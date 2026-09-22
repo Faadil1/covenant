@@ -60,6 +60,10 @@ export function buildTransitionProof({
     proposedPostStateHash: sha256Canonical(proposedPostState),
     authorityRef,
     executionCommitment,
+    executionCommitmentHash:
+      executionCommitment?.onchainExecutionCommitmentHash ??
+      sha256Canonical(executionCommitment),
+    targetClaimMint: passport.mint ?? null,
     nonce,
     expiresAt,
     ruleResultsHash: sha256Canonical(evaluation.ruleResults),
@@ -92,6 +96,8 @@ export function buildReceipt({
     settledStateHash: sha256Canonical(settledState),
     authorityRef: proof.authorityRef,
     executionCommitment: proof.executionCommitment,
+    executionCommitmentHash: proof.executionCommitmentHash,
+    targetClaimMint: proof.targetClaimMint,
     transactionReference,
     outcome,
     observedAt,
