@@ -58,7 +58,7 @@
         </div>
         <div>
           <span>AUTHORITY</span>
-          <strong>ACQUIRE ≤ $100</strong>
+          <strong>ACQUIRE / MIGRATE ≤ $100</strong>
         </div>
         <div>
           <span>EVIDENCE</span>
@@ -69,7 +69,7 @@
           <select id="scenario">
             <option value="verified">Verified Stocklana proof</option>
             <option value="invalidate">Evidence invalidation</option>
-            <option value="repair">Representation repair preview</option>
+            <option value="repair">Verified self-healing migration</option>
           </select>
         </div>
       </section>
@@ -252,10 +252,56 @@
         </div>
       </section>
 
-      <section class="receipt-stage">
+      <section class="repair-stage" id="repairProof">
         <div class="section-heading">
           <div>
             <span class="section-index">03</span>
+            <p class="eyebrow">SELF-HEALING / REPRESENTATION MOBILITY</p>
+          </div>
+          <h2>The Position survives.<br />The implementation changes.</h2>
+          <p>A rights-sensitive Covenant rejected the current AAPLx representation because required holder-opt-in evidence was UNKNOWN. AAPLon satisfied the required evidence and a fresh proof authorized one exact migration.</p>
+        </div>
+
+        <div class="repair-proof-grid">
+          <article class="repair-state repair-state--from">
+            <span class="eyebrow">BEFORE</span>
+            <strong>AAPLx</strong>
+            <div><span>Decision</span><b>REFUSE</b></div>
+            <div><span>Reason</span><code>EVIDENCE_UNKNOWN</code></div>
+            <div><span>Claim raw</span><code>3,000,000</code></div>
+            <div><span>Position v / nonce</span><code>1 / 1</code></div>
+          </article>
+
+          <div class="repair-center">
+            <span class="decision decision--allow">MIGRATE</span>
+            <strong>→</strong>
+            <small>Fresh proof<br />exact Jupiter route<br />248.14 bps</small>
+          </div>
+
+          <article class="repair-state repair-state--to">
+            <span class="eyebrow">AFTER</span>
+            <strong>AAPLon</strong>
+            <div><span>Decision</span><b>ALLOW</b></div>
+            <div><span>Received raw</span><code>29,421,175</code></div>
+            <div><span>Source residual</span><code>0</code></div>
+            <div><span>Position v / nonce</span><code>2 / 2</code></div>
+          </article>
+        </div>
+
+        <div class="continuity-strip">
+          <div><span>POSITION ID</span><code>9LEZFU…sZQ2</code></div>
+          <div><span>IDENTITY</span><strong>PRESERVED</strong></div>
+          <div><span>REPRESENTATION</span><strong>CHANGED</strong></div>
+          <div><span>MAINNET FUNDS</span><strong>NONE</strong></div>
+        </div>
+
+        <button class="proof-button repair-proof-button" id="openRepairProof">OPEN SELF-HEALING RECORD</button>
+      </section>
+
+      <section class="receipt-stage">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">04</span>
             <p class="eyebrow">TRANSITION RECEIPT</p>
           </div>
           <h2>The state change carries its proof.</h2>
@@ -342,6 +388,39 @@
       <code id="passportSource"></code>
     </div>
     <p class="dialog-note">Claim Passports preserve verified facts and explicit unknowns. UNKNOWN is never silently converted into TRUE.</p>
+  </dialog>
+
+  <dialog id="repairDialog">
+    <div class="dialog-head">
+      <div>
+        <span class="eyebrow">VERIFICATION RECORD</span>
+        <h2>T4 Self-Healing / PASS</h2>
+      </div>
+      <button class="plain-button" id="closeRepairProof">CLOSE</button>
+    </div>
+    <div class="dialog-grid">
+      <div><span>Run</span><strong>35733746142</strong></div>
+      <div><span>Artifact</span><strong>10696822718</strong></div>
+      <div><span>Source</span><strong>3,000,000 raw AAPLx</strong></div>
+      <div><span>Minimum target</span><strong>29,293,783 raw AAPLon</strong></div>
+      <div><span>Settled target</span><strong>29,421,175 raw AAPLon</strong></div>
+      <div><span>Live route impact</span><strong>248.14 bps / max 500 bps</strong></div>
+    </div>
+    <pre><code>{
+  "currentClaim": "AAPLx",
+  "currentDecision": "REFUSE",
+  "currentReason": "EVIDENCE_UNKNOWN",
+  "repairPlan": "MIGRATE",
+  "targetClaim": "AAPLon",
+  "targetDecision": "ALLOW",
+  "positionIdentityPreserved": true,
+  "sourceFullyConsumed": true,
+  "representationChanged": true,
+  "positionVersion": "1 → 2",
+  "nonce": "1 → 2",
+  "outcome": "MIGRATED"
+}</code></pre>
+    <p class="dialog-note">Verified on a Surfpool mainnet-shaped fork. The repair policy used a 500 bps ceiling, distinct from the 50 bps Stocklana ACQUIRE profile. No mainnet funds were moved.</p>
   </dialog>
 
   <dialog id="proofDialog">

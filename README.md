@@ -8,7 +8,7 @@ COVENANT authorizes **proof-carrying economic state transitions**. A user owns a
 
 ## Stocklana technical proof
 
-Technical proof gate: **T1–T3 PASS on 2026-09-22. The build may now proceed to implementation hardening and UX without weakening the proof boundary.**
+Technical proof gate: **T1–T4 PASS on 2026-09-22. COVENANT now proves acquisition, fail-closed re-evaluation, and proof-gated representation mobility without changing the Invariant Position identity.**
 
 - **T1 — Claim Graph reality proof:** verify at least two exact Solana representations of one underlying, with provenance for identity, issuer/structure, market state, and lifecycle state.
 - **T2 — Transition proof prototype:** deterministic `ALLOW | ESCALATE | REFUSE`, explicit reason codes, UNKNOWN fail-closed.
@@ -52,7 +52,11 @@ Every policy-relevant field must carry provenance and freshness. Missing evidenc
 - T2 deterministically produces `ALLOW | ESCALATE | REFUSE` and refuses UNKNOWN evidence.
 - T3a proves the PDA-controlled authority boundary in LiteSVM.
 - T3b proves an exact proof-gated `USDC -> AAPLx` state transition through Jupiter on a Surfpool mainnet-shaped fork, then rejects replay with unchanged balances.
+- T4 proves self-healing representation mobility: AAPLx fails a rights-sensitive Covenant on UNKNOWN evidence, AAPLon qualifies, and the same Position executes a fresh proof-gated `AAPLx -> AAPLon` migration with full source consumption and preserved Position identity.
 
 Canonical T3b evidence: GitHub Actions run `35698743841`, artifact `covenant-t3b-surfpool-evidence`.
 
 This is a fork proof, not a mainnet financial transaction. Mainnet execution remains disabled by default.
+
+
+Canonical T4 evidence: GitHub Actions run `35733746142`, artifact `covenant-t4-self-healing-evidence` (ID `10696822718`).

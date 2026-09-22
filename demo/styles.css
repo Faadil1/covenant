@@ -233,7 +233,7 @@ main { overflow: hidden; }
   font-weight: 600;
 }
 
-.covenant-stage, .claim-stage, .transition-stage, .receipt-stage {
+.covenant-stage, .claim-stage, .transition-stage, .repair-stage, .receipt-stage {
   padding: 90px clamp(28px, 6vw, 96px);
   border-bottom: 1px solid var(--ink);
 }
@@ -756,7 +756,7 @@ dialog pre {
   .position-stamp { margin: 20px; }
   .control-strip { grid-template-columns: 1fr; }
   .control-strip > div { border-right: 0; }
-  .covenant-stage, .claim-stage, .transition-stage, .receipt-stage { padding: 64px 20px; }
+  .covenant-stage, .claim-stage, .transition-stage, .repair-stage, .receipt-stage { padding: 64px 20px; }
   .covenant-rules article { grid-template-columns: 1fr; gap: 7px; }
   .covenant-rules small { text-align: left; }
   .covenant-authority { grid-template-columns: 1fr; }
@@ -847,4 +847,102 @@ dialog pre {
   .passport-evidence { grid-template-columns: 1fr; }
   .passport-identity > div,
   .passport-evidence article { border-right: 0; border-bottom: 1px solid var(--rule); }
+}
+
+.repair-stage {
+  background: var(--blue-soft);
+}
+
+.repair-proof-grid {
+  display: grid;
+  grid-template-columns: 1fr 170px 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.repair-state {
+  padding: 28px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+}
+
+.repair-state--from { background: var(--signal-soft); }
+.repair-state--to { background: var(--acid); }
+
+.repair-state > strong {
+  display: block;
+  margin: 14px 0 34px;
+  font-size: clamp(48px, 5vw, 78px);
+  line-height: .9;
+  letter-spacing: -.055em;
+}
+
+.repair-state > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 11px;
+}
+
+.repair-state code { font-family: "DM Mono", monospace; }
+
+.repair-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.repair-center > strong {
+  margin: 16px 0;
+  font-size: 54px;
+  font-weight: 400;
+}
+
+.repair-center small {
+  font: 9px/1.6 "DM Mono", monospace;
+  color: var(--muted);
+}
+
+.continuity-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 20px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+}
+
+.continuity-strip > div {
+  padding: 18px 20px;
+  border-right: 1px solid var(--ink);
+}
+
+.continuity-strip > div:last-child { border-right: 0; }
+
+.continuity-strip span {
+  display: block;
+  margin-bottom: 7px;
+  font: 9px "DM Mono", monospace;
+}
+
+.continuity-strip strong,
+.continuity-strip code {
+  font: 500 11px "DM Mono", monospace;
+}
+
+.repair-proof-button { margin-top: 20px; }
+
+@media (max-width: 900px) {
+  .repair-proof-grid { grid-template-columns: 1fr; }
+  .repair-center > strong { transform: rotate(90deg); }
+  .continuity-strip { grid-template-columns: repeat(2, 1fr); }
+  .continuity-strip > div { border-bottom: 1px solid var(--ink); }
+}
+
+@media (max-width: 560px) {
+  .continuity-strip { grid-template-columns: 1fr; }
+  .continuity-strip > div { border-right: 0; }
 }

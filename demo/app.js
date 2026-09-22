@@ -4,6 +4,9 @@ const close = document.querySelector("#closeProof");
 const scenario = document.querySelector("#scenario");
 const passportDialog = document.querySelector("#passportDialog");
 const closePassport = document.querySelector("#closePassport");
+const repairDialog = document.querySelector("#repairDialog");
+const openRepairProof = document.querySelector("#openRepairProof");
+const closeRepairProof = document.querySelector("#closeRepairProof");
 const runDemo = document.querySelector("#runDemo");
 let demoTimers = [];
 
@@ -66,14 +69,14 @@ function applyScenario(value) {
 
   aaplonCard.classList.add("claim-card--repair");
   setDecision(aaplxDecision, "REFUSE", "refuse");
-  setDecision(aaplonDecision, "PREVIEW", "preview");
-  aaplxImpact.textContent = "STALE";
-  aaplonImpact.textContent = "32.00 bps*";
-  aaplxFooter.textContent = "CURRENT REPRESENTATION INVALID";
+  setDecision(aaplonDecision, "ALLOW", "allow");
+  aaplxImpact.textContent = "0 bps*";
+  aaplonImpact.textContent = "248.14 bps";
+  aaplxFooter.textContent = "EVIDENCE_UNKNOWN · FAIL CLOSED";
   aaplxFooter.className = "claim-footer claim-footer--blocked";
-  aaplonFooter.textContent = "MIGRATE PROPOSAL · REQUIRES FRESH PROOF";
+  aaplonFooter.textContent = "VERIFIED MIGRATION TARGET";
   aaplonFooter.className = "claim-footer";
-  snapshotNote.textContent = "* Synthetic repair preview only. 32.00 bps is not observed market data. COVENANT would require fresh evidence and a new exact Transition Proof before migration.";
+  snapshotNote.textContent = "Verified T4 self-healing snapshot · 2026-09-22 13:31 UTC. * AAPLx failed on missing required holder-opt-in evidence, not route impact. Repair Covenant max route impact: 500 bps.";
 }
 
 scenario?.addEventListener("change", (event) => applyScenario(event.target.value));
@@ -118,8 +121,9 @@ runDemo?.addEventListener("click", () => {
   narrativeStep(9800, () => {
     scenario.value = "repair";
     applyScenario("repair");
+    document.querySelector("#repairProof")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
-  narrativeStep(12200, stopNarrative);
+  narrativeStep(12600, stopNarrative);
 });
 
 const passportData = {
@@ -168,4 +172,10 @@ document.querySelectorAll("[data-passport]").forEach((button) => {
 closePassport?.addEventListener("click", () => passportDialog.close());
 passportDialog?.addEventListener("click", (event) => {
   if (event.target === passportDialog) passportDialog.close();
+});
+
+openRepairProof?.addEventListener("click", () => repairDialog.showModal());
+closeRepairProof?.addEventListener("click", () => repairDialog.close());
+repairDialog?.addEventListener("click", (event) => {
+  if (event.target === repairDialog) repairDialog.close();
 });
