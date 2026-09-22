@@ -40,7 +40,7 @@ jobs:
       - name: Syntax-check live Pyth probe
         run: node --check scripts/pyth-stocklana-evidence.mjs
       - name: Install JS dependencies
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm install --omit=dev --ignore-scripts --no-audit --no-fund
       - name: Verify Solana token dependency compatibility
         run: node -e "Promise.all([import('@solana/web3.js'), import('@solana/spl-token')])"
       - name: Syntax-check mainnet scripts
