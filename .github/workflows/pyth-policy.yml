@@ -115,6 +115,8 @@ jobs:
           test -n "$JUPITER_API_KEY" || { echo "JUPITER_API_KEY repository secret is missing"; exit 1; }
       - name: Install JS dependencies
         run: npm install --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Verify official TSLAx identity
+        run: node scripts/tsla-claim-verify.mjs
       - name: Run live TSLA fallback diagnostic
         run: node scripts/tsla-fallback-live-check.mjs
       - name: Upload TSLA fallback evidence
