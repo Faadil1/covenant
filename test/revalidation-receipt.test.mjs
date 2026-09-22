@@ -83,7 +83,11 @@ test("same claim moves from IN_COVENANT to OUT_OF_COVENANT when evidence changes
   assert.equal(second.decision, "REFUSE");
   assert.equal(second.repair.outcome, "MIGRATE");
   assert.equal(second.repair.toClaimId, "apple:ondo:aaplon");
-  assert.equal(second.oldProofReusable, false);
+  assert.equal(second.newTransitionRequiresFreshProof, true);
+  assert.equal(
+    second.outstandingProofExposure.immediateEvidenceEpochRevocationImplemented,
+    false,
+  );
 });
 
 test("stale evidence invalidates the current representation fail-closed", () => {
