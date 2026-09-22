@@ -1,4 +1,10 @@
-use crate::{SystemSettlementArgs, TransitionProofArgs, ID as PROGRAM_ID};
+use crate::{
+    compute_onchain_execution_commitment_hash,
+    compute_swap_invocation_hash,
+    SystemSettlementArgs,
+    TransitionProofArgs,
+    ID as PROGRAM_ID,
+};
 use anchor_lang::{
     prelude::Pubkey,
     system_program,
@@ -543,4 +549,51 @@ fn covenant_amendment_preserves_position_identity_and_kills_old_proof() {
         &[&fx.evaluator],
     )
     .expect("fresh proof under amended Covenant should execute");
+}
+
+
+#[test]
+fn t3b_hashes_match_cross_language_vectors() {
+    let output_mint = Pubkey::new_from_array([
+        0, 68, 181, 226, 188, 208, 102, 82, 113, 157, 188, 42, 144, 195, 178, 31,
+        89, 166, 7, 76, 97, 143, 191, 245, 133, 231, 100, 191, 135, 17, 233, 74,
+    ]);
+    let swap_hash = [42u8; 32];
+
+    let commitment = compute_onchain_execution_commitment_hash(
+        &crate::USDC_MINT,
+        &output_mint,
+        100_000_000,
+        399_000_000,
+        &swap_hash,
+    );
+    assert_eq!(
+        commitment,
+        [
+            0x59, 0xd8, 0xe9, 0xce, 0x79, 0x38, 0x9d, 0xd4,
+            0x2b, 0x4e, 0xe7, 0xd3, 0xb6, 0x74, 0x02, 0x06,
+            0xc3, 0x87, 0xd0, 0xf4, 0x4f, 0xae, 0xac, 0x5d,
+            0x32, 0x33, 0x93, 0x6c, 0x06, 0x18, 0xbf, 0xa0,
+        ]
+    );
+
+    let position = Pubkey::new_from_array([9u8; 32]);
+    let metas = vec![solana_sdk::instruction::AccountMeta::new_readonly(
+        position,
+        true,
+    )];
+    let invocation = compute_swap_invocation_hash(
+        &crate::JUPITER_V6_PROGRAM,
+        &metas,
+        &[7, 1, 2, 3],
+    );
+    assert_eq!(
+        invocation,
+        [
+            0xd4, 0x09, 0x3f, 0xdc, 0x55, 0x3e, 0x03, 0xf1,
+            0x4e, 0xd9, 0x10, 0x7e, 0x2b, 0x79, 0x41, 0x46,
+            0x22, 0xa1, 0xc5, 0xf6, 0xed, 0x9d, 0xff, 0xd4,
+            0x7a, 0x3d, 0x08, 0xf0, 0x09, 0xcf, 0x60, 0xdf,
+        ]
+    );
 }
