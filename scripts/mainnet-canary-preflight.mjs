@@ -29,11 +29,11 @@ const JUPITER_API_KEY = process.env.JUPITER_API_KEY || "";
 const JUPITER_QUOTE =
   process.env.JUPITER_QUOTE_URL || "https://lite-api.jup.ag/swap/v1/quote";
 
-const INPUT_AMOUNT = BigInt(process.env.COVENANT_INPUT_AMOUNT || "5000000");
+const INPUT_AMOUNT = BigInt(process.env.COVENANT_MAINNET_INPUT_AMOUNT || "5000000");
 const ECONOMIC_VALUE_USD = Number(
-  process.env.COVENANT_ECONOMIC_VALUE_USD || "5",
+  process.env.COVENANT_MAINNET_ECONOMIC_VALUE_USD || "5",
 );
-const MAX_SLIPPAGE_BPS = Number(process.env.COVENANT_SLIPPAGE_BPS || "25");
+const MAX_SLIPPAGE_BPS = Number(process.env.COVENANT_MAINNET_SLIPPAGE_BPS || "25");
 const ABSOLUTE_CANARY_CAP_USDC_RAW = 20_000_000n; // $20 USDC max.
 const ABSOLUTE_CANARY_CAP_USD = 20;
 
