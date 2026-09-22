@@ -236,9 +236,13 @@ async function buildJupiterRoute({ taker, destinationTokenAccount }) {
   const url = JUPITER_V2 + "/build?" + params;
   const build = await fetchJson(url, { headers });
 
-  if ((build.setupInstructions || []).length > 0) {
-    throw new Error("T3b fail-closed: Jupiter returned setupInstructions; canonical proof currently requires pre-existing token accounts");
-  }
+  // Jupiter builds against mainnet and cannot observe fork-only token accounts
+  // created by Surfpool for the Position PDA. It may therefore propose ATA
+  // setup instructions even though the exact source/destination accounts
+  // already exist in this fork. We deliberately DO NOT execute setup material.
+  // The governed swap CPI remains the only economic transition, and the
+  // program independently verifies the exact Position-owned token accounts.
+  const omittedSetupInstructions = build.setupInstructions || [];
   if (build.cleanupInstruction || (build.otherInstructions || []).length > 0 || build.tipInstruction) {
     throw new Error("T3b fail-closed: Jupiter returned unbound cleanup/other/tip instruction material");
   }
@@ -251,7 +255,12 @@ async function buildJupiterRoute({ taker, destinationTokenAccount }) {
     expectedTaker: taker.toBase58(),
     maxSlippageBps: MAX_SLIPPAGE_BPS,
   });
-  return { url, build, commitment };
+  return {
+    url,
+    build,
+    commitment,
+    omittedSetupInstructions,
+  };
 }
 
 function evidenceRecord(value, evidenceClass, observedAt, source) {
@@ -554,6 +563,11 @@ async function main() {
       outputMint: AAPLX.toBase58(),
       minOut: commitment.minOut,
       swapInvocationHash: commitment.swapInvocationHash,
+      omittedSetupInstructionCount: route.omittedSetupInstructions.length,
+      setupReason:
+        route.omittedSetupInstructions.length > 0
+          ? "Jupiter mainnet builder cannot observe fork-only Position token accounts; setup is not executed"
+          : "none",
     });
 
     const inputBefore = await tokenAmount(connection, inputTokenAccount);
@@ -832,6 +846,9 @@ async function main() {
         slippageBps: commitment.slippageBps,
         priceImpactPct: commitment.priceImpactPct,
         lookupTableAddresses: commitment.lookupTableAddresses,
+        omittedSetupInstructionCount: route.omittedSetupInstructions.length,
+        omittedSetupInstructionsHash: commitment.setupInstructionsHash,
+        setupExecution: "NOT_EXECUTED — exact Position token accounts pre-exist in fork",
       },
       execution: {
         signature: executionSignature,
