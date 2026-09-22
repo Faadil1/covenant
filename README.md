@@ -85,6 +85,27 @@ With a Pyth Pro key, capture live signed evidence:
 PYTH_API_KEY=... npm run probe:pyth
 ```
 
+## Live fallback while Apple Pyth access is gated
+
+The current Pyth trial is not entitled to AAPL / AAPLx / AAPLon, so the repository also carries a truthful fallback rather than substituting fake market data.
+
+**Tesla fallback is live-validated:**
+
+- Pyth `Equity.US.TSLA/USD` feed `1435`;
+- official xStocks TSLAx mint `XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB`;
+- live Jupiter `USDC -> TSLAx` executable quote;
+- the same COVENANT evaluator applies tracking-error, freshness, confidence, publisher and route-impact rules;
+- live GitHub Actions evidence returned `ALLOW`.
+
+Run:
+
+```bash
+npm run probe:tsla-fallback
+npm run preflight:tsla-mainnet
+```
+
+See `docs/TSLA-FALLBACK.md`.
+
 ## Mainnet canary
 
 The repository now includes a **fail-closed mainnet preflight** for a tiny `USDC -> AAPLx` canary.
