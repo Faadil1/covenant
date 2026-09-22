@@ -75,6 +75,8 @@ jobs:
         run: npm install --omit=dev --ignore-scripts --no-audit --no-fund
       - name: Check Pyth feed entitlements
         run: node scripts/pyth-entitlement-check.mjs
+      - name: Verify Jupiter API key and AAPLx quote path
+        run: node scripts/jupiter-auth-check.mjs
       - name: Capture live Pyth Stocklana evidence
         run: npm run probe:pyth
       - name: Upload live Pyth evidence
