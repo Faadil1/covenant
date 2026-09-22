@@ -8,6 +8,7 @@ on:
       - "src/**"
       - "test/**"
       - "fixtures/**"
+      - "anchor/**"
       - "package.json"
       - ".github/workflows/technical-proof.yml"
   workflow_dispatch:
@@ -48,3 +49,14 @@ jobs:
 
       - name: Run deterministic transition-proof tests
         run: npm run test:t2
+
+  t3-program-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Compile COVENANT authority-boundary program
+        working-directory: anchor
+        run: cargo check --workspace --all-targets
