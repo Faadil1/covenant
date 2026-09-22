@@ -120,6 +120,43 @@ function encodeAdoptExistingClaim(claimMint) {
   ]);
 }
 
+function encodeProofArgs(proof) {
+  return Buffer.concat([
+    fromHex32(proof.covenantHash, "covenantHash"),
+    fromHex32(proof.claimPassportHash, "claimPassportHash"),
+    fromHex32(proof.evidenceRoot, "evidenceRoot"),
+    fromHex32(proof.preStateHash, "preStateHash"),
+    fromHex32(proof.proposedPostStateHash, "proposedPostStateHash"),
+    fromHex32(proof.receiptCommitmentHash, "receiptCommitmentHash"),
+    fromHex32(proof.executionCommitmentHash, "executionCommitmentHash"),
+    new PublicKey(proof.targetClaimMint).toBuffer(),
+    u64(proof.positionVersion),
+    u64(proof.nonce),
+    i64(proof.expiryUnix),
+    Buffer.from([proof.operator]),
+    u64(proof.economicValueUsdMicros),
+  ]);
+}
+
+function encodeAuthorizeTransition(proof) {
+  return Buffer.concat([
+    anchorDiscriminator("authorize_transition"),
+    encodeProofArgs(proof),
+  ]);
+}
+
+function encodeExecuteAuthorizedClaimMigrate({ migrate }) {
+  return Buffer.concat([
+    anchorDiscriminator("execute_authorized_claim_migrate"),
+    migrate.inputMint.toBuffer(),
+    migrate.outputMint.toBuffer(),
+    u64(migrate.inputAmount),
+    u64(migrate.minOut),
+    fromHex32(migrate.swapInvocationHash, "swapInvocationHash"),
+    vecBytes(migrate.swapData),
+  ]);
+}
+
 function encodeExecuteClaimMigrate({ proof, migrate }) {
   const flags = Buffer.from(migrate.swapAccountFlags);
   return Buffer.concat([
@@ -726,39 +763,73 @@ async function main() {
       economicValueUsdMicros: Math.round(ECONOMIC_VALUE_USD * 1_000_000),
     };
 
-    const swapAccounts = (build.swapInstruction.accounts || []).map((account) => ({ ...account }));
-    for (const account of swapAccounts) {
-      if (account.pubkey === position.toBase58()) account.isSigner = true;
-    }
-    const swapAccountFlags = swapAccounts.map(
-      (account) => (account.isSigner ? 1 : 0) | (account.isWritable ? 2 : 0),
+    const [authorization] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("authorization"),
+        position.toBuffer(),
+        u64(positionBefore.nonce),
+      ],
+      PROGRAM_ID,
     );
+
+    const authorizeIx = new TransactionInstruction({
+      programId: PROGRAM_ID,
+      keys: [
+        { pubkey: proposer.publicKey, isSigner: true, isWritable: true },
+        { pubkey: evaluator.publicKey, isSigner: true, isWritable: false },
+        { pubkey: position, isSigner: false, isWritable: false },
+        { pubkey: authorization, isSigner: false, isWritable: true },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      ],
+      data: encodeAuthorizeTransition(proofArgs),
+    });
+
+    const authorizationSignature = await sendVersioned({
+      connection,
+      payer: owner,
+      signers: [proposer, evaluator],
+      instructions: [authorizeIx],
+      lookupTableAccounts: [],
+    });
+
+    const authorizationInfo = await connection.getAccountInfo(authorization, "confirmed");
+    if (!authorizationInfo) {
+      throw new Error("Transition authorization PDA missing after evaluator authorization");
+    }
+
+    await markStage("TRANSITION_AUTHORIZED", {
+      authorization: authorization.toBase58(),
+      signature: authorizationSignature,
+      proofHash: proof.proofHash,
+      executionCommitmentHash: commitment.onchainExecutionCommitmentHash,
+    });
+
+    const swapAccounts = (build.swapInstruction.accounts || []).map((account) => ({ ...account }));
     const swapData = Buffer.from(build.swapInstruction.data, "base64");
 
     const executeIx = new TransactionInstruction({
       programId: PROGRAM_ID,
       keys: [
-        { pubkey: proposer.publicKey, isSigner: true, isWritable: false },
-        { pubkey: evaluator.publicKey, isSigner: true, isWritable: false },
+        { pubkey: proposer.publicKey, isSigner: true, isWritable: true },
         { pubkey: position, isSigner: false, isWritable: true },
+        { pubkey: authorization, isSigner: false, isWritable: true },
         { pubkey: sourceTokenAccount, isSigner: false, isWritable: true },
         { pubkey: targetTokenAccount, isSigner: false, isWritable: true },
         { pubkey: JUPITER_PROGRAM, isSigner: false, isWritable: false },
         ...swapAccounts.map((account) => ({
           pubkey: new PublicKey(account.pubkey),
+          // Position PDA is promoted to signer only by COVENANT's invoke_signed.
           isSigner: Boolean(account.isSigner) && account.pubkey !== position.toBase58(),
           isWritable: Boolean(account.isWritable),
         })),
       ],
-      data: encodeExecuteClaimMigrate({
-        proof: proofArgs,
+      data: encodeExecuteAuthorizedClaimMigrate({
         migrate: {
           inputMint: AAPLX,
           outputMint: AAPLON,
           inputAmount: SOURCE_AMOUNT,
           minOut: BigInt(commitment.minOut),
           swapInvocationHash: commitment.swapInvocationHash,
-          swapAccountFlags,
           swapData,
         },
       }),
@@ -767,6 +838,22 @@ async function main() {
     const computeBudgetIxs = (build.computeBudgetInstructions || []).map(rawInstruction);
     const alts = await lookupTables(connection, build);
 
+    const latestForSizing = await connection.getLatestBlockhash("processed");
+    const sizingMessage = new TransactionMessage({
+      payerKey: owner.publicKey,
+      recentBlockhash: latestForSizing.blockhash,
+      instructions: [...computeBudgetIxs, executeIx],
+    }).compileToV0Message(alts);
+    const sizingTx = new VersionedTransaction(sizingMessage);
+    sizingTx.sign([owner, proposer]);
+    const serializedBytes = sizingTx.serialize().length;
+    if (serializedBytes > 1232) {
+      throw new Error(
+        "Compact authorized MIGRATE still exceeds Solana transaction size: " +
+          serializedBytes + " bytes",
+      );
+    }
+
     await markStage("MIGRATION_SUBMITTING", {
       sourceClaim: AAPLX.toBase58(),
       targetClaim: AAPLON.toBase58(),
@@ -774,12 +861,14 @@ async function main() {
       minOut: commitment.minOut,
       swapInvocationHash: commitment.swapInvocationHash,
       omittedSetupInstructionCount: route.omittedSetupInstructions.length,
+      transactionBytes: serializedBytes,
+      authorization: authorization.toBase58(),
     });
 
     const migrationSignature = await sendVersioned({
       connection,
       payer: owner,
-      signers: [proposer, evaluator],
+      signers: [proposer],
       instructions: [...computeBudgetIxs, executeIx],
       lookupTableAccounts: alts,
     });
@@ -813,7 +902,7 @@ async function main() {
       await sendVersioned({
         connection,
         payer: owner,
-        signers: [proposer, evaluator],
+        signers: [proposer],
         instructions: [...computeBudgetIxs, executeIx],
         lookupTableAccounts: alts,
       });
@@ -876,6 +965,10 @@ async function main() {
         note: "Surfpool seeds the pre-existing AAPLx balance before authorization; owner adoption verifies the exact Position-owned Token-2022 account and moves no value.",
         initializeSignature,
         adoptSignature,
+        authorizationSignature,
+        authorization: authorization.toBase58(),
+        authorizationModel:
+          "Full evaluator-approved Transition Proof stored in nonce-bound PDA before compact execution transaction",
       },
       revalidation: {
         current: {
@@ -906,6 +999,8 @@ async function main() {
       },
       migration: {
         signature: migrationSignature,
+        authorizationSignature,
+        authorization: authorization.toBase58(),
         preState,
         settledState,
         sourceFullyConsumed: sourceAfter === 0n,
@@ -925,7 +1020,7 @@ async function main() {
           replayAfter.target === replayBefore.target,
       },
       assertion:
-        "The same Invariant Position survived a representation failure, produced a fresh proof for a qualifying alternate Claim, migrated the full current Claim through the governed path, and rejected replay.",
+        "The same Invariant Position survived a representation failure, persisted one fresh evaluator-approved proof as a nonce-bound authorization, migrated the full current Claim through the governed path, and rejected replay.",
     };
 
     await mkdir(resolve(ROOT, "evidence/t4"), { recursive: true });
