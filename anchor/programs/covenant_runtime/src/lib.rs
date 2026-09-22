@@ -833,6 +833,12 @@ pub mod covenant_runtime {
             CovenantError::ExecutionCommitmentMismatch
         );
 
+        let expected_flag_bytes = (ctx.remaining_accounts.len() + 3) / 4;
+        require!(
+            args.swap_account_flags_packed.len() == expected_flag_bytes,
+            CovenantError::SwapAccountShapeMismatch
+        );
+
         let mut metas: Vec<AccountMeta> =
             Vec::with_capacity(ctx.remaining_accounts.len());
         let mut infos: Vec<AccountInfo<'_>> =
@@ -841,10 +847,26 @@ pub mod covenant_runtime {
         let mut saw_input = false;
         let mut saw_output = false;
 
-        for account in ctx.remaining_accounts.iter() {
+        for (index, account) in ctx.remaining_accounts.iter().enumerate() {
+            let packed = args.swap_account_flags_packed[index / 4];
+            let shift = (index % 4) * 2;
+            let flags = (packed >> shift) & 0b11;
+            let wants_signer = flags & 0b01 != 0;
+            let wants_writable = flags & 0b10 != 0;
             let key = account.key();
-            let wants_signer = account.is_signer || key == position_key;
-            let wants_writable = account.is_writable;
+
+            if wants_signer {
+                require!(
+                    account.is_signer || key == position_key,
+                    CovenantError::MissingRequiredSigner
+                );
+            }
+            if wants_writable {
+                require!(
+                    account.is_writable,
+                    CovenantError::InsufficientAccountPrivilege
+                );
+            }
 
             if key == position_key {
                 saw_position = true;
@@ -863,6 +885,20 @@ pub mod covenant_runtime {
             };
             metas.push(meta);
             infos.push(account.clone());
+        }
+
+        // Unused high bits in the final packing byte must be zero so there is
+        // only one canonical encoding for a given ordered account list.
+        if !ctx.remaining_accounts.is_empty() {
+            let used_slots = ctx.remaining_accounts.len() % 4;
+            if used_slots != 0 {
+                let used_bits = used_slots * 2;
+                let unused_mask = !((1u8 << used_bits) - 1);
+                require!(
+                    args.swap_account_flags_packed[expected_flag_bytes - 1] & unused_mask == 0,
+                    CovenantError::InvalidAccountFlags
+                );
+            }
         }
 
         require!(saw_position, CovenantError::PositionMissingFromSwap);
@@ -1339,6 +1375,12 @@ pub struct JupiterAuthorizedMigrateArgs {
     pub input_amount: u64,
     pub min_out: u64,
     pub swap_invocation_hash: [u8; 32],
+    /// Two bits per ordered Jupiter account, packed four accounts per byte:
+    /// bit 0 = signer, bit 1 = writable.
+    ///
+    /// This preserves the exact Jupiter invocation flags even when Solana
+    /// privilege de-duplication promotes duplicate outer accounts.
+    pub swap_account_flags_packed: Vec<u8>,
     pub swap_data: Vec<u8>,
 }
 

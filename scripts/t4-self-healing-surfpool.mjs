@@ -153,8 +153,20 @@ function encodeExecuteAuthorizedClaimMigrate({ migrate }) {
     u64(migrate.inputAmount),
     u64(migrate.minOut),
     fromHex32(migrate.swapInvocationHash, "swapInvocationHash"),
+    vecBytes(migrate.swapAccountFlagsPacked),
     vecBytes(migrate.swapData),
   ]);
+}
+
+function packSwapAccountFlags(accounts) {
+  const packed = Buffer.alloc(Math.ceil(accounts.length / 4));
+  accounts.forEach((account, index) => {
+    const flags =
+      (account.isSigner ? 1 : 0) |
+      (account.isWritable ? 2 : 0);
+    packed[Math.floor(index / 4)] |= flags << ((index % 4) * 2);
+  });
+  return packed;
 }
 
 function encodeExecuteClaimMigrate({ proof, migrate }) {
@@ -805,6 +817,7 @@ async function main() {
     });
 
     const swapAccounts = (build.swapInstruction.accounts || []).map((account) => ({ ...account }));
+    const swapAccountFlagsPacked = packSwapAccountFlags(swapAccounts);
     const swapData = Buffer.from(build.swapInstruction.data, "base64");
 
     const executeIx = new TransactionInstruction({
@@ -830,6 +843,7 @@ async function main() {
           inputAmount: SOURCE_AMOUNT,
           minOut: BigInt(commitment.minOut),
           swapInvocationHash: commitment.swapInvocationHash,
+          swapAccountFlagsPacked,
           swapData,
         },
       }),
@@ -862,6 +876,7 @@ async function main() {
       swapInvocationHash: commitment.swapInvocationHash,
       omittedSetupInstructionCount: route.omittedSetupInstructions.length,
       transactionBytes: serializedBytes,
+      packedFlagBytes: swapAccountFlagsPacked.length,
       authorization: authorization.toBase58(),
     });
 
