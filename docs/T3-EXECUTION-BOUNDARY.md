@@ -1,6 +1,6 @@
 # T3 — Execution Boundary Proof
 
-Status: **IN PROGRESS — T3a program scaffold**
+Status: **T3a PASS — authority boundary proven in LiteSVM; T3b Apple ACQUIRE remains open**
 
 COVENANT's T3 requirement is not satisfied by displaying an `ALLOW` result. The same governed path must make the allowed economic state change possible and make the corresponding refused transition impossible.
 
@@ -23,6 +23,20 @@ The proposer/agent never owns generic custody authority over the vault. A transi
 After a successful transition the program increments the nonce and position version, which makes the consumed proof non-replayable.
 
 Owner controls can freeze/unfreeze the position and rotate the evaluator. Rotation consumes a nonce so an old evaluator authorization cannot remain valid against the same state version/nonce pair.
+
+## T3a verification result
+
+GitHub Actions run `35692639745` completed successfully on 2026-09-22 after building the Anchor program with Solana 3.1.10 / Anchor 1.1.2 and executing the LiteSVM suite.
+
+Four authority-boundary tests passed:
+
+- an evaluator-approved proof moved real simulated lamports from the PDA vault and advanced nonce/version;
+- reusing the consumed proof failed;
+- a wrong evaluator and destination substitution could not move value;
+- owner freeze invalidated a pending proof and blocked execution;
+- Covenant amendment preserved the same Invariant Position identity, incremented version/nonce, invalidated the old proof, and permitted a fresh proof under the amended Covenant.
+
+This closes **T3a**, not the complete Stocklana T3 gate. The remaining bar is T3b: exact governed USDC → Apple-claim settlement on a mainnet-shaped fork/devnet path.
 
 ## What T3a proves
 
