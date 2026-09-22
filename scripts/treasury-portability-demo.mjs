@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { evaluateTransition } from "../src/policy/evaluator.mjs";
+import { planRepresentationRepair } from "../src/runtime/repair-planner.mjs";
 
 const load = async (path) => JSON.parse(await readFile(path, "utf8"));
 const covenant = await load("fixtures/treasury-us-qualified-same-day.json");
@@ -47,11 +48,34 @@ for (const row of rows) {
   }
 }
 
+const repairPlan = planRepresentationRepair({
+  currentClaimId: "treasury:openeden:tbill",
+  evaluations: rows.map((row) => ({
+    claimId: row.claimId,
+    decision: row.decision,
+    ruleResults: row.failures.map((failure) => ({
+      outcome: "REFUSE",
+      reasonCode: failure.reasonCode,
+    })),
+  })),
+  authority: { allowedOperators: ["MIGRATE", "FREEZE"] },
+  candidatePriority: ["treasury:superstate:ustb"],
+});
+
+if (
+  repairPlan.outcome !== "MIGRATE" ||
+  repairPlan.toClaimId !== "treasury:superstate:ustb" ||
+  repairPlan.executable !== false
+) {
+  throw new Error("Treasury repair planner did not preserve the proof boundary");
+}
+
 console.log(JSON.stringify({
   schemaVersion: "covenant.treasury-portability-demo.v1",
   covenantId: covenant.id,
   underlyingIntent: covenant.underlyingIntent,
   coreEvaluator: "src/policy/evaluator.mjs",
   result: rows,
-  assertion: "The same COVENANT evaluator distinguishes three real Treasury/cash-equivalent representations from authoritative semantic evidence; no Apple-specific evaluator changes are required.",
+  repairPlan,
+  assertion: "The same COVENANT evaluator and repair planner distinguish three real Treasury/cash-equivalent representations and can propose—but not execute—a TBILL -> USTB repair without Apple-specific core changes.",
 }, null, 2));
