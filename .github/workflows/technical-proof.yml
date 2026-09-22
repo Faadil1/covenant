@@ -50,13 +50,23 @@ jobs:
       - name: Run deterministic transition-proof tests
         run: npm run test:t2
 
-  t3-program-check:
+  t3-authority-boundary:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
 
-      - name: Compile COVENANT authority-boundary program
+      - name: Setup Solana + Anchor
+        uses: solana-foundation/github-actions/setup-all@d1e779ca332fc499507fadf97d9c780ffed5a71f
+        with:
+          solana_version: "3.1.10"
+          anchor_version: "1.1.2"
+          node_version: "22"
+
+      - name: Build COVENANT program
         working-directory: anchor
-        run: cargo check --workspace --all-targets
+        run: anchor build --ignore-keys
+
+      - name: Execute T3a LiteSVM authority-boundary tests
+        working-directory: anchor
+        run: cargo test --workspace -- --nocapture
