@@ -84,3 +84,29 @@ The next gates remain:
 ### USDY
 - https://ondo.finance/usdy
 - https://ondo.finance/
+
+
+## Non-executing representation repair
+
+The same `repair-planner.mjs` now receives:
+
+```
+current Claim = TBILL
+TBILL = REFUSE (redemption horizon)
+USTB = ALLOW
+USDY = REFUSE
+authority = MIGRATE + FREEZE
+owner priority = USTB
+```
+
+and deterministically returns:
+
+```
+MIGRATE
+TBILL -> USTB
+requiresFreshEvidence = true
+requiresFreshTransitionProof = true
+executable = false
+```
+
+This is intentionally **not** a claim that TBILL can currently be directly swapped or atomically migrated into USTB. It proves only that the same representation-repair semantics survive the domain change while preserving the normal proof/execution boundary.
