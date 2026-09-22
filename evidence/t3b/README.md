@@ -48,3 +48,23 @@ A Jupiter build response is routing material, not authority. T2 must return `ALL
 Neither evidence probe authorizes a trade. The T3 gate closes only when the exact `ALLOW -> proof -> governed CPI -> balance deltas -> receipt` sequence executes on the fork while the corresponding REFUSE path cannot move funds.
 
 Never commit API keys or wallet/private-key material.
+
+
+## 3. Governed fork execution
+
+`npm run prove:t3b:surfpool` is the canonical end-to-end technical proof. It:
+
+1. boots an embedded Surfpool mainnet-shaped fork;
+2. deploys the current COVENANT program at its canonical program id;
+3. creates the Invariant Position through the normal program instruction;
+4. uses Surfpool cheatcodes only to seed fork-only USDC/AAPLx test balances before authorization;
+5. collects live Jupiter execution evidence and evaluates the executable Apple Covenant;
+6. creates an executable Transition Proof only when the deterministic evaluator returns `ALLOW`;
+7. binds the exact Jupiter CPI accounts/data, input amount, output mint and min-out into the proof;
+8. executes USDC -> AAPLx through the Position PDA;
+9. verifies economic balance deltas, claim state, nonce/version and receipt commitment;
+10. replays the consumed proof and requires rejection with no balance movement.
+
+The companion REFUSE case never receives executable proof. If AAPLon no longer violates the live market rule when the proof runs, the harness falls back to a deliberately stale AAPLx evidence record so fail-closed behavior remains deterministic and explicitly labeled.
+
+A PASS here is **L2 signed preflight + constrained onchain execution on a mainnet-shaped fork**. It is not a mainnet financial trade.

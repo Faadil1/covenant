@@ -1,0 +1,69 @@
+name: covenant-t3b-surfpool
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/t3b-surfpool-execute.mjs"
+      - "src/execution/**"
+      - "src/policy/**"
+      - "src/proof/**"
+      - "fixtures/apple-executable-covenant.json"
+      - "fixtures/passports/apple-aaplx.json"
+      - "fixtures/passports/apple-aaplon.json"
+      - "anchor/**"
+      - "package.json"
+      - ".github/workflows/t3b-surfpool.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: covenant-t3b-surfpool-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  governed-apple-acquire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SOLANA_RPC_URL: https://api.mainnet-beta.solana.com
+      JUPITER_API_BASE: https://api.jup.ag/swap/v2
+      JUPITER_QUOTE_URL: https://lite-api.jup.ag/swap/v1/quote
+      COVENANT_INPUT_AMOUNT: "100000000"
+      COVENANT_ECONOMIC_VALUE_USD: "100"
+      COVENANT_SLIPPAGE_BPS: "50"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Surfpool proof dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Setup Solana + Anchor
+        uses: solana-foundation/github-actions/setup-all@d1e779ca332fc499507fadf97d9c780ffed5a71f
+        with:
+          solana_version: "3.1.10"
+          anchor_version: "1.1.2"
+          node_version: "22"
+
+      - name: Build COVENANT program
+        working-directory: anchor
+        run: anchor build --ignore-keys
+
+      - name: Execute governed USDC to AAPLx transition on mainnet-shaped Surfpool fork
+        run: npm run prove:t3b:surfpool
+
+      - name: Upload T3b execution evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: covenant-t3b-surfpool-evidence
+          path: evidence/t3b/surfpool-execution-*.json
+          if-no-files-found: warn
+          retention-days: 14

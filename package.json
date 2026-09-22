@@ -9,9 +9,14 @@
     "test:t2": "node --test test/*.test.mjs",
     "demo:t2": "node scripts/t2-canonical-demo.mjs",
     "preflight:t3b:surfpool": "node scripts/t3b-surfpool-preflight.mjs",
-    "probe:routes": "node scripts/t1-route-reality.mjs"
+    "probe:routes": "node scripts/t1-route-reality.mjs",
+    "prove:t3b:surfpool": "node scripts/t3b-surfpool-execute.mjs"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "@solana/surfpool": "1.5.0",
+    "@solana/web3.js": "1.99.0"
   }
-}
+}\n

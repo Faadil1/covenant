@@ -9,3 +9,4 @@ evidence/t1/market-*.json
 evidence/t1/route-reality-*.json
 evidence/t3b/jupiter-build-*.json
 evidence/t3b/surfpool-preflight-*.json
+\nevidence/t3b/surfpool-execution-*.json\n
