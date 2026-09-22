@@ -3,15 +3,22 @@
   "version": 1,
   "underlying": "AAPL",
   "network": "Solana",
-  "mint": null,
+  "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+  "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "decimals": 8,
   "issuer": "Backed Assets (JE) Limited",
+  "identityProvenance": {
+    "issuerApi": "https://api.xstocks.fi/api/v2/public/assets/AAPLx",
+    "onchain": "Solana RPC getAccountInfo",
+    "verifiedAt": "2026-09-22T05:37:51.392Z"
+  },
   "properties": {
     "collateralLendingRequiresHolderOptIn": {
       "value": null,
       "status": "UNKNOWN",
       "evidenceClass": "UNKNOWN",
       "observedAt": null,
-      "source": "No authoritative evidence currently bound to this field"
+      "source": "No authoritative evidence currently bound to this exact property"
     }
   }
 }
