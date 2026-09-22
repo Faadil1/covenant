@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { Decision, evaluateTransition } from "../src/policy/evaluator.mjs";
 import { buildTransitionProof, sha256Canonical } from "../src/proof/transition-proof.mjs";
+import { planRepresentationRepair, RepairOutcome } from "../src/runtime/repair-planner.mjs";
 
 const load = async (path) => JSON.parse(await readFile(path, "utf8"));
 const covenant = await load("fixtures/treasury-us-qualified-same-day.json");
@@ -106,4 +107,30 @@ test("Treasury portability: existing Transition Proof machinery accepts ALLOW an
     () => buildTransitionProof({ evaluation: refuseEvaluation }),
     /Only an ALLOW evaluation/,
   );
+});
+
+test("Treasury portability: an out-of-Covenant TBILL position produces a non-executable USTB repair proposal", () => {
+  const current = evaluateTransition(input(tbill));
+  const alternate = evaluateTransition(input(ustb));
+
+  const repair = planRepresentationRepair({
+    currentClaimId: tbill.id,
+    evaluations: [
+      { claimId: tbill.id, decision: current.decision, ruleResults: current.ruleResults },
+      { claimId: ustb.id, decision: alternate.decision, ruleResults: alternate.ruleResults },
+      { claimId: usdy.id, decision: evaluateTransition(input(usdy)).decision },
+    ],
+    authority: {
+      allowedOperators: ["MIGRATE", "FREEZE"],
+    },
+    candidatePriority: [ustb.id],
+  });
+
+  assert.equal(repair.outcome, RepairOutcome.MIGRATE);
+  assert.equal(repair.fromClaimId, tbill.id);
+  assert.equal(repair.toClaimId, ustb.id);
+  assert.equal(repair.executable, false);
+  assert.equal(repair.requiresFreshEvidence, true);
+  assert.equal(repair.requiresFreshTransitionProof, true);
+  assert.ok(repair.sourceFailure.reasonCodes.includes("REDEMPTION_HORIZON_EXCEEDED"));
 });
