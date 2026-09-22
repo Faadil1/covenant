@@ -1,5 +1,3 @@
-/position /position.html 200
-/covenant /covenant.html 200
-/claims /claims.html 200
-/runtime /runtime.html 200
-/proofs /proofs.html 200
+# Cloudflare Pages automatically maps extensionless routes to matching HTML assets
+# and redirects /route.html to /route.
+# Do not add /route -> /route.html proxy rules here; that creates an infinite loop.
