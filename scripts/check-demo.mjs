@@ -8,6 +8,7 @@ const pages = Object.fromEntries(await Promise.all(names.map(async (name) => [
 const app = await readFile(new URL("../demo/app.js", import.meta.url), "utf8");
 const state = await readFile(new URL("../demo/state.js", import.meta.url), "utf8");
 const css = await readFile(new URL("../demo/styles.css", import.meta.url), "utf8");
+const redirects = await readFile(new URL("../demo/_redirects", import.meta.url), "utf8");
 
 const checks = [
   ["six product surfaces", names.every((name) => pages[name].includes('data-page="'))],
@@ -22,6 +23,8 @@ const checks = [
   ["verified T4 evidence", pages.proofs.includes("35733746142") && pages.proofs.includes("10696822718")],
   ["mainnet truth boundary", pages.runtime.includes("Not mainnet execution") && pages.proofs.includes("Mainnet financial execution is disabled")],
   ["responsive CSS", css.includes("@media(max-width:560px)")],
+  ["extensionless Cloudflare navigation", names.every((name) => !pages[name].includes('href="./runtime.html"') && !pages[name].includes('href="./position.html"') && !pages[name].includes('href="./proofs.html"'))],
+  ["Cloudflare redirect loop guard", !/\/position\s+\/position\.html\s+200/.test(redirects) && !/\/runtime\s+\/runtime\.html\s+200/.test(redirects)],
 ];
 
 const failed = checks.filter(([, ok]) => !ok);
