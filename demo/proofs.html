@@ -1,0 +1,22 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Proofs — COVENANT</title><link rel="stylesheet" href="./styles.css"></head>
+<body data-page="proofs"><div class="shell">
+<header class="topbar">
+  <a class="brand" href="./index.html"><span class="brand-mark">C</span><span>COVENANT</span></a>
+  <nav class="nav" aria-label="Primary">
+    <a data-nav="home" href="./index.html">Overview</a>
+    <a data-nav="position" href="./position.html">Position</a>
+    <a data-nav="covenant" href="./covenant.html">Covenant</a>
+    <a data-nav="claims" href="./claims.html">Claims</a>
+    <a data-nav="runtime" href="./runtime.html">Runtime</a>
+    <a data-nav="proofs" href="./proofs.html">Proofs</a>
+  </nav>
+  <div class="top-status"><span class="status-dot"></span><span data-local-status>LOCAL SANDBOX</span></div>
+</header><main class="page">
+<section class="page-head"><div><p class="kicker">VERIFIED EVIDENCE + LOCAL RECEIPTS</p><h1>State changes carry their <em>proof.</em></h1><p class="lede">Immutable fork evidence is separated from writable browser-sandbox receipts so the demo never blurs what actually ran on Solana-shaped state and what only ran locally.</p></div><button class="button button--secondary" id="exportState">EXPORT LOCAL SANDBOX</button></section>
+<section class="section"><div class="grid grid--2">
+<article class="proof-card"><span class="badge badge--allow">VERIFIED PASS</span><h3>T3 · Governed ACQUIRE</h3><dl><div><dt>Run</dt><dd><code>35698743841</code></dd></div><div><dt>Transition</dt><dd>100,000,000 raw USDC → 29,334,103 raw AAPLx</dd></div><div><dt>Replay</dt><dd>REFUSED · balances unchanged</dd></div><div><dt>Environment</dt><dd>Surfpool mainnet-shaped fork</dd></div><div><dt>Proof hash</dt><dd><code>c8caf55eb9759b44fb90bf5a07ca4c258df4e5d3710a378c9a55bc7424e136e9</code></dd></div></dl></article>
+<article class="proof-card"><span class="badge badge--info">VERIFIED PASS</span><h3>T4 · Self-Healing MIGRATE</h3><dl><div><dt>Run</dt><dd><code>35733746142</code></dd></div><div><dt>Artifact</dt><dd><code>10696822718</code></dd></div><div><dt>Transition</dt><dd>3,000,000 raw AAPLx → 29,421,175 raw AAPLon</dd></div><div><dt>Position</dt><dd>identity preserved · v1/n1 → v2/n2</dd></div><div><dt>Proof hash</dt><dd><code>5f8b540ac809a29dd80a409cfa09aa114e8cc34f875bc0bb27e5f14ca60c154e</code></dd></div></dl></article>
+</div></section>
+<section class="section"><div class="section-title"><div><span class="eyebrow">LOCAL RECEIPTS</span></div><h2>Your writable sandbox history.</h2><p>These receipts are generated only from browser-local mutations and are labeled LOCAL_BROWSER_SANDBOX.</p></div><div class="panel" id="localReceipts"></div></section>
+<section class="section"><div class="callout">Mainnet financial execution is disabled. Verified proof claims refer to the recorded Surfpool fork runs above.</div></section>
+</main><footer><span>COVENANT / STOCKLANA</span><span>PROPOSE → PROVE → AUTHORIZE → EXECUTE</span><span>MAINNET FINANCIAL EXECUTION DISABLED</span></footer></div><script type="module" src="./app.js"></script></body></html>

@@ -1,37 +1,29 @@
 import { readFile } from "node:fs/promises";
 
-const files = await Promise.all([
-  readFile(new URL("../demo/index.html", import.meta.url), "utf8"),
-  readFile(new URL("../demo/app.js", import.meta.url), "utf8"),
-  readFile(new URL("../demo/styles.css", import.meta.url), "utf8"),
-]);
+const names = ["index","position","covenant","claims","runtime","proofs"];
+const pages = Object.fromEntries(await Promise.all(names.map(async (name) => [
+  name,
+  await readFile(new URL("../demo/" + name + ".html", import.meta.url), "utf8"),
+])));
+const app = await readFile(new URL("../demo/app.js", import.meta.url), "utf8");
+const state = await readFile(new URL("../demo/state.js", import.meta.url), "utf8");
+const css = await readFile(new URL("../demo/styles.css", import.meta.url), "utf8");
 
-const [html, js, css] = files;
-const required = [
-  ["category statement", html.includes("THE PROGRAMMABLE RUNTIME FOR ECONOMIC OWNERSHIP")],
-  ["invariant position", html.includes("APPLE ECONOMIC EXPOSURE")],
-  ["covenant machine rules", html.includes("ROUTE IMPACT ≤ 50 BPS")],
-  ["claim passport UI", html.includes('id="passportDialog"') && js.includes("passportData")],
-  ["verified self-healing UI", html.includes("35733746142") && html.includes("29,421,175 raw AAPLon")],
-  ["representation continuity", html.includes("POSITION ID") && html.includes("IDENTITY") && html.includes("PRESERVED")],
-  ["explicit passport unknown", js.includes('lendingStatus: "UNKNOWN"')],
-  ["judge narrative control", html.includes('id="runDemo"') && js.includes("narrativeStep")],
-  ["verified run id", html.includes("35698743841")],
-  ["exact AAPLx mint", html.includes("XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp")],
-  ["fork truth boundary", html.includes("not a mainnet financial trade")],
-  ["verified repair truth boundary", js.includes("Verified T4 self-healing snapshot")],
-  ["fail-closed scenario", js.includes("EVIDENCE_STALE · FAIL CLOSED")],
-  ["responsive breakpoint", css.includes("@media (max-width: 560px)")],
-  ["reduced-motion support", css.includes("prefers-reduced-motion")],
+const checks = [
+  ["six product surfaces", names.every((name) => pages[name].includes('data-page="'))],
+  ["runtime writable controls", pages.runtime.includes("GENERATE PROOF") && pages.runtime.includes("EXECUTE LOCAL MUTATION")],
+  ["covenant writable controls", pages.covenant.includes("SAVE NEW VERSION")],
+  ["position mutation controls", pages.position.includes("FREEZE / UNFREEZE") && pages.position.includes("RESET SANDBOX")],
+  ["claim adoption", app.includes("ADOPT_CLAIM")],
+  ["proof before power flow", app.includes("authorizePending") && app.includes("executePending")],
+  ["local state mutation", state.includes("LOCAL_BROWSER_SANDBOX") && state.includes("localStorage")],
+  ["nonce/version anti-replay", state.includes("Position state changed. Fresh proof required.")],
+  ["verified T3 evidence", pages.proofs.includes("35698743841")],
+  ["verified T4 evidence", pages.proofs.includes("35733746142") && pages.proofs.includes("10696822718")],
+  ["mainnet truth boundary", pages.runtime.includes("Not mainnet execution") && pages.proofs.includes("Mainnet financial execution is disabled")],
+  ["responsive CSS", css.includes("@media(max-width:560px)")],
 ];
 
-const failed = required.filter(([, ok]) => !ok);
-if (failed.length) {
-  throw new Error("Demo integrity failed: " + failed.map(([name]) => name).join(", "));
-}
-
-console.log(JSON.stringify({
-  schemaVersion: "covenant.demo-integrity.v1",
-  status: "PASS",
-  checks: required.map(([name]) => name),
-}, null, 2));
+const failed = checks.filter(([, ok]) => !ok);
+if (failed.length) throw new Error("Demo integrity failed: " + failed.map(([n]) => n).join(", "));
+console.log(JSON.stringify({schemaVersion:"covenant.demo-integrity.v2",status:"PASS",checks:checks.map(([n])=>n)},null,2));
