@@ -63,7 +63,7 @@ const covenantHashHex = sha256Canonical(covenant);
 const covenantHash = Buffer.from(covenantHashHex, "hex");
 
 const connection = mainnetConnection();
-const { keypair: owner, path: keypairPath } = await loadLocalKeypair();
+const { keypair: owner } = await loadLocalKeypair();
 const { genesisHash } = await assertMainnetProgram(connection);
 const { position, positionId } = derivePosition(owner.publicKey);
 
