@@ -21,7 +21,7 @@ const checks = [
   ["nonce/version anti-replay", state.includes("Position state changed. Fresh proof required.")],
   ["verified T3 evidence", pages.proofs.includes("35698743841")],
   ["verified T4 evidence", pages.proofs.includes("35733746142") && pages.proofs.includes("10696822718")],
-  ["mainnet truth boundary", pages.runtime.includes("Not mainnet execution") && pages.proofs.includes("Mainnet financial execution is disabled")],
+  ["mainnet truth boundary", pages.runtime.includes("Apple sandbox") && pages.proofs.includes("Full COVENANT mainnet deployment = not yet done")],
   ["responsive CSS", css.includes("@media(max-width:560px)")],
   ["extensionless Cloudflare navigation", names.every((name) => !pages[name].includes('href="./runtime.html"') && !pages[name].includes('href="./position.html"') && !pages[name].includes('href="./proofs.html"'))],
   ["Cloudflare redirect loop guard", !/\/position\s+\/position\.html\s+200/.test(redirects) && !/\/runtime\s+\/runtime\.html\s+200/.test(redirects)],
