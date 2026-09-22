@@ -33,6 +33,9 @@ jobs:
       - name: Run T1 live Claim Graph probe
         run: npm run probe:t1
 
+      - name: Compare Apple and NVIDIA execution reality
+        run: npm run probe:routes
+
       - name: Upload time-bound evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -8,7 +8,8 @@
     "probe:t3b": "node scripts/t3b-jupiter-build.mjs",
     "test:t2": "node --test test/*.test.mjs",
     "demo:t2": "node scripts/t2-canonical-demo.mjs",
-    "preflight:t3b:surfpool": "node scripts/t3b-surfpool-preflight.mjs"
+    "preflight:t3b:surfpool": "node scripts/t3b-surfpool-preflight.mjs",
+    "probe:routes": "node scripts/t1-route-reality.mjs"
   },
   "engines": {
     "node": ">=22"
