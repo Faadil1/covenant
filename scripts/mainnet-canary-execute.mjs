@@ -86,7 +86,7 @@ const passport = JSON.parse(
   await readFile("fixtures/passports/apple-aaplx.json", "utf8"),
 );
 const connection = mainnetConnection();
-const { keypair: operator, path: keypairPath } = await loadLocalKeypair();
+const { keypair: operator } = await loadLocalKeypair();
 const { genesisHash } = await assertMainnetProgram(connection);
 
 const positionInfoBefore = await connection.getAccountInfo(position, "confirmed");
@@ -406,9 +406,13 @@ const computeBudgetIxs = (build.computeBudgetInstructions || []).map(
 const alts = await lookupTables(connection, build);
 
 // Final freshness gate. No signature exists if Pyth/Jupiter evidence aged out.
-if (Date.now() - Date.parse(pythEvidence.observedAt) > 20_000) {
+const signingNow = Date.now();
+if (
+  signingNow - Date.parse(market.trackingErrorBps.observedAt) > 20_000 ||
+  signingNow - Date.parse(quote.observedAt) > 20_000
+) {
   throw new Error(
-    "Pyth evidence aged out before signing; rerun for a fresh atomic proposal",
+    "Pyth or Jupiter evidence aged out before signing; rerun for a fresh proposal",
   );
 }
 
