@@ -181,3 +181,53 @@ test("receipt verifier detects exact proof and settled-state integrity", () => {
   assert.equal(tampered.valid, false);
   assert.equal(tampered.reasonCode, "SETTLED_STATE_HASH_MISMATCH");
 });
+
+
+test("receipt verifier accepts MIGRATED as a successful terminal state", () => {
+  const evaluation = {
+    decision: "ALLOW",
+    positionId: "position:apple",
+    operator: "MIGRATE",
+    claimId: "apple:ondo:aaplon",
+    covenantVersion: 1,
+    ruleResults: [],
+  };
+  const targetPassport = {
+    id: "apple:ondo:aaplon",
+    version: 1,
+    mint: "AAPLonMint",
+    properties: {},
+  };
+  const proof = buildTransitionProof({
+    evaluation,
+    covenant,
+    passport: targetPassport,
+    evidenceRecords: [evidence(10, "LIVE_MARKET_OR_ORACLE")],
+    preState: { positionVersion: 7, nonce: 7, currentClaimMint: "AAPLxMint" },
+    proposedPostState: { positionVersion: 8, nonce: 8, currentClaimMint: "AAPLonMint" },
+    authorityRef: { kind: "COVENANT_POSITION_PDA" },
+    executionCommitment: { kind: "EXACT_SWAP", input: "AAPLxMint", output: "AAPLonMint" },
+    nonce: 7,
+    expiresAt: "2026-09-22T07:20:00.000Z",
+  });
+  const settledState = {
+    positionVersion: 8,
+    nonce: 8,
+    currentClaimMint: "AAPLonMint",
+    sourceClaimRaw: "0",
+    targetClaimRaw: "100",
+  };
+  const receipt = buildReceipt({
+    proof,
+    settledState,
+    transactionReference: {
+      environment: "SURFPOOL_MAINNET_SHAPED_FORK",
+      signature: "migration-signature",
+    },
+    outcome: "MIGRATED",
+    observedAt: "2026-09-22T07:19:31.545Z",
+  });
+  const verified = verifyTransitionReceipt({ proof, receipt, settledState });
+  assert.equal(verified.valid, true);
+  assert.equal(verified.reasonCode, "RECEIPT_VALID");
+});

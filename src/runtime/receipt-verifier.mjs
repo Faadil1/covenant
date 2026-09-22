@@ -1,5 +1,7 @@
 import { sha256Canonical } from "../proof/transition-proof.mjs";
 
+const SUCCESSFUL_TERMINAL_OUTCOMES = new Set(["EXECUTED", "MIGRATED"]);
+
 function fail(reasonCode, detail = {}) {
   return {
     valid: false,
@@ -71,8 +73,8 @@ export function verifyTransitionReceipt({
     }
   }
 
-  if (receipt.outcome !== "EXECUTED") {
-    return fail("RECEIPT_NOT_EXECUTED", { outcome: receipt.outcome });
+  if (!SUCCESSFUL_TERMINAL_OUTCOMES.has(receipt.outcome)) {
+    return fail("RECEIPT_OUTCOME_NOT_SUCCESSFUL", { outcome: receipt.outcome });
   }
 
   const material = { ...receipt };
