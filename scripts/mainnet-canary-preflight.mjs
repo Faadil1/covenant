@@ -165,7 +165,7 @@ market.priceImpactBps = marketRecord(
 
 const positionAddress = process.env.COVENANT_MAINNET_POSITION || "";
 const destinationTokenAccount =
-  process.env.COVENANT_DESTINATION_TOKEN_ACCOUNT || "";
+  process.env.COVENANT_MAINNET_DESTINATION_TOKEN_ACCOUNT || "";
 
 let positionExists = false;
 if (positionAddress) {
