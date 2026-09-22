@@ -14,7 +14,7 @@ const message = raw?.value ?? raw?.message?.value ?? raw;
 const requestedFeeds = [
   { symbol: PYTH_STOCKLANA_SYMBOLS.AAPL, id: 922 },
   { symbol: PYTH_STOCKLANA_SYMBOLS.AAPLX, id: 1792 },
-  { symbol: PYTH_STOCKLANA_SYMBOLS.AAPLON, id: 2239 },
+  { symbol: PYTH_STOCKLANA_SYMBOLS.AAPLON, id: 3132 },
 ];
 
 const parsed = parsePythLatestResponse(message, requestedFeeds);
