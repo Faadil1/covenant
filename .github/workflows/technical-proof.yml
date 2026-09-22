@@ -45,6 +45,25 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  t4-migration-route:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Probe direct Apple representation migration routes
+        run: npm run probe:t4:migration-route
+      - name: Upload time-bound T4 route evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: covenant-t4-route-evidence
+          path: evidence/t4/*.json
+          if-no-files-found: warn
+          retention-days: 14
+
   t2-transition-proof:
     runs-on: ubuntu-latest
     timeout-minutes: 3

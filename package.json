@@ -10,7 +10,8 @@
     "demo:t2": "node scripts/t2-canonical-demo.mjs",
     "preflight:t3b:surfpool": "node scripts/t3b-surfpool-preflight.mjs",
     "probe:routes": "node scripts/t1-route-reality.mjs",
-    "prove:t3b:surfpool": "node scripts/t3b-surfpool-execute.mjs"
+    "prove:t3b:surfpool": "node scripts/t3b-surfpool-execute.mjs",
+    "probe:t4:migration-route": "node scripts/t4-migration-route-probe.mjs"
   },
   "engines": {
     "node": ">=22"
@@ -19,4 +20,4 @@
     "@solana/surfpool": "1.5.0",
     "@solana/web3.js": "1.99.0"
   }
-}
+}\n
