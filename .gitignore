@@ -10,4 +10,5 @@ evidence/t1/route-reality-*.json
 evidence/t3b/jupiter-build-*.json
 evidence/t3b/surfpool-preflight-*.json
 evidence/t3b/surfpool-execution-*.json
-evidence/t4/migration-route-*.json\n
+evidence/t4/migration-route-*.json\nevidence/t4/self-healing-*.json
+evidence/t4/surfpool-execution-progress.json

@@ -11,7 +11,8 @@
     "preflight:t3b:surfpool": "node scripts/t3b-surfpool-preflight.mjs",
     "probe:routes": "node scripts/t1-route-reality.mjs",
     "prove:t3b:surfpool": "node scripts/t3b-surfpool-execute.mjs",
-    "probe:t4:migration-route": "node scripts/t4-migration-route-probe.mjs"
+    "probe:t4:migration-route": "node scripts/t4-migration-route-probe.mjs",
+    "prove:t4:self-healing": "node scripts/t4-self-healing-surfpool.mjs"
   },
   "engines": {
     "node": ">=22"
