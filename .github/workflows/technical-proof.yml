@@ -54,6 +54,9 @@ jobs:
       - name: Run deterministic transition-proof tests
         run: npm run test:t2
 
+      - name: Run canonical ALLOW -> REFUSE proof demo
+        run: npm run demo:t2
+
   t3-authority-boundary:
     runs-on: ubuntu-latest
     timeout-minutes: 20
