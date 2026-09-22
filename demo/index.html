@@ -20,7 +20,10 @@
         <span class="status-dot"></span>
         <span>FORK VERIFIED</span>
       </div>
-      <button class="plain-button" id="openProof">VIEW PROOF</button>
+      <div class="topbar-actions">
+        <button class="plain-button" id="runDemo">RUN DEMO</button>
+        <button class="plain-button" id="openProof">VIEW PROOF</button>
+      </div>
     </header>
 
     <main id="top">
@@ -68,6 +71,56 @@
             <option value="invalidate">Evidence invalidation</option>
             <option value="repair">Representation repair preview</option>
           </select>
+        </div>
+      </section>
+
+      <section class="covenant-stage" id="covenant">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">00</span>
+            <p class="eyebrow">THE COVENANT</p>
+          </div>
+          <h2>Define what must remain economically true.</h2>
+          <p>Economic intent stays stable while exact representations are allowed to change. These are machine-evaluated conditions, not suggestions.</p>
+        </div>
+
+        <div class="covenant-board">
+          <div class="covenant-intent">
+            <span class="eyebrow">ECONOMIC INTENT</span>
+            <strong>APPLE ECONOMIC EXPOSURE</strong>
+            <p>Implementation-neutral position identity.</p>
+          </div>
+          <div class="covenant-rules">
+            <article>
+              <span>RULE 01</span>
+              <strong>ISSUER MAPPING VERIFIED</strong>
+              <small>AUTHORITATIVE OFFCHAIN EVIDENCE REQUIRED</small>
+            </article>
+            <article>
+              <span>RULE 02</span>
+              <strong>EXACT TOKEN-2022 CLAIM</strong>
+              <small>ONCHAIN DETERMINISTIC EVIDENCE REQUIRED</small>
+            </article>
+            <article>
+              <span>RULE 03</span>
+              <strong>ROUTE IMPACT ≤ 50 BPS</strong>
+              <small>LIVE MARKET EVIDENCE · MAX AGE 30S</small>
+            </article>
+          </div>
+          <div class="covenant-authority">
+            <div>
+              <span>DELEGATED OPERATOR</span>
+              <strong>ACQUIRE</strong>
+            </div>
+            <div>
+              <span>AUTONOMOUS CAP</span>
+              <strong>$100</strong>
+            </div>
+            <div>
+              <span>UNKNOWN</span>
+              <strong>REFUSE</strong>
+            </div>
+          </div>
         </div>
       </section>
 

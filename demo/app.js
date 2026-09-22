@@ -2,6 +2,8 @@ const dialog = document.querySelector("#proofDialog");
 const openers = [document.querySelector("#openProof"), document.querySelector("#openProofBottom")];
 const close = document.querySelector("#closeProof");
 const scenario = document.querySelector("#scenario");
+const runDemo = document.querySelector("#runDemo");
+let demoTimers = [];
 
 openers.forEach((button) => button?.addEventListener("click", () => dialog.showModal()));
 close?.addEventListener("click", () => dialog.close());
@@ -74,3 +76,46 @@ function applyScenario(value) {
 
 scenario?.addEventListener("change", (event) => applyScenario(event.target.value));
 applyScenario("verified");
+
+function stopNarrative() {
+  demoTimers.forEach((timer) => clearTimeout(timer));
+  demoTimers = [];
+  if (runDemo) runDemo.textContent = "RUN DEMO";
+}
+
+function narrativeStep(delay, fn) {
+  const timer = setTimeout(fn, delay);
+  demoTimers.push(timer);
+}
+
+runDemo?.addEventListener("click", () => {
+  if (demoTimers.length) {
+    stopNarrative();
+    return;
+  }
+
+  runDemo.textContent = "STOP DEMO";
+  scenario.value = "verified";
+  applyScenario("verified");
+  document.querySelector("#covenant")?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  narrativeStep(1600, () =>
+    document.querySelector(".claim-stage")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+  );
+  narrativeStep(3600, () =>
+    document.querySelector(".transition-stage")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+  );
+  narrativeStep(5600, () =>
+    document.querySelector(".receipt-stage")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+  );
+  narrativeStep(7600, () => {
+    scenario.value = "invalidate";
+    applyScenario("invalidate");
+    document.querySelector(".claim-stage")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  narrativeStep(9800, () => {
+    scenario.value = "repair";
+    applyScenario("repair");
+  });
+  narrativeStep(12200, stopNarrative);
+});
