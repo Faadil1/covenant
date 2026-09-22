@@ -1,0 +1,32 @@
+{
+  "id": "tesla:xstocks:tslax",
+  "version": 1,
+  "underlying": "TSLA",
+  "network": "Solana",
+  "mint": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB",
+  "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "decimals": 8,
+  "issuer": "Backed Assets (JE) Limited",
+  "identityProvenance": {
+    "issuerApi": "https://api.xstocks.fi/api/v2/public/assets/TSLAx",
+    "onchain": "Solana RPC getAccountInfo/getMint",
+    "verifiedAt": "2026-09-22T22:47:33.000Z",
+    "verifiedSlot": 449517647
+  },
+  "properties": {
+    "officialIssuerMappingVerified": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T22:47:33.000Z",
+      "source": "https://api.xstocks.fi/api/v2/public/assets/TSLAx"
+    },
+    "tokenProgram": {
+      "value": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "status": "VERIFIED",
+      "evidenceClass": "ONCHAIN_DETERMINISTIC",
+      "observedAt": "2026-09-22T22:47:33.000Z",
+      "source": "Solana mainnet RPC @ slot 449517647"
+    }
+  }
+}
