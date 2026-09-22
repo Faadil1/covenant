@@ -1,4 +1,4 @@
-use crate::{TransitionProofArgs, ID as PROGRAM_ID};
+use crate::{SystemSettlementArgs, TransitionProofArgs, ID as PROGRAM_ID};
 use anchor_lang::{
     prelude::Pubkey,
     system_program,
@@ -150,14 +150,20 @@ fn transition_ix(
             system_program: system_program::ID,
         }
         .to_account_metas(None),
-        data: crate::instruction::ExecuteProvenTransition { proof }.data(),
+        data: crate::instruction::ExecuteProvenTransition {
+            proof,
+            settlement: SystemSettlementArgs {
+                settlement_amount_lamports: TRANSITION_AMOUNT,
+                destination: settlement,
+            },
+        }
+        .data(),
     }
 }
 
 fn proof(
     svm: &LiteSVM,
     covenant_hash: [u8; 32],
-    destination: Pubkey,
     nonce: u64,
     position_version: u64,
 ) -> TransitionProofArgs {
@@ -170,13 +176,13 @@ fn proof(
         pre_state_hash: nonzero(4),
         proposed_post_state_hash: nonzero(5),
         receipt_hash: nonzero(6),
+        execution_commitment_hash: nonzero(8),
+        target_claim_mint: Pubkey::default(),
         position_version,
         nonce,
         expiry_unix: clock.unix_timestamp + 120,
         operator: OPERATOR_ACQUIRE,
         economic_value_usd_micros: 50_000_000,
-        settlement_amount_lamports: TRANSITION_AMOUNT,
-        destination,
     }
 }
 
@@ -278,7 +284,6 @@ fn allowed_proof_moves_real_value_and_replay_fails() {
     let proof = proof(
         &fx.svm,
         fx.covenant_hash,
-        fx.settlement.pubkey(),
         nonce,
         version,
     );
@@ -365,7 +370,6 @@ fn wrong_evaluator_and_destination_substitution_cannot_move_value() {
     let exact_proof = proof(
         &fx.svm,
         fx.covenant_hash,
-        fx.settlement.pubkey(),
         nonce,
         version,
     );
@@ -437,7 +441,6 @@ fn freeze_is_an_onchain_kill_switch_and_invalidates_pending_proof() {
     let pending_proof = proof(
         &fx.svm,
         fx.covenant_hash,
-        fx.settlement.pubkey(),
         nonce,
         version,
     );
@@ -485,7 +488,6 @@ fn covenant_amendment_preserves_position_identity_and_kills_old_proof() {
     let old_proof = proof(
         &fx.svm,
         fx.covenant_hash,
-        fx.settlement.pubkey(),
         nonce,
         version,
     );
@@ -523,7 +525,6 @@ fn covenant_amendment_preserves_position_identity_and_kills_old_proof() {
     let new_proof = proof(
         &fx.svm,
         new_covenant_hash,
-        fx.settlement.pubkey(),
         amended.nonce,
         amended.position_version,
     );
