@@ -1,0 +1,17 @@
+{
+  "id": "apple:xstocks:aaplx",
+  "version": 1,
+  "underlying": "AAPL",
+  "network": "Solana",
+  "mint": null,
+  "issuer": "Backed Assets (JE) Limited",
+  "properties": {
+    "collateralLendingRequiresHolderOptIn": {
+      "value": null,
+      "status": "UNKNOWN",
+      "evidenceClass": "UNKNOWN",
+      "observedAt": null,
+      "source": "No authoritative evidence currently bound to this field"
+    }
+  }
+}
