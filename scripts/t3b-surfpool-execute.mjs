@@ -23,6 +23,19 @@ import { buildJupiterExecutionCommitment } from "../src/execution/jupiter-v2.mjs
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
+const PROGRESS_PATH = resolve(ROOT, "evidence/t3b/surfpool-execution-progress.json");
+
+async function markStage(stage, detail = {}) {
+  await mkdir(resolve(ROOT, "evidence/t3b"), { recursive: true });
+  const payload = {
+    schemaVersion: "covenant.t3b-surfpool-progress.v1",
+    observedAt: new Date().toISOString(),
+    stage,
+    detail,
+  };
+  await writeFile(PROGRESS_PATH, JSON.stringify(payload, null, 2) + "\n");
+  console.error("[COVENANT T3b] " + stage + " " + JSON.stringify(detail));
+}
 
 const PROGRAM_ID = new PublicKey("CEKUNCY7VYeHdwyyWCJTKQkGgMzPeTsx2uwBoQ98wm3z");
 const JUPITER_PROGRAM = new PublicKey("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4");
@@ -363,14 +376,18 @@ async function sendVersioned({ connection, payer, signers, instructions, lookupT
 
 async function main() {
   const runObservedAt = new Date().toISOString();
+  await markStage("HARNESS_START", { mainnetRpc: MAINNET_RPC });
   const payerInfo = Surfnet.newKeypair();
+  await markStage("SURFNET_STARTING");
   const surfnet = Surfnet.startWithConfig({
     remoteRpcUrl: MAINNET_RPC,
     blockProductionMode: "transaction",
     slotTimeMs: 1,
     payerSecretKey: payerInfo.secretKey,
     airdropSol: 20_000_000_000,
+    skipBlockhashCheck: true,
   });
+  await markStage("SURFNET_READY", { rpcUrl: surfnet.rpcUrl });
 
   try {
     const connection = new Connection(surfnet.rpcUrl, "confirmed");
@@ -391,6 +408,7 @@ async function main() {
     if (deployed !== PROGRAM_ID.toBase58()) {
       throw new Error("Surfpool deployed unexpected program id: " + deployed);
     }
+    await markStage("PROGRAM_DEPLOYED", { programId: deployed });
 
     const positionId = hashBytes(Buffer.from("COVENANT:APPLE:STOCKLANA:POSITION:42"));
     const covenantHashHex = sha256Canonical(covenant);
@@ -422,6 +440,10 @@ async function main() {
       signers: [],
       instructions: [initialize],
       lookupTableAccounts: [],
+    });
+    await markStage("POSITION_INITIALIZED", {
+      position: position.toBase58(),
+      signature: initSignature,
     });
 
     const classic = TOKEN_PROGRAM.toBase58();
@@ -487,6 +509,11 @@ async function main() {
       destinationTokenAccount: outputTokenAccount,
     });
     const { build, commitment } = route;
+    await markStage("ROUTE_BOUND", {
+      outputMint: AAPLX.toBase58(),
+      minOut: commitment.minOut,
+      swapInvocationHash: commitment.swapInvocationHash,
+    });
 
     const inputBefore = await tokenAmount(connection, inputTokenAccount);
     const outputBefore = await tokenAmount(connection, outputTokenAccount);
@@ -612,12 +639,20 @@ async function main() {
 
     const computeBudgetIxs = (build.computeBudgetInstructions || []).map(rawInstruction);
     const alts = await lookupTables(connection, build);
+    await markStage("GOVERNED_EXECUTION_SUBMITTING", {
+      position: position.toBase58(),
+      inputAmount: INPUT_AMOUNT.toString(),
+      minOut: commitment.minOut,
+    });
     const executionSignature = await sendVersioned({
       connection,
       payer: owner,
       signers: [proposer, evaluator],
       instructions: [...computeBudgetIxs, executeIx],
       lookupTableAccounts: alts,
+    });
+    await markStage("GOVERNED_EXECUTION_CONFIRMED", {
+      signature: executionSignature,
     });
 
     const inputAfter = await tokenAmount(connection, inputTokenAccount);
@@ -673,6 +708,10 @@ async function main() {
     if (replayAfter.input !== replayBefore.input || replayAfter.output !== replayBefore.output) {
       throw new Error("Rejected replay changed economic balances");
     }
+    await markStage("REPLAY_REJECTED", {
+      balancesUnchanged: true,
+      error: replayError,
+    });
 
     const settledState = {
       positionId: position.toBase58(),
@@ -781,6 +820,11 @@ async function main() {
     await writeFile(path, JSON.stringify(evidence, (_key, value) =>
       typeof value === "bigint" ? value.toString() : value, 2) + "\n");
 
+    await markStage("PASS", {
+      signature: executionSignature,
+      evidencePath: path,
+      outputReceivedRaw: received.toString(),
+    });
     console.log(JSON.stringify(evidence, null, 2));
     console.error("\nCOVENANT T3b SURFPOOL EXECUTION: PASS");
     console.error("Evidence: " + path);
@@ -789,7 +833,12 @@ async function main() {
   }
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
+  try {
+    await markStage("FAIL_CLOSED", { error: String(error) });
+  } catch (progressError) {
+    console.error("Could not persist T3b progress failure:", progressError);
+  }
   console.error("\nCOVENANT T3b SURFPOOL EXECUTION: FAIL_CLOSED");
   console.error(error);
   process.exitCode = 1;
