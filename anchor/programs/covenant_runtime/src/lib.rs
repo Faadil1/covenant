@@ -1,10 +1,10 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
 use anchor_lang::solana_program::{
-    hash::hashv,
     instruction::{AccountMeta, Instruction},
     program::invoke_signed,
 };
+use solana_sha256_hasher::hashv;
 
 declare_id!("CEKUNCY7VYeHdwyyWCJTKQkGgMzPeTsx2uwBoQ98wm3z");
 
@@ -325,8 +325,8 @@ pub mod covenant_runtime {
     /// signs an exact proof, while this program independently verifies the
     /// exact input/output token accounts, Jupiter program, CPI account order +
     /// privileges + data, minimum output, and post-settlement balance deltas.
-    pub fn execute_apple_acquire(
-        ctx: Context<ExecuteAppleAcquire>,
+    pub fn execute_apple_acquire<'info>(
+        ctx: Context<'info, ExecuteAppleAcquire<'info>>,
         proof: TransitionProofArgs,
         args: JupiterAcquireArgs,
     ) -> Result<()> {
