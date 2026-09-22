@@ -6,7 +6,8 @@
   "scripts": {
     "probe:t1": "node scripts/t1-claim-graph.mjs && node scripts/t1-market-evidence.mjs",
     "probe:t3b": "node scripts/t3b-jupiter-build.mjs",
-    "test:t2": "node --test test/*.test.mjs"
+    "test:t2": "node --test test/*.test.mjs",
+    "demo:t2": "node scripts/t2-canonical-demo.mjs"
   },
   "engines": {
     "node": ">=22"
