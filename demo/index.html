@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f3f0e8" />
+  <title>COVENANT — Proof Before Power</title>
+  <meta name="description" content="COVENANT is the programmable runtime for economic ownership. Tokens are implementations. Economic intent is the interface." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="COVENANT home">
+        <span class="brand-mark">C</span>
+        <span>COVENANT</span>
+      </a>
+      <div class="topbar-meta">
+        <span class="eyebrow">STOCKLANA / TECHNICAL PROOF</span>
+        <span class="status-dot"></span>
+        <span>FORK VERIFIED</span>
+      </div>
+      <button class="plain-button" id="openProof">VIEW PROOF</button>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="kicker">THE PROGRAMMABLE RUNTIME FOR ECONOMIC OWNERSHIP</p>
+          <h1>Own the <em>intention.</em><br />Let implementations change.</h1>
+          <p class="lede">Traditional portfolios hold assets. COVENANT holds intentions — and only authorizes state transitions that keep the economic truth inside your invariants.</p>
+        </div>
+
+        <div class="position-stamp" aria-label="Invariant Position summary">
+          <div class="stamp-number">01</div>
+          <div>
+            <div class="stamp-label">INVARIANT POSITION</div>
+            <strong>APPLE ECONOMIC EXPOSURE</strong>
+          </div>
+          <div class="stamp-state">
+            <span>STATE</span>
+            <strong>IN COVENANT</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="control-strip">
+        <div>
+          <span>POSITION</span>
+          <strong>APPLE / 001</strong>
+        </div>
+        <div>
+          <span>COVENANT</span>
+          <strong>v2 · 3 HARD RULES</strong>
+        </div>
+        <div>
+          <span>AUTHORITY</span>
+          <strong>ACQUIRE ≤ $100</strong>
+        </div>
+        <div>
+          <span>EVIDENCE</span>
+          <strong>VERIFIED SNAPSHOT</strong>
+        </div>
+        <div class="mode-control">
+          <label for="scenario">DEMO STATE</label>
+          <select id="scenario">
+            <option value="verified">Verified Stocklana proof</option>
+            <option value="invalidate">Evidence invalidation</option>
+            <option value="repair">Representation repair preview</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="claim-stage">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">01</span>
+            <p class="eyebrow">CLAIM GRAPH</p>
+          </div>
+          <h2>One economic intent.<br />Multiple implementations.</h2>
+          <p>The runtime evaluates exact representations, not ticker labels. Same underlying does not mean same admissibility.</p>
+        </div>
+
+        <div class="claim-graph">
+          <article class="claim-card claim-card--selected" id="aaplxCard">
+            <div class="claim-top">
+              <div>
+                <span class="claim-provider">xStocks / Backed</span>
+                <h3>AAPLx</h3>
+              </div>
+              <span class="decision decision--allow" id="aaplxDecision">ALLOW</span>
+            </div>
+            <div class="claim-metric">
+              <span>LIVE ROUTE IMPACT</span>
+              <strong id="aaplxImpact">19.98 bps</strong>
+              <small>Covenant max: 50 bps</small>
+            </div>
+            <div class="claim-grid">
+              <span>Mint</span><code>XsbEhL…LJzJp</code>
+              <span>Program</span><code>Token-2022</code>
+              <span>Route</span><strong>Raydium CLMM</strong>
+              <span>Evidence</span><strong>ONCHAIN + LIVE MARKET</strong>
+            </div>
+            <div class="claim-footer" id="aaplxFooter">QUALIFIES FOR ACQUIRE</div>
+          </article>
+
+          <div class="graph-spine">
+            <div class="spine-node">ECONOMIC<br />INTENT</div>
+            <span></span>
+            <span></span>
+          </div>
+
+          <article class="claim-card" id="aaplonCard">
+            <div class="claim-top">
+              <div>
+                <span class="claim-provider">Ondo Stocks</span>
+                <h3>AAPLon</h3>
+              </div>
+              <span class="decision decision--refuse" id="aaplonDecision">REFUSE</span>
+            </div>
+            <div class="claim-metric">
+              <span>LIVE ROUTE IMPACT</span>
+              <strong id="aaplonImpact">471.29 bps</strong>
+              <small>Covenant max: 50 bps</small>
+            </div>
+            <div class="claim-grid">
+              <span>Mint</span><code>123mYE…ondo</code>
+              <span>Program</span><code>Token-2022</code>
+              <span>Route</span><strong>Meteora DLMM</strong>
+              <span>Evidence</span><strong>ONCHAIN + LIVE MARKET</strong>
+            </div>
+            <div class="claim-footer claim-footer--blocked" id="aaplonFooter">PRICE_IMPACT_EXCEEDED</div>
+          </article>
+        </div>
+
+        <p class="snapshot-note" id="snapshotNote">Verified technical-proof snapshot · 2026-09-22 07:19 UTC · values are not presented as current market data.</p>
+      </section>
+
+      <section class="transition-stage">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">02</span>
+            <p class="eyebrow">TRANSITION AUTHORITY</p>
+          </div>
+          <h2>Proof before power.</h2>
+          <p>An ALLOW decision is not wallet authority. COVENANT binds one exact proposed economic transition before the Position PDA can move value.</p>
+        </div>
+
+        <div class="transition-rail">
+          <div class="rail-step rail-step--done">
+            <span>01</span>
+            <strong>PROPOSE</strong>
+            <small>USDC → AAPLx</small>
+          </div>
+          <div class="rail-line"></div>
+          <div class="rail-step rail-step--done">
+            <span>02</span>
+            <strong>PROVE</strong>
+            <small>Exact CPI commitment</small>
+          </div>
+          <div class="rail-line"></div>
+          <div class="rail-step rail-step--done">
+            <span>03</span>
+            <strong>AUTHORIZE</strong>
+            <small>Evaluator + Position PDA</small>
+          </div>
+          <div class="rail-line"></div>
+          <div class="rail-step rail-step--done">
+            <span>04</span>
+            <strong>EXECUTE</strong>
+            <small>Atomic settlement</small>
+          </div>
+        </div>
+
+        <div class="execution-grid">
+          <article class="execution-card">
+            <div class="eyebrow">PRE-STATE</div>
+            <div class="balance-row"><span>USDC</span><strong>200,000,000</strong></div>
+            <div class="balance-row"><span>AAPLx</span><strong>0</strong></div>
+            <div class="state-row"><span>VERSION / NONCE</span><strong>0 / 0</strong></div>
+            <div class="state-row"><span>CURRENT CLAIM</span><strong>NONE</strong></div>
+          </article>
+
+          <div class="execution-arrow">
+            <span>EXACT</span>
+            <strong>→</strong>
+            <small>100,000,000 USDC</small>
+          </div>
+
+          <article class="execution-card execution-card--settled">
+            <div class="eyebrow">SETTLED STATE</div>
+            <div class="balance-row"><span>USDC</span><strong>100,000,000</strong></div>
+            <div class="balance-row"><span>AAPLx</span><strong>29,334,103</strong></div>
+            <div class="state-row"><span>VERSION / NONCE</span><strong>1 / 1</strong></div>
+            <div class="state-row"><span>CURRENT CLAIM</span><strong>AAPLx</strong></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="receipt-stage">
+        <div class="section-heading">
+          <div>
+            <span class="section-index">03</span>
+            <p class="eyebrow">TRANSITION RECEIPT</p>
+          </div>
+          <h2>The state change carries its proof.</h2>
+          <p>The receipt binds intent, evidence, authority, exact execution commitment and settled post-state.</p>
+        </div>
+
+        <div class="receipt">
+          <div class="receipt-head">
+            <div>
+              <span class="eyebrow">OUTCOME</span>
+              <strong>EXECUTED</strong>
+            </div>
+            <div>
+              <span class="eyebrow">ENVIRONMENT</span>
+              <strong>SURFPOOL MAINNET-SHAPED FORK</strong>
+            </div>
+            <div>
+              <span class="eyebrow">REPLAY</span>
+              <strong>REFUSED · BALANCES UNCHANGED</strong>
+            </div>
+          </div>
+          <div class="hashes">
+            <div><span>PROOF</span><code>c8caf55e…e136e9</code></div>
+            <div><span>EXECUTION</span><code>d4356397…64c8ee</code></div>
+            <div><span>INVOCATION</span><code>cf5d19ee…5e768f</code></div>
+            <div><span>RECEIPT</span><code>8773eac5…aa9f2f</code></div>
+          </div>
+          <button class="proof-button" id="openProofBottom">OPEN VERIFICATION RECORD</button>
+        </div>
+      </section>
+
+      <section class="manifesto">
+        <p>TOKENS ARE IMPLEMENTATIONS.</p>
+        <h2>Economic intent is the interface.</h2>
+        <div class="manifesto-rule"></div>
+        <p class="manifesto-small">COVENANT / STOCKLANA BUILD · MAINNET FINANCIAL EXECUTION DISABLED</p>
+      </section>
+    </main>
+
+    <footer>
+      <span>COVENANT</span>
+      <span>PROPOSE → PROVE → AUTHORIZE → EXECUTE</span>
+      <span>© 2026</span>
+    </footer>
+  </div>
+
+  <dialog id="proofDialog">
+    <div class="dialog-head">
+      <div>
+        <span class="eyebrow">VERIFICATION RECORD</span>
+        <h2>Stocklana T3b / PASS</h2>
+      </div>
+      <button class="plain-button" id="closeProof">CLOSE</button>
+    </div>
+    <div class="dialog-grid">
+      <div><span>Run</span><strong>35698743841</strong></div>
+      <div><span>Proof strength</span><strong>L2 SIGNED PREFLIGHT + CONSTRAINED ONCHAIN EXECUTION</strong></div>
+      <div><span>Input</span><strong>100,000,000 raw USDC</strong></div>
+      <div><span>Minimum output</span><strong>29,188,074 raw AAPLx</strong></div>
+      <div><span>Settled output</span><strong>29,334,103 raw AAPLx</strong></div>
+      <div><span>Replay result</span><strong>PositionVersionMismatch</strong></div>
+    </div>
+    <pre><code>{
+  "decision": "ALLOW",
+  "operator": "ACQUIRE",
+  "targetClaimMint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+  "outcome": "EXECUTED",
+  "positionVersion": "0 → 1",
+  "nonce": "0 → 1",
+  "replay": "REFUSED"
+}</code></pre>
+    <p class="dialog-note">This record represents a verified fork execution, not a mainnet financial trade.</p>
+  </dialog>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+name: covenant-demo-integrity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "demo/**"
+      - "docs/DEMO-UX-V1.md"
+      - "scripts/check-demo.mjs"
+      - ".github/workflows/demo-integrity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  demo-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify demo truth boundaries
+        run: node scripts/check-demo.mjs
