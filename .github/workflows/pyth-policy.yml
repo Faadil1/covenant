@@ -7,7 +7,8 @@ on:
       - "fixtures/apple-mainnet-canary-covenant.json"
       - "test/pyth-market-policy.test.mjs"
       - "scripts/pyth-stocklana-evidence.mjs"
-      - "scripts/mainnet-canary-preflight.mjs"
+      - "scripts/mainnet-canary-*.mjs"
+      - "src/execution/mainnet-canary-helpers.mjs"
       - "package.json"
       - ".github/workflows/pyth-policy.yml"
   push:
@@ -17,7 +18,8 @@ on:
       - "fixtures/apple-mainnet-canary-covenant.json"
       - "test/pyth-market-policy.test.mjs"
       - "scripts/pyth-stocklana-evidence.mjs"
-      - "scripts/mainnet-canary-preflight.mjs"
+      - "scripts/mainnet-canary-*.mjs"
+      - "src/execution/mainnet-canary-helpers.mjs"
       - "package.json"
       - ".github/workflows/pyth-policy.yml"
 
@@ -37,5 +39,13 @@ jobs:
         run: node --test test/pyth-market-policy.test.mjs
       - name: Syntax-check live Pyth probe
         run: node --check scripts/pyth-stocklana-evidence.mjs
-      - name: Syntax-check mainnet preflight
-        run: node --check scripts/mainnet-canary-preflight.mjs
+      - name: Install JS dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify Solana token dependency compatibility
+        run: node -e "Promise.all([import('@solana/web3.js'), import('@solana/spl-token')])"
+      - name: Syntax-check mainnet scripts
+        run: |
+          node --check src/execution/mainnet-canary-helpers.mjs
+          node --check scripts/mainnet-canary-preflight.mjs
+          node --check scripts/mainnet-canary-setup.mjs
+          node --check scripts/mainnet-canary-execute.mjs
