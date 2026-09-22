@@ -6,8 +6,12 @@ on:
     paths:
       - "src/evidence/**"
       - "fixtures/apple-mainnet-canary-covenant.json"
+      - "fixtures/tesla-mainnet-canary-covenant.json"
+      - "fixtures/passports/tesla-tslax.json"
       - "test/pyth-market-policy.test.mjs"
+      - "test/tsla-fallback-policy.test.mjs"
       - "scripts/pyth-stocklana-evidence.mjs"
+      - "scripts/tsla-*.mjs"
       - "scripts/mainnet-canary-*.mjs"
       - "src/execution/mainnet-canary-helpers.mjs"
       - "package.json"
@@ -17,8 +21,12 @@ on:
     paths:
       - "src/evidence/**"
       - "fixtures/apple-mainnet-canary-covenant.json"
+      - "fixtures/tesla-mainnet-canary-covenant.json"
+      - "fixtures/passports/tesla-tslax.json"
       - "test/pyth-market-policy.test.mjs"
+      - "test/tsla-fallback-policy.test.mjs"
       - "scripts/pyth-stocklana-evidence.mjs"
+      - "scripts/tsla-*.mjs"
       - "scripts/mainnet-canary-*.mjs"
       - "src/execution/mainnet-canary-helpers.mjs"
       - "package.json"
@@ -37,7 +45,7 @@ jobs:
         with:
           node-version: "22"
       - name: Run deterministic Pyth policy tests
-        run: node --test test/pyth-market-policy.test.mjs
+        run: node --test test/pyth-market-policy.test.mjs test/tsla-fallback-policy.test.mjs
       - name: Syntax-check live Pyth probe
         run: node --check scripts/pyth-stocklana-evidence.mjs
       - name: Install JS dependencies
@@ -117,8 +125,10 @@ jobs:
         run: npm install --omit=dev --ignore-scripts --no-audit --no-fund
       - name: Verify official TSLAx identity
         run: node scripts/tsla-claim-verify.mjs
-      - name: Run live TSLA fallback diagnostic
-        run: node scripts/tsla-fallback-live-check.mjs
+      - name: Run live TSLA fallback through COVENANT
+        run: npm run probe:tsla-fallback
+      - name: Run TSLA mainnet preflight
+        run: npm run preflight:tsla-mainnet
       - name: Upload TSLA fallback evidence
         uses: actions/upload-artifact@v4
         with:
