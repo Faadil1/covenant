@@ -77,6 +77,8 @@ jobs:
         run: node scripts/pyth-entitlement-check.mjs
       - name: Verify Jupiter API key and AAPLx quote path
         run: node scripts/jupiter-auth-check.mjs
+      - name: Test Pyth Core and Benchmarks fallback
+        run: node scripts/pyth-core-fallback-check.mjs
       - name: Capture live Pyth Stocklana evidence
         run: npm run probe:pyth
       - name: Upload live Pyth evidence
