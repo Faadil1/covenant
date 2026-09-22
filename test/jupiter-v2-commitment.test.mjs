@@ -79,6 +79,7 @@ test("exact Jupiter V2 build becomes deterministic execution commitment", () => 
   assert.equal(a.executionCommitmentHash, b.executionCommitmentHash);
   assert.equal(a.swapProgramId, JUPITER_V6_PROGRAM);
   assert.equal(a.minOut, "399000000");
+  assert.match(a.onchainExecutionCommitmentHash, /^[0-9a-f]{64}$/);
 });
 
 test("wrong output claim cannot be committed", () => {
@@ -101,6 +102,10 @@ test("route instruction substitution changes commitment hash", () => {
   assert.notEqual(
     changed.executionCommitmentHash,
     original.executionCommitmentHash,
+  );
+  assert.notEqual(
+    changed.onchainExecutionCommitmentHash,
+    original.onchainExecutionCommitmentHash,
   );
 });
 
