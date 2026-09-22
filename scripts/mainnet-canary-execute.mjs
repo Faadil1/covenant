@@ -86,7 +86,7 @@ const passport = JSON.parse(
   await readFile("fixtures/passports/apple-aaplx.json", "utf8"),
 );
 const connection = mainnetConnection();
-const { keypair: operator } = await loadLocalKeypair();
+const { keypair: operator, path: keypairPath } = await loadLocalKeypair();
 const { genesisHash } = await assertMainnetProgram(connection);
 
 const positionInfoBefore = await connection.getAccountInfo(position, "confirmed");
