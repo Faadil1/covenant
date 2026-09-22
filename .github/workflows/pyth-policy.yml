@@ -1,0 +1,51 @@
+name: covenant-pyth-policy
+
+on:
+  pull_request:
+    paths:
+      - "src/evidence/**"
+      - "fixtures/apple-mainnet-canary-covenant.json"
+      - "test/pyth-market-policy.test.mjs"
+      - "scripts/pyth-stocklana-evidence.mjs"
+      - "scripts/mainnet-canary-*.mjs"
+      - "src/execution/mainnet-canary-helpers.mjs"
+      - "package.json"
+      - ".github/workflows/pyth-policy.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/evidence/**"
+      - "fixtures/apple-mainnet-canary-covenant.json"
+      - "test/pyth-market-policy.test.mjs"
+      - "scripts/pyth-stocklana-evidence.mjs"
+      - "scripts/mainnet-canary-*.mjs"
+      - "src/execution/mainnet-canary-helpers.mjs"
+      - "package.json"
+      - ".github/workflows/pyth-policy.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-pyth-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run deterministic Pyth policy tests
+        run: node --test test/pyth-market-policy.test.mjs
+      - name: Syntax-check live Pyth probe
+        run: node --check scripts/pyth-stocklana-evidence.mjs
+      - name: Install JS dependencies
+        run: npm install --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Verify Solana token dependency compatibility
+        run: node -e "Promise.all([import('@solana/web3.js'), import('@solana/spl-token')])"
+      - name: Syntax-check mainnet scripts
+        run: |
+          node --check src/execution/mainnet-canary-helpers.mjs
+          node --check scripts/mainnet-canary-preflight.mjs
+          node --check scripts/mainnet-canary-setup.mjs
+          node --check scripts/mainnet-canary-execute.mjs
