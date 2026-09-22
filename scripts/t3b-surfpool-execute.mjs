@@ -348,7 +348,7 @@ async function lookupTables(connection, build) {
 }
 
 async function sendVersioned({ connection, payer, signers, instructions, lookupTableAccounts }) {
-  const latest = await connection.getLatestBlockhash("confirmed");
+  const latest = await connection.getLatestBlockhash("processed");
   const message = new TransactionMessage({
     payerKey: payer.publicKey,
     recentBlockhash: latest.blockhash,
@@ -356,22 +356,63 @@ async function sendVersioned({ connection, payer, signers, instructions, lookupT
   }).compileToV0Message(lookupTableAccounts);
   const transaction = new VersionedTransaction(message);
   transaction.sign([payer, ...signers]);
+
   const signature = await connection.sendTransaction(transaction, {
     skipPreflight: false,
+    preflightCommitment: "processed",
     maxRetries: 0,
   });
-  const result = await connection.confirmTransaction(
-    {
-      signature,
-      blockhash: latest.blockhash,
-      lastValidBlockHeight: latest.lastValidBlockHeight,
-    },
-    "confirmed",
-  );
-  if (result.value.err) {
-    throw new Error("Transaction failed: " + JSON.stringify(result.value.err));
+
+  // Surfpool's embedded JS runtime exposes HTTP RPC reliably but may not expose
+  // the companion websocket endpoint expected by web3.js confirmTransaction().
+  // Poll signature status over HTTP so fork proof success is determined by
+  // transaction state, not by an unavailable websocket transport.
+  const deadline = Date.now() + 15_000;
+  let lastStatus = null;
+  while (Date.now() < deadline) {
+    const statuses = await connection.getSignatureStatuses([signature], {
+      searchTransactionHistory: true,
+    });
+    const status = statuses.value[0];
+    if (status) {
+      lastStatus = status;
+      if (status.err) {
+        throw new Error(
+          "Transaction failed: " + JSON.stringify(status.err) +
+            " signature=" + signature,
+        );
+      }
+      if (
+        status.confirmationStatus === "confirmed" ||
+        status.confirmationStatus === "finalized" ||
+        (status.confirmations !== null && status.confirmations >= 1)
+      ) {
+        return signature;
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  return signature;
+
+  // Some local/fork runtimes do not advance confirmation levels like mainnet.
+  // A retrievable transaction with no meta error is still deterministic proof
+  // that the state transition executed in this fork.
+  const landed = await connection.getTransaction(signature, {
+    commitment: "processed",
+    maxSupportedTransactionVersion: 0,
+  });
+  if (landed?.meta?.err) {
+    throw new Error(
+      "Transaction landed with error: " +
+        JSON.stringify(landed.meta.err) +
+        " signature=" + signature,
+    );
+  }
+  if (landed) return signature;
+
+  throw new Error(
+    "Surfpool transaction status timeout: signature=" + signature +
+      " lastStatus=" + JSON.stringify(lastStatus),
+  );
 }
 
 async function main() {
