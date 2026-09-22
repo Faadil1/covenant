@@ -7,6 +7,7 @@ on:
       - "scripts/**"
       - "src/**"
       - "test/**"
+      - "fixtures/**"
       - "package.json"
       - ".github/workflows/technical-proof.yml"
   workflow_dispatch:
@@ -35,3 +36,15 @@ jobs:
           path: evidence/t1/runtime-*.json
           if-no-files-found: warn
           retention-days: 14
+
+  t2-transition-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run deterministic transition-proof tests
+        run: npm run test:t2
