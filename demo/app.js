@@ -2,6 +2,8 @@ const dialog = document.querySelector("#proofDialog");
 const openers = [document.querySelector("#openProof"), document.querySelector("#openProofBottom")];
 const close = document.querySelector("#closeProof");
 const scenario = document.querySelector("#scenario");
+const passportDialog = document.querySelector("#passportDialog");
+const closePassport = document.querySelector("#closePassport");
 const runDemo = document.querySelector("#runDemo");
 let demoTimers = [];
 
@@ -118,4 +120,52 @@ runDemo?.addEventListener("click", () => {
     applyScenario("repair");
   });
   narrativeStep(12200, stopNarrative);
+});
+
+const passportData = {
+  aaplx: {
+    title: "AAPLx",
+    claimId: "apple:xstocks:aaplx",
+    issuer: "Backed Assets (JE) Limited",
+    decimals: "8",
+    mint: "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+    lendingStatus: "UNKNOWN",
+    lendingClass: "UNKNOWN · NO AUTHORITATIVE EVIDENCE BOUND",
+    source: "xStocks official asset API + Solana RPC getAccountInfo",
+  },
+  aaplon: {
+    title: "AAPLon",
+    claimId: "apple:ondo:aaplon",
+    issuer: "Ondo",
+    decimals: "9",
+    mint: "123mYEnRLM2LLYsJW3K6oyYh8uP1fngj732iG638ondo",
+    lendingStatus: "VERIFIED · TRUE",
+    lendingClass: "SIGNED / AUTHORITATIVE OFFCHAIN",
+    source: "Ondo official repository + Solana RPC getAccountInfo",
+  },
+};
+
+document.querySelectorAll("[data-passport]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const data = passportData[button.dataset.passport];
+    if (!data) return;
+    document.querySelector("#passportTitle").textContent = data.title;
+    document.querySelector("#passportClaimId").textContent = data.claimId;
+    document.querySelector("#passportIssuer").textContent = data.issuer;
+    document.querySelector("#passportDecimals").textContent = data.decimals;
+    document.querySelector("#passportMint").textContent = data.mint;
+    const lending = document.querySelector("#passportLendingStatus");
+    lending.textContent = data.lendingStatus;
+    lending.className = data.lendingStatus.startsWith("UNKNOWN")
+      ? "evidence-unknown"
+      : "evidence-pass";
+    document.querySelector("#passportLendingClass").textContent = data.lendingClass;
+    document.querySelector("#passportSource").textContent = data.source;
+    passportDialog.showModal();
+  });
+});
+
+closePassport?.addEventListener("click", () => passportDialog.close());
+passportDialog?.addEventListener("click", (event) => {
+  if (event.target === passportDialog) passportDialog.close();
 });

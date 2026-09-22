@@ -154,6 +154,7 @@
               <span>Route</span><strong>Raydium CLMM</strong>
               <span>Evidence</span><strong>ONCHAIN + LIVE MARKET</strong>
             </div>
+            <button class="passport-button" data-passport="aaplx">OPEN CLAIM PASSPORT</button>
             <div class="claim-footer" id="aaplxFooter">QUALIFIES FOR ACQUIRE</div>
           </article>
 
@@ -182,6 +183,7 @@
               <span>Route</span><strong>Meteora DLMM</strong>
               <span>Evidence</span><strong>ONCHAIN + LIVE MARKET</strong>
             </div>
+            <button class="passport-button" data-passport="aaplon">OPEN CLAIM PASSPORT</button>
             <div class="claim-footer claim-footer--blocked" id="aaplonFooter">PRICE_IMPACT_EXCEEDED</div>
           </article>
         </div>
@@ -299,6 +301,48 @@
       <span>© 2026</span>
     </footer>
   </div>
+
+  <dialog id="passportDialog">
+    <div class="dialog-head">
+      <div>
+        <span class="eyebrow">CLAIM PASSPORT / VERSION 1</span>
+        <h2 id="passportTitle">AAPLx</h2>
+      </div>
+      <button class="plain-button" id="closePassport">CLOSE</button>
+    </div>
+    <div class="passport-identity">
+      <div><span>CLAIM ID</span><strong id="passportClaimId"></strong></div>
+      <div><span>ISSUER</span><strong id="passportIssuer"></strong></div>
+      <div><span>NETWORK</span><strong>Solana</strong></div>
+      <div><span>DECIMALS</span><strong id="passportDecimals"></strong></div>
+    </div>
+    <div class="passport-mint">
+      <span>EXACT MINT</span>
+      <code id="passportMint"></code>
+    </div>
+    <div class="passport-evidence">
+      <article>
+        <span>OFFICIAL ISSUER MAPPING</span>
+        <strong class="evidence-pass">VERIFIED</strong>
+        <small>SIGNED / AUTHORITATIVE OFFCHAIN</small>
+      </article>
+      <article>
+        <span>TOKEN PROGRAM</span>
+        <strong class="evidence-pass">VERIFIED</strong>
+        <small>ONCHAIN DETERMINISTIC · TOKEN-2022</small>
+      </article>
+      <article>
+        <span>COLLATERAL LENDING REQUIRES HOLDER OPT-IN</span>
+        <strong id="passportLendingStatus"></strong>
+        <small id="passportLendingClass"></small>
+      </article>
+    </div>
+    <div class="passport-provenance">
+      <span>IDENTITY PROVENANCE</span>
+      <code id="passportSource"></code>
+    </div>
+    <p class="dialog-note">Claim Passports preserve verified facts and explicit unknowns. UNKNOWN is never silently converted into TRUE.</p>
+  </dialog>
 
   <dialog id="proofDialog">
     <div class="dialog-head">

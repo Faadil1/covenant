@@ -447,6 +447,24 @@ main { overflow: hidden; }
 
 .claim-grid code { font-family: "DM Mono", monospace; }
 
+.passport-button {
+  width: 100%;
+  margin-top: 26px;
+  padding: 12px 14px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font: 500 9px "DM Mono", monospace;
+  letter-spacing: .04em;
+}
+
+.passport-button:hover,
+.passport-button:focus-visible {
+  background: var(--ink);
+  color: var(--paper);
+}
+
 .claim-footer {
   margin: 28px -28px -28px;
   padding: 15px 28px;
@@ -756,4 +774,77 @@ dialog pre {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+.passport-identity {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--ink);
+}
+
+.passport-identity > div {
+  padding: 20px;
+  border-right: 1px solid var(--rule);
+}
+
+.passport-identity > div:last-child { border-right: 0; }
+
+.passport-identity span,
+.passport-mint span,
+.passport-evidence span,
+.passport-evidence small,
+.passport-provenance span {
+  display: block;
+  font: 9px "DM Mono", monospace;
+  letter-spacing: .045em;
+}
+
+.passport-identity strong {
+  display: block;
+  margin-top: 7px;
+  font-size: 12px;
+}
+
+.passport-mint,
+.passport-provenance {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.passport-mint code,
+.passport-provenance code {
+  display: block;
+  margin-top: 9px;
+  overflow-wrap: anywhere;
+  font: 11px/1.5 "DM Mono", monospace;
+}
+
+.passport-evidence {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--ink);
+}
+
+.passport-evidence article {
+  min-height: 160px;
+  padding: 22px;
+  border-right: 1px solid var(--rule);
+}
+
+.passport-evidence article:last-child { border-right: 0; }
+
+.passport-evidence strong {
+  display: block;
+  margin: 24px 0 8px;
+  font: 500 18px "DM Mono", monospace;
+}
+
+.evidence-pass { color: #27670c; }
+.evidence-unknown { color: var(--signal); }
+
+@media (max-width: 700px) {
+  .passport-identity,
+  .passport-evidence { grid-template-columns: 1fr; }
+  .passport-identity > div,
+  .passport-evidence article { border-right: 0; border-bottom: 1px solid var(--rule); }
 }
