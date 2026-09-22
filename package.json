@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "probe:t1": "node scripts/t1-claim-graph.mjs",
+    "probe:t1": "node scripts/t1-claim-graph.mjs && node scripts/t1-market-evidence.mjs",
     "test:t2": "node --test test/*.test.mjs"
   },
   "engines": {
