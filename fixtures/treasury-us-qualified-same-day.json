@@ -1,0 +1,52 @@
+{
+  "id": "covenant:treasury:us-qualified-same-day",
+  "version": 1,
+  "underlyingIntent": "SHORT-DURATION U.S. TREASURY / CASH-EQUIVALENT EXPOSURE",
+  "ownerProfile": "U.S. institutional holder that is both Accredited Investor and Qualified Purchaser",
+  "notes": "Research Covenant for the portability gate. It requires U.S. primary-access compatibility, same-day normal redemption, and a fund/share-like legal claim rather than exposure-only bearer-note semantics. This is a test mandate, not investment advice.",
+  "rules": [
+    {
+      "id": "claim.official_provider_mapping_verified",
+      "evidencePath": "passport.properties.officialProviderMappingVerified",
+      "operator": "EQUALS",
+      "expected": true,
+      "hard": true,
+      "minEvidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "onUnknown": "REFUSE",
+      "reasonCode": "OFFICIAL_PROVIDER_MAPPING_NOT_VERIFIED"
+    },
+    {
+      "id": "claim.us_primary_access_compatible",
+      "evidencePath": "passport.properties.primaryAccessForUsAccreditedQualifiedPurchaser",
+      "operator": "EQUALS",
+      "expected": true,
+      "hard": true,
+      "minEvidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "onUnknown": "REFUSE",
+      "reasonCode": "US_PRIMARY_ACCESS_NOT_ALLOWED"
+    },
+    {
+      "id": "claim.max_normal_redemption_business_days",
+      "evidencePath": "passport.properties.normalRedemptionBusinessDays",
+      "operator": "LTE",
+      "expected": 0,
+      "hard": true,
+      "minEvidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "onUnknown": "REFUSE",
+      "reasonCode": "REDEMPTION_HORIZON_EXCEEDED"
+    },
+    {
+      "id": "claim.legal_claim_model",
+      "evidencePath": "passport.properties.legalClaimModel",
+      "operator": "IN",
+      "expected": [
+        "FUND_OWNERSHIP_REPRESENTED_BY_SHARE",
+        "ECONOMIC_INTEREST_WITH_PROPORTIONAL_REDEMPTION_RIGHT"
+      ],
+      "hard": true,
+      "minEvidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "onUnknown": "REFUSE",
+      "reasonCode": "LEGAL_CLAIM_MODEL_NOT_ALLOWED"
+    }
+  ]
+}

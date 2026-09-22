@@ -1,0 +1,56 @@
+{
+  "id": "treasury:openeden:tbill",
+  "version": 1,
+  "economicIntentClass": "SHORT_DURATION_US_TREASURY_CASH_EQUIVALENT_EXPOSURE",
+  "provider": "OpenEden",
+  "instrumentName": "TBILL",
+  "instrumentType": "TOKENIZED_PROFESSIONAL_FUND_INTEREST",
+  "identityProvenance": {
+    "officialProductDocs": "https://docs.openeden.com/tbill",
+    "verifiedAt": "2026-09-22T17:07:00.000Z"
+  },
+  "properties": {
+    "officialProviderMappingVerified": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://docs.openeden.com/tbill/product-structuring.md"
+    },
+    "economicExposureClass": {
+      "value": "SHORT_DURATION_US_T_BILL_FUND",
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://docs.openeden.com/tbill/product-structuring.md"
+    },
+    "primaryAccessForUsAccreditedQualifiedPurchaser": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://docs.openeden.com/tbill/investor-onboarding.md"
+    },
+    "normalRedemptionBusinessDays": {
+      "value": 1,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://docs.openeden.com/tbill/redemptions.md"
+    },
+    "legalClaimModel": {
+      "value": "ECONOMIC_INTEREST_WITH_PROPORTIONAL_REDEMPTION_RIGHT",
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://docs.openeden.com/tbill/product-structuring.md"
+    },
+    "transferPermissioning": {
+      "value": "WHITELISTED_WALLETS_ONLY",
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://docs.openeden.com/tbill/product-structuring.md"
+    }
+  }
+}

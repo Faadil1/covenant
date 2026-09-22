@@ -1,0 +1,69 @@
+{
+  "id": "treasury:ondo:usdy",
+  "version": 1,
+  "economicIntentClass": "SHORT_DURATION_US_TREASURY_CASH_EQUIVALENT_EXPOSURE",
+  "provider": "Ondo Finance",
+  "instrumentName": "Ondo US Dollar Yield Token (USDY)",
+  "instrumentType": "BEARER_NOTE_ECONOMIC_EXPOSURE_TOKEN",
+  "identityProvenance": {
+    "officialProductPage": "https://ondo.finance/usdy",
+    "verifiedAt": "2026-09-22T17:07:00.000Z"
+  },
+  "networkRepresentations": [
+    "Ethereum",
+    "Mantle",
+    "Solana",
+    "Sui",
+    "Aptos",
+    "Noble",
+    "Arbitrum",
+    "Stellar",
+    "Sei",
+    "Tempo",
+    "BNB Chain"
+  ],
+  "properties": {
+    "officialProviderMappingVerified": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://ondo.finance/usdy"
+    },
+    "economicExposureClass": {
+      "value": "SHORT_TERM_US_TREASURIES_AND_BANK_DEPOSITS",
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://ondo.finance/usdy"
+    },
+    "primaryAccessForUsAccreditedQualifiedPurchaser": {
+      "value": false,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://ondo.finance/usdy"
+    },
+    "normalRedemptionBusinessDays": {
+      "value": 0,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://ondo.finance/usdy"
+    },
+    "legalClaimModel": {
+      "value": "BEARER_NOTE_ECONOMIC_EXPOSURE_NO_RIGHT_TO_UNDERLYING_TREASURIES",
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://ondo.finance/"
+    },
+    "transferPermissioning": {
+      "value": "FREELY_TRANSFERABLE_SUBJECT_TO_JURISDICTIONAL_RESTRICTIONS",
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://ondo.finance/usdy"
+    }
+  }
+}

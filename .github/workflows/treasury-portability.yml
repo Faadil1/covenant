@@ -1,0 +1,32 @@
+name: covenant-treasury-portability
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "fixtures/passports/treasury-*.json"
+      - "fixtures/treasury-us-qualified-same-day.json"
+      - "test/treasury-portability.test.mjs"
+      - "scripts/treasury-portability-demo.mjs"
+      - "src/policy/**"
+      - "src/proof/**"
+      - "package.json"
+      - ".github/workflows/treasury-portability.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semantic-portability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run Treasury portability tests
+        run: node --test test/treasury-portability.test.mjs
+      - name: Run deterministic Treasury portability demo
+        run: npm run demo:treasury-portability

@@ -1,0 +1,76 @@
+{
+  "id": "treasury:superstate:ustb",
+  "version": 1,
+  "economicIntentClass": "SHORT_DURATION_US_TREASURY_CASH_EQUIVALENT_EXPOSURE",
+  "provider": "Superstate / Invesco",
+  "instrumentName": "Invesco Short Duration US Government Securities Fund",
+  "instrumentType": "PRIVATE_FUND_SHARE",
+  "identityProvenance": {
+    "officialProductPage": "https://superstate.com/assets/ustb",
+    "verifiedAt": "2026-09-22T17:07:00.000Z"
+  },
+  "networkRepresentations": [
+    "Ethereum",
+    "Solana",
+    "Plume",
+    "Book-entry"
+  ],
+  "properties": {
+    "officialProviderMappingVerified": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://superstate.com/assets/ustb"
+    },
+    "economicExposureClass": {
+      "value": "SHORT_DURATION_US_GOVERNMENT_SECURITIES_FUND",
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://superstate.com/assets/ustb"
+    },
+    "primaryAccessForUsAccreditedQualifiedPurchaser": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://superstate.com/assets/ustb"
+    },
+    "normalRedemptionBusinessDays": {
+      "value": 0,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://superstate.com/assets/ustb"
+    },
+    "legalClaimModel": {
+      "value": "FUND_OWNERSHIP_REPRESENTED_BY_SHARE",
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://superstate.com/assets/ustb"
+    },
+    "transferPermissioning": {
+      "value": "ALLOWLIST_REQUIRED",
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://superstate.com/assets/ustb"
+    },
+    "custodian": {
+      "value": "The Bank of New York Mellon",
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://superstate.com/assets/ustb"
+    },
+    "sameFundAcrossMultipleRepresentations": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T17:07:00.000Z",
+      "source": "https://superstate.com/assets/ustb"
+    }
+  }
+}
