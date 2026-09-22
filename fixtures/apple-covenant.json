@@ -14,15 +14,26 @@
       "reasonCode": "REQUIRED_CLAIM_PROPERTY_FAILED"
     },
     {
-      "id": "market.max_slippage_bps",
-      "evidencePath": "market.slippageBps",
+      "id": "market.max_price_impact_bps",
+      "evidencePath": "market.priceImpactBps",
       "operator": "LTE",
       "expected": 50,
       "hard": true,
       "minEvidenceClass": "LIVE_MARKET_OR_ORACLE",
       "maxAgeSeconds": 30,
       "onUnknown": "REFUSE",
-      "reasonCode": "SLIPPAGE_EXCEEDED"
+      "reasonCode": "PRICE_IMPACT_EXCEEDED"
+    },
+    {
+      "id": "market.max_basis_bps",
+      "evidencePath": "market.basisBps",
+      "operator": "LTE",
+      "expected": 75,
+      "hard": true,
+      "minEvidenceClass": "LIVE_MARKET_OR_ORACLE",
+      "maxAgeSeconds": 30,
+      "onUnknown": "REFUSE",
+      "reasonCode": "REFERENCE_BASIS_EXCEEDED"
     },
     {
       "id": "portfolio.max_concentration_pct",
