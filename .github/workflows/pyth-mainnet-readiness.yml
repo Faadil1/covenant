@@ -1,0 +1,24 @@
+name: covenant-pyth-mainnet-readiness
+
+on:
+  push:
+    paths:
+      - "src/market/pyth-apple.mjs"
+      - "fixtures/apple-pyth-mainnet-canary-covenant.json"
+      - "test/pyth-apple.test.mjs"
+      - "scripts/pyth-apple-demo.mjs"
+      - ".github/workflows/pyth-mainnet-readiness.yml"
+  workflow_dispatch:
+
+jobs:
+  pyth-policy-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run full deterministic test suite
+        run: node --test test/*.test.mjs
+      - name: Run Pyth Apple policy demo
+        run: node scripts/pyth-apple-demo.mjs
