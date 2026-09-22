@@ -104,7 +104,7 @@ test("route instruction substitution changes commitment hash", () => {
   );
 });
 
-test("account-order substitution changes commitment hash", () => {
+test("account-order substitution changes both execution and CPI invocation hash", () => {
   const original = commit();
   const build = buildFixture();
   build.swapInstruction.accounts.reverse();
@@ -113,6 +113,15 @@ test("account-order substitution changes commitment hash", () => {
     changed.executionCommitmentHash,
     original.executionCommitmentHash,
   );
+  assert.notEqual(changed.swapInvocationHash, original.swapInvocationHash);
+});
+
+test("account privilege substitution changes CPI invocation hash", () => {
+  const original = commit();
+  const build = buildFixture();
+  build.swapInstruction.accounts[0].isWritable = false;
+  const changed = commit(build);
+  assert.notEqual(changed.swapInvocationHash, original.swapInvocationHash);
 });
 
 test("unapproved swap program is refused", () => {
