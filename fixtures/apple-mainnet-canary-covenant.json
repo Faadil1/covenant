@@ -1,0 +1,72 @@
+{
+  "id": "covenant:apple:stocklana-mainnet-canary",
+  "version": 1,
+  "underlyingIntent": "Maintain Apple economic exposure through an approved Solana representation",
+  "notes": "Stocklana mainnet-canary profile. Pyth live market data is policy-relevant: the selected tokenized representation must remain close to the Apple equity reference, confidence must remain bounded, and the exact Jupiter route must remain under the route-impact ceiling.",
+  "rules": [
+    {
+      "id": "claim.official_issuer_mapping_verified",
+      "evidencePath": "passport.properties.officialIssuerMappingVerified",
+      "operator": "EQUALS",
+      "expected": true,
+      "hard": true,
+      "minEvidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "onUnknown": "REFUSE",
+      "reasonCode": "OFFICIAL_ISSUER_MAPPING_NOT_VERIFIED"
+    },
+    {
+      "id": "claim.token_program",
+      "evidencePath": "passport.properties.tokenProgram",
+      "operator": "EQUALS",
+      "expected": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "hard": true,
+      "minEvidenceClass": "ONCHAIN_DETERMINISTIC",
+      "onUnknown": "REFUSE",
+      "reasonCode": "TOKEN_PROGRAM_NOT_ALLOWED"
+    },
+    {
+      "id": "market.pyth_tracking_error_bps",
+      "evidencePath": "market.trackingErrorBps",
+      "operator": "LTE",
+      "expected": 75,
+      "hard": true,
+      "minEvidenceClass": "LIVE_MARKET_OR_ORACLE",
+      "maxAgeSeconds": 20,
+      "onUnknown": "REFUSE",
+      "reasonCode": "PYTH_TRACKING_ERROR_EXCEEDED"
+    },
+    {
+      "id": "market.pyth_confidence_bps",
+      "evidencePath": "market.pythConfidenceBps",
+      "operator": "LTE",
+      "expected": 50,
+      "hard": true,
+      "minEvidenceClass": "LIVE_MARKET_OR_ORACLE",
+      "maxAgeSeconds": 20,
+      "onUnknown": "REFUSE",
+      "reasonCode": "PYTH_CONFIDENCE_TOO_WIDE"
+    },
+    {
+      "id": "market.pyth_min_publishers",
+      "evidencePath": "market.pythPublisherCount",
+      "operator": "GTE",
+      "expected": 1,
+      "hard": true,
+      "minEvidenceClass": "LIVE_MARKET_OR_ORACLE",
+      "maxAgeSeconds": 20,
+      "onUnknown": "REFUSE",
+      "reasonCode": "PYTH_PUBLISHER_COUNT_TOO_LOW"
+    },
+    {
+      "id": "market.max_price_impact_bps",
+      "evidencePath": "market.priceImpactBps",
+      "operator": "LTE",
+      "expected": 50,
+      "hard": true,
+      "minEvidenceClass": "LIVE_MARKET_OR_ORACLE",
+      "maxAgeSeconds": 20,
+      "onUnknown": "REFUSE",
+      "reasonCode": "PRICE_IMPACT_EXCEEDED"
+    }
+  ]
+}
