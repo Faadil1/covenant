@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "covenant.treasury-claim-graph-research.v0",
+  "observedAt": "2026-09-22",
+  "status": "RESEARCH_ONLY_NOT_EXECUTABLE",
+  "economicIntent": "SHORT-DURATION U.S. TREASURY / CASH-EQUIVALENT EXPOSURE",
+  "claims": [
+    {
+      "id": "treasury:superstate:ustb",
+      "symbol": "USTB",
+      "provider": "Superstate / Invesco",
+      "classification": "TOKENIZED FUND SHARE_OR_BOOK_ENTRY",
+      "verifiedFacts": {
+        "eligibleInvestors": "Accredited Investors and Qualified Purchasers in supported jurisdictions",
+        "representations": [
+          "Ethereum token",
+          "Solana token",
+          "Plume token",
+          "book-entry"
+        ],
+        "redemption": "Same-day; immediate USDC when liquidity available; protocol redemption subject to availability/dynamic limits",
+        "custodian": "The Bank of New York Mellon"
+      },
+      "sources": [
+        "https://superstate.com/assets/ustb",
+        "https://docs.superstate.com/superstate-funds/ustb/redeeming-ustb"
+      ]
+    },
+    {
+      "id": "treasury:franklin:benji",
+      "symbol": "BENJI",
+      "provider": "Franklin Templeton",
+      "classification": "REGISTERED_MONEY_MARKET_FUND_SHARE",
+      "verifiedFacts": {
+        "underlyingFund": "Franklin OnChain U.S. Government Money Fund (FOBXX)",
+        "transferability": "Peer-to-peer between enabled/eligible shareholders",
+        "multiNetwork": true,
+        "institutionalCollateralUse": true
+      },
+      "unknowns": [
+        "Exact universal eligibility rules across every network/context"
+      ],
+      "sources": [
+        "https://digitalassets.franklintempleton.com/benji/",
+        "https://www.franklintempleton.com/press-releases/news-room/2026/franklin-templeton-and-binance-advance-strategic-collaboration-with-institutional-off-exchange-collateral-program"
+      ]
+    },
+    {
+      "id": "treasury:openeden:tbill",
+      "symbol": "TBILL",
+      "provider": "OpenEden",
+      "classification": "TOKENIZED_PROFESSIONAL_FUND_INTEREST",
+      "verifiedFacts": {
+        "transferability": "Whitelisted investors only",
+        "mintRedeemEligibility": "Onboarded/whitelisted investors",
+        "legalClaim": "Contractual entitlement to proportional redemption value of fund assets",
+        "redemptionTiming": "Typically next 1 U.S. business day",
+        "underlyingCustodian": "BNY"
+      },
+      "sources": [
+        "https://docs.openeden.com/tbill",
+        "https://docs.openeden.com/tbill/product-structuring",
+        "https://docs.openeden.com/tbill/redemptions"
+      ]
+    },
+    {
+      "id": "treasury:ondo:usdy",
+      "symbol": "USDY",
+      "provider": "Ondo Finance",
+      "classification": "YIELD_BEARING_ECONOMIC_EXPOSURE_TOKEN",
+      "verifiedFacts": {
+        "transferability": "Permissionless bearer asset",
+        "primaryMintRedeemEligibility": "Non-US persons/entities, additional restrictions apply",
+        "legalClaim": "Economic exposure to short-term U.S. Treasuries; token is not itself a U.S. Treasury and does not provide a right to receive underlying Treasuries",
+        "multiNetwork": true
+      },
+      "sources": [
+        "https://ondo.finance/usdy",
+        "https://ondo.finance/"
+      ]
+    },
+    {
+      "id": "treasury:blackrock:buidl",
+      "symbol": "BUIDL",
+      "provider": "BlackRock / Securitize",
+      "classification": "TOKENIZED_INSTITUTIONAL_LIQUIDITY_FUND",
+      "verifiedFacts": {
+        "institutionalCollateralUse": true,
+        "onchainLiquidityIntegrations": true,
+        "multiNetwork": true
+      },
+      "unknowns": [
+        "Canonical current eligibility",
+        "Canonical redemption conditions",
+        "Exact share-class/network equivalence"
+      ],
+      "sources": [
+        "https://investors.securitize.io/news/news-details/2026/OKX-BlackRock-and-Standard-Chartered-Launch-Joint-Framework-to-Establish-New-Utility-for-Tokenized-Real-World-Assets/default.aspx"
+      ]
+    },
+    {
+      "id": "treasury:janushenderson:jtrsy",
+      "symbol": "JTRSY",
+      "provider": "Janus Henderson / Anemoy / Centrifuge",
+      "classification": "TOKENIZED_TREASURY_FUND",
+      "verifiedFacts": {
+        "m0CollateralEligibility": true
+      },
+      "unknowns": [
+        "Legal structure",
+        "Transfer restrictions",
+        "Redemption mechanism",
+        "Network representations"
+      ],
+      "sources": [
+        "https://centrifuge.io/blog/m0-centrifuge"
+      ]
+    }
+  ]
+}
