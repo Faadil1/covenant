@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { revalidateInvariantPosition, PositionHealth } from "../src/runtime/revalidation.mjs";
 import { verifyTransitionReceipt } from "../src/runtime/receipt-verifier.mjs";
-import { buildTransitionProof, buildTransitionReceipt, sha256Canonical } from "../src/proof/transition-proof.mjs";
+import { buildTransitionProof, buildReceipt, sha256Canonical } from "../src/proof/transition-proof.mjs";
 
 const observedAt = "2026-09-22T07:19:30.869Z";
 const evidence = (value, evidenceClass, observed = observedAt) => ({
@@ -144,7 +144,7 @@ test("receipt verifier detects exact proof and settled-state integrity", () => {
     outputReceivedRaw: "29334103",
   };
 
-  const receipt = buildTransitionReceipt({
+  const receipt = buildReceipt({
     proof,
     settledState,
     transactionReference: {
