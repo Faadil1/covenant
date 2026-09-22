@@ -19,7 +19,8 @@ function baseInput(passport = aaplon, amountUsd = 100) {
     covenant,
     passport,
     market: {
-      slippageBps: verified(20, "LIVE_MARKET_OR_ORACLE"),
+      priceImpactBps: verified(20, "LIVE_MARKET_OR_ORACLE"),
+      basisBps: verified(15, "LIVE_MARKET_OR_ORACLE"),
     },
     portfolioPostState: {
       concentrationPct: verified(10, "ONCHAIN_DETERMINISTIC"),
@@ -61,14 +62,26 @@ test("ESCALATE: valid transition above autonomous cap needs owner authority", ()
   );
 });
 
-test("REFUSE: stale live quote fails closed", () => {
+test("REFUSE: stale market quote evidence fails closed", () => {
   const input = baseInput();
-  input.market.slippageBps.observedAt = "2026-09-22T04:59:00.000Z";
+  input.market.priceImpactBps.observedAt = "2026-09-22T04:59:00.000Z";
   const proof = evaluateTransition(input);
   assert.equal(proof.decision, Decision.REFUSE);
   assert.equal(
-    proof.ruleResults.find((r) => r.ruleId === "market.max_slippage_bps").reasonCode,
+    proof.ruleResults.find((r) => r.ruleId === "market.max_price_impact_bps").reasonCode,
     "EVIDENCE_STALE",
+  );
+});
+
+test("REFUSE: price impact and reference basis are distinct hard invariants", () => {
+  const input = baseInput();
+  input.market.priceImpactBps = verified(102.4, "LIVE_MARKET_OR_ORACLE");
+  input.market.basisBps = verified(20, "LIVE_MARKET_OR_ORACLE");
+  const proof = evaluateTransition(input);
+  assert.equal(proof.decision, Decision.REFUSE);
+  assert.equal(
+    proof.ruleResults.find((r) => r.ruleId === "market.max_price_impact_bps").reasonCode,
+    "PRICE_IMPACT_EXCEEDED",
   );
 });
 
