@@ -1,6 +1,7 @@
 name: covenant-pyth-policy
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - "src/evidence/**"
@@ -49,3 +50,35 @@ jobs:
           node --check scripts/mainnet-canary-preflight.mjs
           node --check scripts/mainnet-canary-setup.mjs
           node --check scripts/mainnet-canary-execute.mjs
+
+  live-pyth-evidence:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[live-pyth]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: read
+    env:
+      PYTH_API_KEY: ${{ secrets.PYTH_API_KEY }}
+      JUPITER_API_KEY: ${{ secrets.JUPITER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Confirm required secrets are configured
+        shell: bash
+        run: |
+          test -n "$PYTH_API_KEY" || { echo "PYTH_API_KEY repository secret is missing"; exit 1; }
+          test -n "$JUPITER_API_KEY" || { echo "JUPITER_API_KEY repository secret is missing"; exit 1; }
+          echo "Required repository secrets are configured."
+      - name: Install JS dependencies
+        run: npm install --omit=dev --ignore-scripts --no-audit --no-fund
+      - name: Capture live Pyth Stocklana evidence
+        run: npm run probe:pyth
+      - name: Upload live Pyth evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: covenant-pyth-live-evidence
+          path: evidence/pyth/*.json
+          if-no-files-found: error
+          retention-days: 14
