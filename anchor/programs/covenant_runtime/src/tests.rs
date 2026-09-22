@@ -85,7 +85,7 @@ fn initialize_ix(
             position_id,
             covenant_hash,
             evaluator,
-            max_transition_lamports: 100_000_000,
+            max_transition_value_usd_micros: 100_000_000,
             allowed_operator_mask: ACQUIRE_MASK,
         }
         .data(),
@@ -174,7 +174,8 @@ fn proof(
         nonce,
         expiry_unix: clock.unix_timestamp + 120,
         operator: OPERATOR_ACQUIRE,
-        amount: TRANSITION_AMOUNT,
+        economic_value_usd_micros: 50_000_000,
+        settlement_amount_lamports: TRANSITION_AMOUNT,
         destination,
     }
 }
