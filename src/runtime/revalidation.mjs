@@ -70,7 +70,11 @@ export function revalidateInvariantPosition({
     ruleResults: result.evaluation.ruleResults,
     proposalPacket: result.packet,
     repair,
-    oldProofReusable: false,
+    newTransitionRequiresFreshProof: true,
+    outstandingProofExposure: {
+      immediateEvidenceEpochRevocationImplemented: false,
+      boundedBy: ["EXPIRY", "NONCE", "POSITION_VERSION", "OWNER_FREEZE_OR_AMENDMENT", "EVALUATOR_ROTATION"],
+    },
     proofRequirement:
       health === PositionHealth.IN_COVENANT
         ? "ANY_NEW_TRANSITION_REQUIRES_FRESH_PROOF"
