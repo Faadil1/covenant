@@ -19,6 +19,20 @@
       "evidenceClass": "UNKNOWN",
       "observedAt": null,
       "source": "No authoritative evidence currently bound to this exact property"
+    },
+    "officialIssuerMappingVerified": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T06:31:32.589Z",
+      "source": "https://api.xstocks.fi/api/v2/public/assets/AAPLx"
+    },
+    "tokenProgram": {
+      "value": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "status": "VERIFIED",
+      "evidenceClass": "ONCHAIN_DETERMINISTIC",
+      "observedAt": "2026-09-22T06:31:32.589Z",
+      "source": "Solana RPC getAccountInfo @ slot 449298427"
     }
   }
 }

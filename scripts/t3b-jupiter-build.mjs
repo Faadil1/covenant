@@ -8,9 +8,9 @@ const API_KEY = process.env.JUPITER_API_KEY || "";
 const USDC =
   process.env.COVENANT_INPUT_MINT ||
   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-const AAPLON =
+const APPLE_CLAIM =
   process.env.COVENANT_OUTPUT_MINT ||
-  "123mYEnRLM2LLYsJW3K6oyYh8uP1fngj732iG638ondo";
+  "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp";
 
 const TAKER = process.env.COVENANT_TAKER;
 const DESTINATION_TOKEN_ACCOUNT =
@@ -26,7 +26,7 @@ if (!TAKER) {
 
 const params = new URLSearchParams({
   inputMint: USDC,
-  outputMint: AAPLON,
+  outputMint: APPLE_CLAIM,
   amount: AMOUNT,
   taker: TAKER,
   slippageBps: SLIPPAGE_BPS,
@@ -55,7 +55,7 @@ const build = JSON.parse(raw);
 const commitment = buildJupiterExecutionCommitment({
   build,
   expectedInputMint: USDC,
-  expectedOutputMint: AAPLON,
+  expectedOutputMint: APPLE_CLAIM,
   expectedInAmount: AMOUNT,
   expectedTaker: TAKER,
   maxSlippageBps: Number(SLIPPAGE_BPS),
@@ -68,7 +68,7 @@ const evidence = {
   environment: {
     apiBase: API_BASE,
     inputMint: USDC,
-    outputMint: AAPLON,
+    outputMint: APPLE_CLAIM,
     taker: TAKER,
     destinationTokenAccount: DESTINATION_TOKEN_ACCOUNT || null,
     amount: AMOUNT,

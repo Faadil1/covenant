@@ -1,0 +1,39 @@
+{
+  "id": "covenant:apple:stocklana-executable",
+  "version": 2,
+  "underlyingIntent": "APPLE economic exposure",
+  "notes": "Execution profile for the Stocklana proof. It preserves exact-claim identity and Token-2022 requirements, then lets live execution evidence decide admissibility. The stricter rights-policy fixture remains separate.",
+  "rules": [
+    {
+      "id": "claim.official_issuer_mapping_verified",
+      "evidencePath": "passport.properties.officialIssuerMappingVerified",
+      "operator": "EQUALS",
+      "expected": true,
+      "hard": true,
+      "minEvidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "onUnknown": "REFUSE",
+      "reasonCode": "OFFICIAL_ISSUER_MAPPING_NOT_VERIFIED"
+    },
+    {
+      "id": "claim.token_program",
+      "evidencePath": "passport.properties.tokenProgram",
+      "operator": "EQUALS",
+      "expected": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "hard": true,
+      "minEvidenceClass": "ONCHAIN_DETERMINISTIC",
+      "onUnknown": "REFUSE",
+      "reasonCode": "TOKEN_PROGRAM_NOT_ALLOWED"
+    },
+    {
+      "id": "market.max_price_impact_bps",
+      "evidencePath": "market.priceImpactBps",
+      "operator": "LTE",
+      "expected": 50,
+      "hard": true,
+      "minEvidenceClass": "LIVE_MARKET_OR_ORACLE",
+      "maxAgeSeconds": 30,
+      "onUnknown": "REFUSE",
+      "reasonCode": "PRICE_IMPACT_EXCEEDED"
+    }
+  ]
+}

@@ -16,9 +16,9 @@ const TOKEN_2022_PROGRAM =
 const USDC =
   process.env.COVENANT_INPUT_MINT ||
   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-const AAPLON =
+const APPLE_CLAIM =
   process.env.COVENANT_OUTPUT_MINT ||
-  "123mYEnRLM2LLYsJW3K6oyYh8uP1fngj732iG638ondo";
+  "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp";
 const POSITION = process.env.COVENANT_TAKER || "";
 const EXPECTED_OUTPUT_ACCOUNT =
   process.env.COVENANT_DESTINATION_TOKEN_ACCOUNT || "";
@@ -87,13 +87,13 @@ async function main() {
     covenantProgram,
     jupiterProgram,
     usdcMint,
-    aaplonMint,
+    appleClaimMint,
     positionAccount,
   ] = await Promise.all([
     account(COVENANT_PROGRAM),
     account(JUPITER_V6_PROGRAM),
     account(USDC),
-    account(AAPLON),
+    account(APPLE_CLAIM),
     account(POSITION),
   ]);
 
@@ -124,9 +124,9 @@ async function main() {
   );
   checks.push(
     check(
-      "mint.aaplon_token_2022",
-      aaplonMint?.owner === TOKEN_2022_PROGRAM,
-      { expectedOwner: TOKEN_2022_PROGRAM, actualOwner: aaplonMint?.owner ?? null },
+      "mint.apple_claim_token_2022",
+      appleClaimMint?.owner === TOKEN_2022_PROGRAM,
+      { expectedOwner: TOKEN_2022_PROGRAM, actualOwner: appleClaimMint?.owner ?? null },
     ),
   );
   checks.push(
@@ -144,7 +144,7 @@ async function main() {
 
   const [inputs, outputs] = await Promise.all([
     tokenAccountsByMint(POSITION, USDC),
-    tokenAccountsByMint(POSITION, AAPLON),
+    tokenAccountsByMint(POSITION, APPLE_CLAIM),
   ]);
 
   const input = inputs[0] ?? null;
@@ -188,12 +188,12 @@ async function main() {
 
   checks.push(
     check(
-      "position.aaplon_account",
+      "position.apple_claim_account",
       Boolean(
         output &&
           output.account?.owner === TOKEN_2022_PROGRAM &&
           outputInfo?.owner === POSITION &&
-          outputInfo?.mint === AAPLON,
+          outputInfo?.mint === APPLE_CLAIM,
       ),
       {
         address: output?.pubkey ?? null,
@@ -220,7 +220,7 @@ async function main() {
       jupiterProgram: JUPITER_V6_PROGRAM,
       position: POSITION,
       inputMint: USDC,
-      outputMint: AAPLON,
+      outputMint: APPLE_CLAIM,
       expectedInputAmountRaw: INPUT_AMOUNT.toString(),
       expectedOutputTokenAccount: EXPECTED_OUTPUT_ACCOUNT || null,
     },

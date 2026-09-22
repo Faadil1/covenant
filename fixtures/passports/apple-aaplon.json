@@ -12,6 +12,27 @@
       "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
       "observedAt": "2026-09-22T05:00:00.000Z",
       "source": "https://ondo.finance/ondo-stocks"
+    },
+    "officialIssuerMappingVerified": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T06:31:32.589Z",
+      "source": "https://raw.githubusercontent.com/ondoprotocol/gm-solana-simulator/main/constants.rs"
+    },
+    "tokenProgram": {
+      "value": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "status": "VERIFIED",
+      "evidenceClass": "ONCHAIN_DETERMINISTIC",
+      "observedAt": "2026-09-22T06:31:32.589Z",
+      "source": "Solana RPC getAccountInfo @ slot 449298427"
     }
+  },
+  "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "decimals": 9,
+  "identityProvenance": {
+    "officialRepository": "https://raw.githubusercontent.com/ondoprotocol/gm-solana-simulator/main/constants.rs",
+    "onchain": "Solana RPC getAccountInfo",
+    "verifiedAt": "2026-09-22T06:31:32.589Z"
   }
 }

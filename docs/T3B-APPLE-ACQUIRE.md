@@ -1,6 +1,6 @@
 # T3b — Exact Apple ACQUIRE Boundary
 
-Status: **DESIGN LOCK — implementation follows T3a**
+Status: **PROGRAM BOUNDARY IMPLEMENTED — Surfpool governed AAPLx execution remains the open T3b gate**
 
 T3a proves that COVENANT can withhold PDA-controlled authority unless an exact proof packet matches the current Covenant state. T3b converts that generic state-changing boundary into the canonical Stocklana economic transition:
 
@@ -11,6 +11,17 @@ USDC in Position Vault
 ```
 
 The execution adapter must never become a generic "call arbitrary Jupiter instruction" escape hatch.
+
+## Current execution target
+
+Time-bound route evidence captured in GitHub Actions on 2026-09-22T06:31:32Z compared the four exact Apple/NVIDIA claims at a $100 notional under a 50 bps price-impact rule:
+
+- AAPLx: 0.0971 bps via Raydium CLMM — PASS.
+- AAPLon: 481.31 bps via Meteora DLMM — REFUSE under this rule.
+- NVDAx: 0.3797 bps via Whirlpool — PASS.
+- NVDAon: 6029.78 bps via Manifest — REFUSE under this rule.
+
+This does not rank issuers or claim quality in general. It selects the current T3b execution fixture. **AAPLx is the canonical ACQUIRE target for the fork proof** because it preserves the preferred Apple multi-representation story while supplying the strongest observed secondary execution path. AAPLon remains a truthful alternative Claim Graph node and a live REFUSE case when the route violates the Covenant.
 
 ## Current execution primitive
 
