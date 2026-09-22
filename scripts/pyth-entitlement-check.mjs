@@ -5,7 +5,8 @@ if (!KEY) throw new Error("PYTH_API_KEY is required");
 const feeds = [
   ["Equity.US.AAPL/USD", 922],
   ["Crypto.AAPLX/USD", 1792],
-  ["Crypto.AAPLON/USD", 2239],
+  ["Crypto.AAPLON/USD", 3132],
+  ["Crypto.AAPLON/USD (symbol-discovery alternate)", 2239],
 ];
 
 for (const [symbol, id] of feeds) {
