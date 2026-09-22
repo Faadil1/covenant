@@ -123,7 +123,7 @@ fn validate_common_transition(
 }
 
 fn validate_authorization(
-    position: &Position,
+    position: &Account<'_, Position>,
     authorization: &TransitionAuthorization,
     now_unix: i64,
 ) -> Result<()> {
@@ -1425,7 +1425,7 @@ pub struct AuthorizeTransition<'info> {
         seeds = [
             b"authorization",
             position.key().as_ref(),
-            &proof.nonce.to_le_bytes(),
+            proof.nonce.to_le_bytes().as_ref(),
         ],
         bump,
     )]
@@ -1540,7 +1540,7 @@ pub struct ExecuteAuthorizedClaimMigrate<'info> {
         seeds = [
             b"authorization",
             position.key().as_ref(),
-            &authorization.nonce.to_le_bytes(),
+            authorization.nonce.to_le_bytes().as_ref(),
         ],
         bump = authorization.bump,
     )]
