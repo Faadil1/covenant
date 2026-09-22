@@ -1,0 +1,106 @@
+name: covenant-mainnet-deploy-readiness
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "anchor/**"
+      - ".github/workflows/mainnet-deploy-readiness.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Solana + Anchor
+        uses: solana-foundation/github-actions/setup-all@d1e779ca332fc499507fadf97d9c780ffed5a71f
+        with:
+          solana_version: "3.1.10"
+          anchor_version: "1.1.2"
+          node_version: "22"
+
+      - name: Build reviewed COVENANT program
+        working-directory: anchor
+        run: anchor build --ignore-keys
+
+      - name: Produce deploy-readiness report
+        working-directory: anchor
+        shell: bash
+        run: |
+          set -euo pipefail
+          SO="target/deploy/covenant_runtime.so"
+          KEYPAIR="target/deploy/covenant_runtime-keypair.json"
+          DECLARED="CEKUNCY7VYeHdwyyWCJTKQkGgMzPeTsx2uwBoQ98wm3z"
+
+          test -f "$SO"
+          BYTES=$(wc -c < "$SO" | tr -d ' ')
+          SHA=$(sha256sum "$SO" | awk '{print $1}')
+
+          solana config set --url https://api.mainnet-beta.solana.com >/dev/null
+          RENT=$(solana rent "$BYTES" 2>&1 || true)
+
+          GENERATED=""
+          MATCH="NO_KEYPAIR_GENERATED"
+          if [ -f "$KEYPAIR" ]; then
+            GENERATED=$(solana-keygen pubkey "$KEYPAIR")
+            if [ "$GENERATED" = "$DECLARED" ]; then
+              MATCH="MATCH"
+            else
+              MATCH="MISMATCH"
+            fi
+          fi
+
+          if solana program show "$DECLARED" --url https://api.mainnet-beta.solana.com > /tmp/program-show.txt 2>&1; then
+            DEPLOYED="true"
+          else
+            DEPLOYED="false"
+          fi
+
+          mkdir -p ../evidence/deploy-readiness
+          {
+            echo "COVENANT MAINNET DEPLOY READINESS"
+            echo "commit=${GITHUB_SHA}"
+            echo "declared_program_id=${DECLARED}"
+            echo "binary_bytes=${BYTES}"
+            echo "binary_sha256=${SHA}"
+            echo "generated_build_keypair_pubkey=${GENERATED:-none}"
+            echo "generated_keypair_matches_declared_id=${MATCH}"
+            echo "mainnet_program_deployed=${DEPLOYED}"
+            echo "solana_rent_output=${RENT}"
+            echo
+            echo "mainnet_program_show:"
+            cat /tmp/program-show.txt || true
+            echo
+            echo "IMPORTANT:"
+            echo "No program keypair is included in this artifact."
+            echo "Deploying to the declared Program ID requires the matching program keypair locally."
+          } | tee ../evidence/deploy-readiness/report.txt
+
+          cp "$SO" ../evidence/deploy-readiness/covenant_runtime.so
+          if [ -f "target/idl/covenant_runtime.json" ]; then
+            cp target/idl/covenant_runtime.json ../evidence/deploy-readiness/covenant_runtime.idl.json
+          fi
+
+          rm -f "$KEYPAIR"
+
+      - name: Verify no keypair enters artifact
+        shell: bash
+        run: |
+          if find evidence/deploy-readiness -type f -name '*keypair*' | grep -q .; then
+            echo "Refusing artifact: keypair-like file found"
+            exit 1
+          fi
+
+      - name: Upload deploy-readiness bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: covenant-mainnet-deploy-readiness
+          path: evidence/deploy-readiness/*
+          if-no-files-found: error
+          retention-days: 14
