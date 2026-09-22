@@ -312,6 +312,7 @@ async function buildJupiterRoute({
   outputMint,
   amount,
   taker,
+  payer,
   destinationTokenAccount,
 }) {
   const params = new URLSearchParams({
@@ -319,6 +320,7 @@ async function buildJupiterRoute({
     outputMint: outputMint.toBase58(),
     amount: amount.toString(),
     taker: taker.toBase58(),
+    payer: payer.toBase58(),
     slippageBps: String(MAX_SLIPPAGE_BPS),
     wrapAndUnwrapSol: "false",
     destinationTokenAccount: destinationTokenAccount.toBase58(),
@@ -714,6 +716,7 @@ async function main() {
       outputMint: AAPLON,
       amount: SOURCE_AMOUNT,
       taker: position,
+      payer: owner.publicKey,
       destinationTokenAccount: targetTokenAccount,
     });
     const { build, commitment } = route;
