@@ -62,6 +62,37 @@ export function computeSwapInvocationHash(ix) {
   return hash.digest("hex");
 }
 
+function u64Le(value, field) {
+  const parsed = BigInt(value);
+  if (parsed < 0n || parsed > 0xffffffffffffffffn) {
+    throw new Error(field + " does not fit in u64");
+  }
+  const out = Buffer.alloc(8);
+  out.writeBigUInt64LE(parsed);
+  return out;
+}
+
+export function computeOnchainExecutionCommitmentHash({
+  inputMint,
+  outputMint,
+  inputAmount,
+  minOut,
+  swapInvocationHash,
+}) {
+  assertString(swapInvocationHash, "swapInvocationHash");
+  if (!/^[0-9a-f]{64}$/i.test(swapInvocationHash)) {
+    throw new Error("swapInvocationHash must be a 32-byte hex digest");
+  }
+
+  const hash = createHash("sha256");
+  hash.update(base58PubkeyBytes(inputMint));
+  hash.update(base58PubkeyBytes(outputMint));
+  hash.update(u64Le(inputAmount, "inputAmount"));
+  hash.update(u64Le(minOut, "minOut"));
+  hash.update(Buffer.from(swapInvocationHash, "hex"));
+  return hash.digest("hex");
+}
+
 function assertString(value, field) {
   if (typeof value !== "string" || value.length === 0) {
     throw new Error("Missing/invalid Jupiter build field: " + field);
@@ -218,6 +249,16 @@ export function buildJupiterExecutionCommitment({
     throw new Error("Jupiter build response has no blockhash metadata");
   }
 
+  const swapInvocationHash = computeSwapInvocationHash(build.swapInstruction);
+  const onchainExecutionCommitmentHash =
+    computeOnchainExecutionCommitmentHash({
+      inputMint: build.inputMint,
+      outputMint: build.outputMint,
+      inputAmount: String(build.inAmount),
+      minOut,
+      swapInvocationHash,
+    });
+
   const commitment = {
     schemaVersion: "covenant.jupiter-v2-execution-commitment.v1",
     router: "JUPITER_METIS_V2_BUILD",
@@ -231,7 +272,8 @@ export function buildJupiterExecutionCommitment({
     priceImpactPct:
       build.priceImpactPct == null ? null : String(build.priceImpactPct),
     swapProgramId: swapInstruction.programId,
-    swapInvocationHash: computeSwapInvocationHash(build.swapInstruction),
+    swapInvocationHash,
+    onchainExecutionCommitmentHash,
     swapInstruction,
     setupInstructionsHash: sha256Canonical(setupInstructions),
     computeBudgetInstructionsHash: sha256Canonical(computeBudgetInstructions),
