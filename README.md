@@ -8,7 +8,7 @@ COVENANT authorizes **proof-carrying economic state transitions**. A user owns a
 
 ## Stocklana technical proof
 
-Current build gate: **T1–T3 before UI polish**.
+Technical proof gate: **T1–T3 PASS on 2026-09-22. The build may now proceed to implementation hardening and UX without weakening the proof boundary.**
 
 - **T1 — Claim Graph reality proof:** verify at least two exact Solana representations of one underlying, with provenance for identity, issuer/structure, market state, and lifecycle state.
 - **T2 — Transition proof prototype:** deterministic `ALLOW | ESCALATE | REFUSE`, explicit reason codes, UNKNOWN fail-closed.
@@ -46,4 +46,13 @@ Every policy-relevant field must carry provenance and freshness. Missing evidenc
 
 ## Repository status
 
-This repository was initialized on 2026-09-22 for the Stocklana proof wedge. The first code path is an evidence probe, not a UI.
+**Stocklana technical proof wedge: PASS.**
+
+- T1 resolves a real Apple Claim Graph with AAPLx and AAPLon and live route evidence.
+- T2 deterministically produces `ALLOW | ESCALATE | REFUSE` and refuses UNKNOWN evidence.
+- T3a proves the PDA-controlled authority boundary in LiteSVM.
+- T3b proves an exact proof-gated `USDC -> AAPLx` state transition through Jupiter on a Surfpool mainnet-shaped fork, then rejects replay with unchanged balances.
+
+Canonical T3b evidence: GitHub Actions run `35698743841`, artifact `covenant-t3b-surfpool-evidence`.
+
+This is a fork proof, not a mainnet financial transaction. Mainnet execution remains disabled by default.

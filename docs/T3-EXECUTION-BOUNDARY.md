@@ -1,6 +1,6 @@
 # T3 — Execution Boundary Proof
 
-Status: **T3a PASS — authority boundary proven in LiteSVM; T3b Apple ACQUIRE remains open**
+Status: **T3 PASS — T3a authority boundary proven in LiteSVM and T3b exact Apple ACQUIRE proven on a Surfpool mainnet-shaped fork**
 
 COVENANT's T3 requirement is not satisfied by displaying an `ALLOW` result. The same governed path must make the allowed economic state change possible and make the corresponding refused transition impossible.
 
@@ -36,7 +36,7 @@ Four authority-boundary tests passed:
 - owner freeze invalidated a pending proof and blocked execution;
 - Covenant amendment preserved the same Invariant Position identity, incremented version/nonce, invalidated the old proof, and permitted a fresh proof under the amended Covenant.
 
-This closes **T3a**, not the complete Stocklana T3 gate. The remaining bar is T3b: exact governed USDC → Apple-claim settlement on a mainnet-shaped fork/devnet path.
+This closes **T3a**. T3b subsequently closed the complete Stocklana T3 gate in GitHub Actions run `35698743841`: an exact proof-gated USDC → AAPLx transition executed through Jupiter on a Surfpool mainnet-shaped fork, advanced nonce/version and current claim state, produced a Transition Receipt, and rejected replay with unchanged balances.
 
 ## What T3a proves
 
@@ -53,17 +53,11 @@ PROPOSER
 
 A substituted destination, wrong evaluator, replayed proof, stale proof, frozen position, excessive amount, changed Covenant hash, or disallowed operator must fail before value moves.
 
-## What T3a does not claim
+## T3b verification result
 
-The current `execute_proven_transition` settlement is **not yet the canonical Apple ACQUIRE**. It is the load-bearing authority primitive beneath it.
+The generic `execute_proven_transition` remains the T3a authority primitive. The canonical Stocklana ACQUIRE is now implemented separately as `execute_apple_acquire`.
 
-T3 is only fully closed for the Stocklana demo after this boundary constrains the exact swap/settlement path (target: USDC -> exact Apple claim) and the post-settlement state is verified.
-
-No UI work should treat T3 as complete until that final route-binding test exists.
-
-## T3b target
-
-Replace the generic settlement transfer with a constrained execution adapter that binds:
+Run `35698743841` verified the constrained adapter with:
 
 - input mint and amount;
 - exact output claim mint;
@@ -74,7 +68,9 @@ Replace the generic settlement transfer with a constrained execution adapter tha
 - evidence root;
 - pre/post position hashes.
 
-The program then verifies settlement and persists the new position version/receipt reference.
+The successful fork transition spent exactly `100000000` raw USDC units, received `29334103` raw AAPLx units against a committed minimum of `29188074`, changed `current_claim_mint` to the exact AAPLx mint, and advanced position version/nonce from `0/0` to `1/1`.
+
+The same consumed proof was then replayed and rejected with `PositionVersionMismatch`; balances remained unchanged.
 
 This is the implementation form of:
 

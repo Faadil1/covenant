@@ -1,6 +1,6 @@
 # T3b — Exact Apple ACQUIRE Boundary
 
-Status: **PROGRAM BOUNDARY IMPLEMENTED — Surfpool governed AAPLx execution remains the open T3b gate**
+Status: **PASS — exact proof-gated USDC → AAPLx execution verified on a Surfpool mainnet-shaped fork**
 
 T3a proves that COVENANT can withhold PDA-controlled authority unless an exact proof packet matches the current Covenant state. T3b converts that generic state-changing boundary into the canonical Stocklana economic transition:
 
@@ -94,9 +94,17 @@ Keep these concepts separate:
 
 No one field may stand in for another.
 
-## Fork-first proof
+## Fork proof result
 
-The next integration environment should be Surfpool/mainnet-fork because the Apple claims and actual Jupiter liquidity live on mainnet. The goal is to clone/fetch the exact route accounts and execute the same CPI logic against mainnet-shaped state without using real funds.
+GitHub Actions run `35698743841` completed the canonical proof on 2026-09-22. At authorization time:
+
+- AAPLx live price impact was `19.977864498792208 bps`, below the Covenant ceiling of `50 bps`, so T2 returned `ALLOW`.
+- AAPLon live price impact was `471.29142825340807 bps`, above the same ceiling, so T2 returned `REFUSE` and no executable proof was created.
+- the AAPLx proof committed exact input/output mints, `100000000` raw USDC input, `29188074` raw minimum output, the Jupiter CPI invocation hash and evidence/Claim Passport/Covenant state.
+- execution settled `29334103` raw AAPLx units, advanced position version and nonce to `1/1`, and persisted the receipt commitment.
+- replay of the consumed proof failed with `PositionVersionMismatch` and left balances unchanged.
+
+Jupiter returned one setup instruction because its mainnet builder cannot observe the fork-only Position token accounts. The harness did **not** execute that setup instruction; the exact Position-owned USDC and AAPLx accounts were pre-created in the fork and independently verified by COVENANT before CPI.
 
 Canonical proof sequence:
 
@@ -129,9 +137,9 @@ A mainnet financial transaction is not required to develop or validate this adap
 
 Until then, `mainnet execution = disabled`.
 
-## T3 completion standard
+## T3 completion standard — satisfied
 
-T3 is closed only when the repository contains reproducible evidence of:
+T3 is closed for the Stocklana proof wedge because the repository and run artifact now contain reproducible evidence of:
 
 ```
 ALLOW
@@ -145,4 +153,6 @@ REFUSE
  -> no economic state change
 ```
 
-A passing policy unit test alone is T2. A generic PDA transfer is T3a. The exact Apple ACQUIRE path is T3b and is the Stocklana technical gate.
+A passing policy unit test alone is T2. A generic PDA transfer is T3a. The exact Apple ACQUIRE path is T3b; that Stocklana technical gate is now closed on the mainnet-shaped fork.
+
+This does **not** claim mainnet financial execution. Mainnet remains a separately guarded operator decision.

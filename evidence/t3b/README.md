@@ -68,3 +68,25 @@ Never commit API keys or wallet/private-key material.
 The companion REFUSE case never receives executable proof. If AAPLon no longer violates the live market rule when the proof runs, the harness falls back to a deliberately stale AAPLx evidence record so fail-closed behavior remains deterministic and explicitly labeled.
 
 A PASS here is **L2 signed preflight + constrained onchain execution on a mainnet-shaped fork**. It is not a mainnet financial trade.
+
+
+## Verified PASS — 2026-09-22
+
+GitHub Actions run `35698743841` produced the first complete T3b PASS artifact.
+
+Observed proof facts:
+
+- environment: Surfpool mainnet-shaped fork;
+- input: `100000000` raw canonical USDC;
+- target: exact AAPLx mint `XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp`;
+- AAPLx T2 result: `ALLOW` at `19.977864498792208 bps` live Jupiter price impact;
+- AAPLon T2 result: `REFUSE` at `471.29142825340807 bps`;
+- committed AAPLx minimum output: `29188074` raw;
+- settled AAPLx output: `29334103` raw;
+- position version / nonce: `0/0 -> 1/1`;
+- replay: rejected with `PositionVersionMismatch`, balances unchanged;
+- final receipt outcome: `EXECUTED`.
+
+Artifact: `covenant-t3b-surfpool-evidence` (artifact ID `10680579722`).
+
+The transaction signature belongs to the ephemeral Surfpool fork and is evidence inside that run; it is not a mainnet signature.
