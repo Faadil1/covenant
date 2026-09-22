@@ -1,0 +1,17 @@
+{
+  "id": "apple:ondo:aaplon",
+  "version": 1,
+  "underlying": "AAPL",
+  "network": "Solana",
+  "mint": "123mYEnRLM2LLYsJW3K6oyYh8uP1fngj732iG638ondo",
+  "issuer": "Ondo",
+  "properties": {
+    "collateralLendingRequiresHolderOptIn": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-22T05:00:00.000Z",
+      "source": "https://ondo.finance/ondo-stocks"
+    }
+  }
+}
