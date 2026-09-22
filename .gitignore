@@ -7,3 +7,4 @@ coverage/
 evidence/t1/runtime-*.json
 evidence/t1/market-*.json
 evidence/t3b/jupiter-build-*.json
+evidence/t3b/surfpool-preflight-*.json
