@@ -18,6 +18,14 @@ function moneyRaw(value) {
   return new Intl.NumberFormat("en-US").format(Number(value || 0));
 }
 
+function tokenAmount(raw, decimals, maxFractionDigits = decimals) {
+  const value = Number(raw || 0) / (10 ** decimals);
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: Math.min(2, maxFractionDigits),
+    maximumFractionDigits: maxFractionDigits,
+  }).format(value);
+}
+
 function badge(text, kind = "neutral") {
   return '<span class="badge badge--' + kind + '">' + text + "</span>";
 }
@@ -47,9 +55,9 @@ function pagePosition() {
     form.intent.value = state.position.intent;
     form.positionId.value = state.position.id;
     form.currentClaim.value = state.position.currentClaim || "";
-    document.querySelector("#balanceUSDC").textContent = moneyRaw(state.position.balances.USDC);
-    document.querySelector("#balanceAAPLx").textContent = moneyRaw(state.position.balances.AAPLx);
-    document.querySelector("#balanceAAPLon").textContent = moneyRaw(state.position.balances.AAPLon);
+    document.querySelector("#balanceUSDC").textContent = tokenAmount(state.position.balances.USDC, 6, 2);
+    document.querySelector("#balanceAAPLx").textContent = tokenAmount(state.position.balances.AAPLx, 8, 8);
+    document.querySelector("#balanceAAPLon").textContent = tokenAmount(state.position.balances.AAPLon, 9, 9);
     document.querySelector("#positionState").innerHTML =
       badge(state.position.frozen ? "FROZEN" : "ACTIVE", state.position.frozen ? "refuse" : "allow") +
       badge("v" + state.position.version + " / nonce " + state.position.nonce, "neutral");
@@ -205,9 +213,9 @@ function pageRuntime() {
       state.position.id + " · " + (state.position.currentClaim || "NO CURRENT CLAIM") +
       " · v" + state.position.version + " / nonce " + state.position.nonce;
     document.querySelector("#runtimeBalances").textContent =
-      "USDC " + moneyRaw(state.position.balances.USDC) +
-      " · AAPLx " + moneyRaw(state.position.balances.AAPLx) +
-      " · AAPLon " + moneyRaw(state.position.balances.AAPLon);
+      "USDC " + tokenAmount(state.position.balances.USDC, 6, 2) +
+      " · AAPLx " + tokenAmount(state.position.balances.AAPLx, 8, 8) +
+      " · AAPLon " + tokenAmount(state.position.balances.AAPLon, 9, 9);
     const pending = state.pending;
     proofBox.textContent = pending
       ? pending.proofHash + " · " + pending.status + " · expires " + pending.expiresAt
