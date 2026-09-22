@@ -510,6 +510,30 @@ async function sendVersioned({ connection, payer, signers, instructions, lookupT
   );
 }
 
+const SAFE_SETUP_PROGRAMS = new Set([
+  SystemProgram.programId.toBase58(),
+  "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+  TOKEN_PROGRAM.toBase58(),
+  TOKEN_2022_PROGRAM.toBase58(),
+]);
+
+function validateSetupInstructions(ixs) {
+  return (ixs || []).map((ix, index) => {
+    if (!SAFE_SETUP_PROGRAMS.has(ix.programId)) {
+      throw new Error(
+        "T4 fail-closed: Jupiter setup instruction uses unapproved program " +
+          ix.programId + " at index " + index,
+      );
+    }
+    return {
+      index,
+      programId: ix.programId,
+      accountCount: (ix.accounts || []).length,
+      dataLength: Buffer.from(ix.data || "", "base64").length,
+    };
+  });
+}
+
 async function main() {
   const runObservedAt = new Date().toISOString();
   await markStage("HARNESS_START", { mainnetRpc: MAINNET_RPC });
@@ -694,8 +718,58 @@ async function main() {
     });
     const { build, commitment } = route;
 
-    const sourceBefore = await tokenAmount(connection, sourceTokenAccount);
-    const targetBefore = await tokenAmount(connection, targetTokenAccount);
+    // Multi-hop Jupiter routes can require intermediate token accounts that do
+    // not exist in the fork. Unlike the T3b single-path proof, those setup
+    // instructions are not always redundant. We allow only account-setup
+    // programs and execute them with NO Position PDA signature, then prove that
+    // source/target economic balances did not change.
+    const setupSummary = validateSetupInstructions(route.omittedSetupInstructions);
+    for (const [index, ix] of route.omittedSetupInstructions.entries()) {
+      if ((ix.accounts || []).some(
+        (account) => account.isSigner && account.pubkey === position.toBase58(),
+      )) {
+        throw new Error(
+          "T4 fail-closed: setup instruction " + index +
+            " requests Position PDA signature",
+        );
+      }
+    }
+
+    const sourceBeforeSetup = await tokenAmount(connection, sourceTokenAccount);
+    const targetBeforeSetup = await tokenAmount(connection, targetTokenAccount);
+    const setupSignatures = [];
+    if (route.omittedSetupInstructions.length > 0) {
+      for (const ix of route.omittedSetupInstructions) {
+        setupSignatures.push(
+          await sendVersioned({
+            connection,
+            payer: owner,
+            signers: [],
+            instructions: [rawInstruction(ix)],
+            lookupTableAccounts: [],
+          }),
+        );
+      }
+    }
+    const sourceAfterSetup = await tokenAmount(connection, sourceTokenAccount);
+    const targetAfterSetup = await tokenAmount(connection, targetTokenAccount);
+    if (
+      sourceAfterSetup !== sourceBeforeSetup ||
+      targetAfterSetup !== targetBeforeSetup
+    ) {
+      throw new Error(
+        "T4 fail-closed: route setup changed economic source/target balances",
+      );
+    }
+    await markStage("SAFE_ROUTE_SETUP_READY", {
+      instructionCount: setupSummary.length,
+      instructions: setupSummary,
+      signatures: setupSignatures,
+      sourceTargetBalancesUnchanged: true,
+    });
+
+    const sourceBefore = sourceAfterSetup;
+    const targetBefore = targetAfterSetup;
     if (sourceBefore !== SOURCE_AMOUNT) {
       throw new Error("Self-healing fixture source balance changed before authorization");
     }
@@ -1011,6 +1085,13 @@ async function main() {
         priceImpactPct: commitment.priceImpactPct,
         lookupTableAddresses: commitment.lookupTableAddresses,
         omittedSetupInstructionCount: route.omittedSetupInstructions.length,
+        setupExecution: {
+          mode: "ALLOWLISTED_NON_ECONOMIC_PRECONDITION",
+          allowedPrograms: [...SAFE_SETUP_PROGRAMS],
+          instructions: setupSummary,
+          signatures: setupSignatures,
+          sourceTargetBalancesUnchanged: true,
+        },
       },
       migration: {
         signature: migrationSignature,
