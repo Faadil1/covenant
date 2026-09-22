@@ -1,0 +1,41 @@
+name: covenant-pyth-policy
+
+on:
+  pull_request:
+    paths:
+      - "src/evidence/**"
+      - "fixtures/apple-mainnet-canary-covenant.json"
+      - "test/pyth-market-policy.test.mjs"
+      - "scripts/pyth-stocklana-evidence.mjs"
+      - "scripts/mainnet-canary-preflight.mjs"
+      - "package.json"
+      - ".github/workflows/pyth-policy.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/evidence/**"
+      - "fixtures/apple-mainnet-canary-covenant.json"
+      - "test/pyth-market-policy.test.mjs"
+      - "scripts/pyth-stocklana-evidence.mjs"
+      - "scripts/mainnet-canary-preflight.mjs"
+      - "package.json"
+      - ".github/workflows/pyth-policy.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-pyth-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run deterministic Pyth policy tests
+        run: node --test test/pyth-market-policy.test.mjs
+      - name: Syntax-check live Pyth probe
+        run: node --check scripts/pyth-stocklana-evidence.mjs
+      - name: Syntax-check mainnet preflight
+        run: node --check scripts/mainnet-canary-preflight.mjs
