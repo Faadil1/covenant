@@ -17,7 +17,8 @@
     "probe:pyth": "node --env-file-if-exists=.env scripts/pyth-stocklana-evidence.mjs",
     "preflight:mainnet": "node --env-file-if-exists=.env scripts/mainnet-canary-preflight.mjs",
     "setup:mainnet-canary": "node --env-file-if-exists=.env scripts/mainnet-canary-setup.mjs",
-    "execute:mainnet-canary": "node --env-file-if-exists=.env scripts/mainnet-canary-execute.mjs"
+    "execute:mainnet-canary": "node --env-file-if-exists=.env scripts/mainnet-canary-execute.mjs",
+    "probe:pyth:playground": "node scripts/pyth-playground-ingest.mjs"
   },
   "engines": {
     "node": ">=22.9.0"
