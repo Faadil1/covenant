@@ -161,6 +161,19 @@ fn compute_onchain_execution_commitment_hash(
     .to_bytes()
 }
 
+fn compute_system_settlement_commitment_hash(
+    destination: &Pubkey,
+    settlement_amount_lamports: u64,
+) -> [u8; 32] {
+    let amount_bytes = settlement_amount_lamports.to_le_bytes();
+    hashv(&[
+        b"COVENANT_SYSTEM_SETTLEMENT_V1",
+        destination.as_ref(),
+        &amount_bytes,
+    ])
+    .to_bytes()
+}
+
 #[program]
 pub mod covenant_runtime {
     use super::*;
@@ -271,6 +284,14 @@ pub mod covenant_runtime {
             settlement.destination,
             ctx.accounts.settlement.key(),
             CovenantError::DestinationMismatch
+        );
+        let settlement_commitment = compute_system_settlement_commitment_hash(
+            &settlement.destination,
+            settlement.settlement_amount_lamports,
+        );
+        require!(
+            settlement_commitment == proof.execution_commitment_hash,
+            CovenantError::ExecutionCommitmentMismatch
         );
         require!(
             ctx.accounts.vault.lamports() >= settlement.settlement_amount_lamports,

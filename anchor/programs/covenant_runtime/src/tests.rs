@@ -1,6 +1,7 @@
 use crate::{
     compute_onchain_execution_commitment_hash,
     compute_swap_invocation_hash,
+    compute_system_settlement_commitment_hash,
     SystemSettlementArgs,
     TransitionProofArgs,
     ID as PROGRAM_ID,
@@ -172,6 +173,7 @@ fn proof(
     covenant_hash: [u8; 32],
     nonce: u64,
     position_version: u64,
+    settlement_destination: Pubkey,
 ) -> TransitionProofArgs {
     let clock = svm.get_sysvar::<Clock>();
 
@@ -182,7 +184,10 @@ fn proof(
         pre_state_hash: nonzero(4),
         proposed_post_state_hash: nonzero(5),
         receipt_hash: nonzero(6),
-        execution_commitment_hash: nonzero(8),
+        execution_commitment_hash: compute_system_settlement_commitment_hash(
+            &settlement_destination,
+            TRANSITION_AMOUNT,
+        ),
         target_claim_mint: Pubkey::default(),
         position_version,
         nonce,
@@ -292,6 +297,7 @@ fn allowed_proof_moves_real_value_and_replay_fails() {
         fx.covenant_hash,
         nonce,
         version,
+        fx.settlement.pubkey(),
     );
     let ix = transition_ix(
         fx.proposer.pubkey(),
@@ -378,6 +384,7 @@ fn wrong_evaluator_and_destination_substitution_cannot_move_value() {
         fx.covenant_hash,
         nonce,
         version,
+        fx.settlement.pubkey(),
     );
 
     let wrong_evaluator_ix = transition_ix(
@@ -449,6 +456,7 @@ fn freeze_is_an_onchain_kill_switch_and_invalidates_pending_proof() {
         fx.covenant_hash,
         nonce,
         version,
+        fx.settlement.pubkey(),
     );
 
     let freeze = freeze_ix(fx.owner.pubkey(), fx.position);
@@ -496,6 +504,7 @@ fn covenant_amendment_preserves_position_identity_and_kills_old_proof() {
         fx.covenant_hash,
         nonce,
         version,
+        fx.settlement.pubkey(),
     );
 
     let new_covenant_hash = nonzero(7);
@@ -533,6 +542,7 @@ fn covenant_amendment_preserves_position_identity_and_kills_old_proof() {
         new_covenant_hash,
         amended.nonce,
         amended.position_version,
+        fx.settlement.pubkey(),
     );
     let new_ix = transition_ix(
         fx.proposer.pubkey(),
