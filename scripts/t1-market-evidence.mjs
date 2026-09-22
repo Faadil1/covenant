@@ -86,36 +86,61 @@ async function latestPyth(observedAt) {
     : {};
 
   const url = `${PYTH_HERMES}/v2/updates/price/latest?${params}`;
-  const body = await fetchJson(url, { headers });
   const observedEpoch = Math.floor(Date.parse(observedAt) / 1000);
 
-  const byId = Object.fromEntries(
-    (body.parsed || []).map((item) => [
-      item.id.replace(/^0x/, ""),
-      {
-        price: priceValue(item.price),
-        confidence: Number(item.price.conf) * 10 ** Number(item.price.expo),
-        publishTime: item.price.publish_time,
-        ageSeconds: observedEpoch - item.price.publish_time,
-        slot: item.metadata?.slot ?? null,
-      },
-    ]),
-  );
+  try {
+    const body = await fetchJson(url, { headers });
+    const byId = Object.fromEntries(
+      (body.parsed || []).map((item) => [
+        item.id.replace(/^0x/, ""),
+        {
+          status: "VERIFIED",
+          price: priceValue(item.price),
+          confidence: Number(item.price.conf) * 10 ** Number(item.price.expo),
+          publishTime: item.price.publish_time,
+          ageSeconds: observedEpoch - item.price.publish_time,
+          slot: item.metadata?.slot ?? null,
+        },
+      ]),
+    );
 
-  const result = {};
-  for (const [name, id] of Object.entries(FEEDS)) {
-    result[name] = byId[id] ?? {
-      status: "UNKNOWN",
-      reason: "Feed missing from latest-price response",
+    const result = {};
+    for (const [name, id] of Object.entries(FEEDS)) {
+      result[name] = byId[id] ?? {
+        status: "UNKNOWN",
+        reason: "Feed missing from latest-price response",
+      };
+    }
+
+    return {
+      source: url,
+      evidenceClass: "LIVE_MARKET_OR_ORACLE",
+      observedAt,
+      status: "VERIFIED",
+      values: result,
+    };
+  } catch (error) {
+    const reason = String(error);
+    const authRequired = reason.includes("401") || reason.includes("Unauthorized");
+    return {
+      source: url,
+      evidenceClass: "LIVE_MARKET_OR_ORACLE",
+      observedAt,
+      status: authRequired ? "AUTH_REQUIRED" : "UNKNOWN",
+      requiredEnv: authRequired ? "PYTH_API_KEY" : null,
+      values: Object.fromEntries(
+        Object.keys(FEEDS).map((name) => [
+          name,
+          {
+            status: "UNKNOWN",
+            reason: authRequired
+              ? "Pyth Hermes requires an API key after the Aug 26 2026 Core upgrade"
+              : reason,
+          },
+        ]),
+      ),
     };
   }
-
-  return {
-    source: url,
-    evidenceClass: "LIVE_MARKET_OR_ORACLE",
-    observedAt,
-    values: result,
-  };
 }
 
 async function mintNormalization(mint, observedAt) {
