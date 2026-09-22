@@ -12,7 +12,9 @@ export const PositionHealth = Object.freeze({
  * Re-evaluate the current exact representation against current evidence.
  *
  * This produces a health transition and an optional non-executing repair plan.
- * It never reuses an old proof for a new evidence state.
+ * It never generates or reissues an old proof for a new evidence state.
+ * Already-issued proof exposure remains bounded by the onchain controls reported
+ * in outstandingProofExposure.
  */
 export function revalidateInvariantPosition({
   currentClaimId,
