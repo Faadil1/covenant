@@ -1,5 +1,5 @@
 # COVENANT — Treasury Portability Spike
-**Status:** T0 research graph created; not executable.  
+**Status:** Treasury-T1/T2/T3 semantic portability PASS; Treasury-T4/T5 remain open.  
 **Purpose:** test whether the COVENANT core survives removal of AAPL.
 
 ## Portability question
@@ -42,7 +42,7 @@ A rewrite of Invariant Position / Transition Proof / authority / receipt semanti
 **Important semantic:** the same fund exposure already exists through multiple representations.  
 **Sources:**  
 https://superstate.com/assets/ustb  
-https://docs.superstate.com/superstate-funds/ustb/redeeming-ustb
+https://superstate.com/assets/ustb
 
 ### Claim B — BENJI / Franklin OnChain U.S. Government Money Fund
 **Economic object:** shares of FOBXX, a U.S.-registered government money market fund.  
@@ -219,8 +219,16 @@ At least one design partner confirms that the modeled transition resembles a rea
 
 ## Portability verdict so far
 
-**PROMISING, NOT YET PASSED.**
+**SEMANTIC PORTABILITY PASS. CUSTOMER REALITY STILL OPEN.**
 
-The existing core concepts appear reusable without alteration. The new work is overwhelmingly semantic evidence, policy and adapters — exactly what we wanted to see.
+Three authoritative Treasury Claim Passports now evaluate through the unchanged core runtime:
 
-But the gate is not passed until at least three authoritative Treasury Claim Passports evaluate under the existing runtime and a real design partner recognizes the workflow.
+- USTB → ALLOW under the research same-day U.S.-qualified mandate;
+- TBILL → REFUSE because typical redemption is next 1 U.S. business day;
+- USDY → REFUSE because primary mint/redeem is non-U.S.-only and its legal-claim model is exposure-only rather than a fund/share claim.
+
+The existing `src/policy/evaluator.mjs` and `src/proof/transition-proof.mjs` were not modified for this domain shift.
+
+Canonical portability CI run: `35758958490` — PASS.
+
+The remaining gate is no longer “can COVENANT survive removal of Apple?” It can at the semantic/proof level. The remaining question is whether a real operator recognizes this transition as a repeated workflow worth paying to control.
