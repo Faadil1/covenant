@@ -13,7 +13,9 @@
     "prove:t3b:surfpool": "node scripts/t3b-surfpool-execute.mjs",
     "probe:t4:migration-route": "node scripts/t4-migration-route-probe.mjs",
     "prove:t4:self-healing": "node scripts/t4-self-healing-surfpool.mjs",
-    "demo:treasury-portability": "node scripts/treasury-portability-demo.mjs"
+    "demo:treasury-portability": "node scripts/treasury-portability-demo.mjs",
+    "probe:pyth": "node scripts/pyth-stocklana-evidence.mjs",
+    "preflight:mainnet": "node scripts/mainnet-canary-preflight.mjs"
   },
   "engines": {
     "node": ">=22"
