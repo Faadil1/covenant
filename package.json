@@ -14,13 +14,13 @@
     "probe:t4:migration-route": "node scripts/t4-migration-route-probe.mjs",
     "prove:t4:self-healing": "node scripts/t4-self-healing-surfpool.mjs",
     "demo:treasury-portability": "node scripts/treasury-portability-demo.mjs",
-    "probe:pyth": "node scripts/pyth-stocklana-evidence.mjs",
-    "preflight:mainnet": "node scripts/mainnet-canary-preflight.mjs",
-    "setup:mainnet-canary": "node scripts/mainnet-canary-setup.mjs",
-    "execute:mainnet-canary": "node scripts/mainnet-canary-execute.mjs"
+    "probe:pyth": "node --env-file-if-exists=.env scripts/pyth-stocklana-evidence.mjs",
+    "preflight:mainnet": "node --env-file-if-exists=.env scripts/mainnet-canary-preflight.mjs",
+    "setup:mainnet-canary": "node --env-file-if-exists=.env scripts/mainnet-canary-setup.mjs",
+    "execute:mainnet-canary": "node --env-file-if-exists=.env scripts/mainnet-canary-execute.mjs"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9.0"
   },
   "dependencies": {
     "@solana/spl-token": "0.4.15",
