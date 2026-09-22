@@ -3,6 +3,9 @@ use anchor_lang::system_program::{transfer, Transfer};
 
 declare_id!("CEKUNCY7VYeHdwyyWCJTKQkGgMzPeTsx2uwBoQ98wm3z");
 
+#[cfg(test)]
+mod tests;
+
 #[program]
 pub mod covenant_runtime {
     use super::*;
