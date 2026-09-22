@@ -122,6 +122,61 @@ fn validate_common_transition(
     Ok(())
 }
 
+fn validate_authorization(
+    position: &Position,
+    authorization: &TransitionAuthorization,
+    now_unix: i64,
+) -> Result<()> {
+    require_keys_eq!(
+        authorization.position,
+        position.key(),
+        CovenantError::AuthorizationPositionMismatch
+    );
+    require!(
+        authorization.covenant_hash == position.covenant_hash,
+        CovenantError::CovenantVersionMismatch
+    );
+    require!(
+        authorization.position_version == position.position_version,
+        CovenantError::PositionVersionMismatch
+    );
+    require!(
+        authorization.nonce == position.nonce,
+        CovenantError::NonceMismatch
+    );
+    require!(
+        authorization.expiry_unix >= now_unix,
+        CovenantError::ProofExpired
+    );
+    require!(
+        authorization.economic_value_usd_micros > 0
+            && authorization.economic_value_usd_micros
+                <= position.max_transition_value_usd_micros,
+        CovenantError::AmountOutsideAuthority
+    );
+
+    let operator_bit = 1u16
+        .checked_shl(u32::from(authorization.operator))
+        .ok_or(CovenantError::OperatorNotAllowed)?;
+    require!(
+        operator_bit & position.allowed_operator_mask != 0,
+        CovenantError::OperatorNotAllowed
+    );
+
+    for hash in [
+        authorization.claim_passport_hash,
+        authorization.evidence_root,
+        authorization.pre_state_hash,
+        authorization.proposed_post_state_hash,
+        authorization.receipt_hash,
+        authorization.execution_commitment_hash,
+    ] {
+        require!(hash != [0u8; 32], CovenantError::ZeroProofField);
+    }
+
+    Ok(())
+}
+
 fn compute_swap_invocation_hash(
     program_id: &Pubkey,
     metas: &[AccountMeta],
@@ -221,6 +276,61 @@ pub mod covenant_runtime {
             covenant_hash,
             max_transition_value_usd_micros,
             allowed_operator_mask,
+        });
+
+        Ok(())
+    }
+
+    /// Persist one evaluator-approved Transition Proof as a compact onchain
+    /// authorization PDA. This keeps the execution transaction below Solana's
+    /// packet-size ceiling for multi-hop routes without granting generic wallet
+    /// authority.
+    pub fn authorize_transition(
+        ctx: Context<AuthorizeTransition>,
+        proof: TransitionProofArgs,
+    ) -> Result<()> {
+        let clock = Clock::get()?;
+        let position = &ctx.accounts.position;
+
+        validate_common_transition(
+            position,
+            ctx.accounts.evaluator.key(),
+            &proof,
+            clock.unix_timestamp,
+        )?;
+        require!(
+            proof.target_claim_mint != Pubkey::default(),
+            CovenantError::TargetClaimMissing
+        );
+
+        let authorization = &mut ctx.accounts.authorization;
+        authorization.position = position.key();
+        authorization.evaluator = ctx.accounts.evaluator.key();
+        authorization.covenant_hash = proof.covenant_hash;
+        authorization.claim_passport_hash = proof.claim_passport_hash;
+        authorization.evidence_root = proof.evidence_root;
+        authorization.pre_state_hash = proof.pre_state_hash;
+        authorization.proposed_post_state_hash = proof.proposed_post_state_hash;
+        authorization.receipt_hash = proof.receipt_hash;
+        authorization.execution_commitment_hash = proof.execution_commitment_hash;
+        authorization.target_claim_mint = proof.target_claim_mint;
+        authorization.position_version = proof.position_version;
+        authorization.nonce = proof.nonce;
+        authorization.expiry_unix = proof.expiry_unix;
+        authorization.operator = proof.operator;
+        authorization.economic_value_usd_micros = proof.economic_value_usd_micros;
+        authorization.bump = ctx.bumps.authorization;
+
+        emit!(TransitionAuthorized {
+            position: position.key(),
+            authorization: authorization.key(),
+            evaluator: authorization.evaluator,
+            operator: authorization.operator,
+            target_claim_mint: authorization.target_claim_mint,
+            position_version: authorization.position_version,
+            nonce: authorization.nonce,
+            expiry_unix: authorization.expiry_unix,
+            execution_commitment_hash: authorization.execution_commitment_hash,
         });
 
         Ok(())
@@ -620,6 +730,227 @@ pub mod covenant_runtime {
         Ok(())
     }
 
+    /// Packet-size-safe T4 migration path. The full Transition Proof is first
+    /// evaluator-authorized into a nonce-bound PDA. This execution transaction
+    /// then carries only the exact Jupiter invocation material.
+    pub fn execute_authorized_claim_migrate<'info>(
+        ctx: Context<'info, ExecuteAuthorizedClaimMigrate<'info>>,
+        args: JupiterAuthorizedMigrateArgs,
+    ) -> Result<()> {
+        let clock = Clock::get()?;
+        let position = &mut ctx.accounts.position;
+        let authorization = &ctx.accounts.authorization;
+
+        validate_authorization(position, authorization, clock.unix_timestamp)?;
+
+        require!(
+            authorization.operator == OPERATOR_MIGRATE,
+            CovenantError::OperatorNotAllowed
+        );
+        require!(
+            position.current_claim_mint != Pubkey::default(),
+            CovenantError::CurrentClaimMissing
+        );
+        require!(args.input_amount > 0, CovenantError::InvalidAmount);
+        require!(args.min_out > 0, CovenantError::InvalidMinimumOutput);
+        require!(
+            args.swap_invocation_hash != [0u8; 32],
+            CovenantError::ZeroProofField
+        );
+        require!(!args.swap_data.is_empty(), CovenantError::EmptySwapInstruction);
+        require_keys_eq!(
+            args.input_mint,
+            position.current_claim_mint,
+            CovenantError::SourceClaimMismatch
+        );
+        require_keys_eq!(
+            args.output_mint,
+            authorization.target_claim_mint,
+            CovenantError::WrongOutputMint
+        );
+        require!(
+            args.output_mint != args.input_mint,
+            CovenantError::MigrationTargetUnchanged
+        );
+        require_keys_eq!(
+            ctx.accounts.jupiter_program.key(),
+            JUPITER_V6_PROGRAM,
+            CovenantError::WrongExecutionProgram
+        );
+
+        let input_info = ctx.accounts.input_token_account.to_account_info();
+        let output_info = ctx.accounts.output_token_account.to_account_info();
+
+        require_keys_eq!(
+            *input_info.owner,
+            TOKEN_2022_PROGRAM,
+            CovenantError::WrongSourceTokenProgram
+        );
+        require_keys_eq!(
+            *output_info.owner,
+            TOKEN_2022_PROGRAM,
+            CovenantError::WrongOutputTokenProgram
+        );
+
+        let position_key = position.key();
+        let input_before = read_token_account_base(&input_info)?;
+        let output_before = read_token_account_base(&output_info)?;
+
+        require_keys_eq!(
+            input_before.mint,
+            args.input_mint,
+            CovenantError::SourceClaimMismatch
+        );
+        require_keys_eq!(
+            output_before.mint,
+            args.output_mint,
+            CovenantError::WrongOutputMint
+        );
+        require_keys_eq!(
+            input_before.authority,
+            position_key,
+            CovenantError::TokenAccountAuthorityMismatch
+        );
+        require_keys_eq!(
+            output_before.authority,
+            position_key,
+            CovenantError::TokenAccountAuthorityMismatch
+        );
+        require!(
+            input_before.amount == args.input_amount,
+            CovenantError::SourceClaimNotFullyMigrated
+        );
+
+        let expected_execution_commitment = compute_onchain_execution_commitment_hash(
+            &args.input_mint,
+            &args.output_mint,
+            args.input_amount,
+            args.min_out,
+            &args.swap_invocation_hash,
+        );
+        require!(
+            expected_execution_commitment == authorization.execution_commitment_hash,
+            CovenantError::ExecutionCommitmentMismatch
+        );
+
+        let mut metas: Vec<AccountMeta> =
+            Vec::with_capacity(ctx.remaining_accounts.len());
+        let mut infos: Vec<AccountInfo<'_>> =
+            Vec::with_capacity(ctx.remaining_accounts.len() + 1);
+        let mut saw_position = false;
+        let mut saw_input = false;
+        let mut saw_output = false;
+
+        for account in ctx.remaining_accounts.iter() {
+            let key = account.key();
+            let wants_signer = account.is_signer || key == position_key;
+            let wants_writable = account.is_writable;
+
+            if key == position_key {
+                saw_position = true;
+            }
+            if key == ctx.accounts.input_token_account.key() {
+                saw_input = true;
+            }
+            if key == ctx.accounts.output_token_account.key() {
+                saw_output = true;
+            }
+
+            let meta = if wants_writable {
+                AccountMeta::new(key, wants_signer)
+            } else {
+                AccountMeta::new_readonly(key, wants_signer)
+            };
+            metas.push(meta);
+            infos.push(account.clone());
+        }
+
+        require!(saw_position, CovenantError::PositionMissingFromSwap);
+        require!(saw_input, CovenantError::InputAccountMissingFromSwap);
+        require!(saw_output, CovenantError::OutputAccountMissingFromSwap);
+
+        let computed_swap_hash =
+            compute_swap_invocation_hash(&JUPITER_V6_PROGRAM, &metas, &args.swap_data);
+        require!(
+            computed_swap_hash == args.swap_invocation_hash,
+            CovenantError::SwapInvocationMismatch
+        );
+
+        let instruction = Instruction {
+            program_id: JUPITER_V6_PROGRAM,
+            accounts: metas,
+            data: args.swap_data.clone(),
+        };
+        infos.push(ctx.accounts.jupiter_program.to_account_info());
+
+        let owner = position.owner;
+        let position_id = position.position_id;
+        let bump = [position.bump];
+        let signer_seeds: &[&[&[u8]]] = &[&[
+            b"position",
+            owner.as_ref(),
+            position_id.as_ref(),
+            &bump,
+        ]];
+
+        invoke_signed(&instruction, &infos, signer_seeds)?;
+
+        let input_after = read_token_account_base(&input_info)?;
+        let output_after = read_token_account_base(&output_info)?;
+
+        let input_spent = input_before
+            .amount
+            .checked_sub(input_after.amount)
+            .ok_or(CovenantError::UnexpectedInputBalance)?;
+        let output_received = output_after
+            .amount
+            .checked_sub(output_before.amount)
+            .ok_or(CovenantError::UnexpectedOutputBalance)?;
+
+        require!(
+            input_spent == args.input_amount,
+            CovenantError::InputAmountMismatch
+        );
+        require!(
+            input_after.amount == 0,
+            CovenantError::SourceClaimNotFullyMigrated
+        );
+        require!(
+            output_received >= args.min_out,
+            CovenantError::MinimumOutputNotMet
+        );
+
+        let source_claim_mint = position.current_claim_mint;
+        let consumed_nonce = position.nonce;
+        let evaluator = authorization.evaluator;
+        let execution_commitment_hash = authorization.execution_commitment_hash;
+        let receipt_hash = authorization.receipt_hash;
+        let economic_value_usd_micros = authorization.economic_value_usd_micros;
+
+        advance_position_state(position)?;
+        position.current_claim_mint = args.output_mint;
+        position.last_receipt_hash = receipt_hash;
+
+        emit!(ClaimMigrationExecuted {
+            position: position.key(),
+            proposer: ctx.accounts.proposer.key(),
+            evaluator,
+            source_claim_mint,
+            target_claim_mint: args.output_mint,
+            source_amount: args.input_amount,
+            target_received: output_received,
+            min_out: args.min_out,
+            economic_value_usd_micros,
+            nonce: consumed_nonce,
+            new_position_version: position.position_version,
+            execution_commitment_hash,
+            swap_invocation_hash: args.swap_invocation_hash,
+            receipt_hash,
+        });
+
+        Ok(())
+    }
+
     /// T4 exact representation-mobility boundary.
     ///
     /// MIGRATE is deliberately stricter than ACQUIRE: the source mint must be
@@ -1001,6 +1332,40 @@ pub struct JupiterMigrateArgs {
     pub swap_data: Vec<u8>,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+pub struct JupiterAuthorizedMigrateArgs {
+    pub input_mint: Pubkey,
+    pub output_mint: Pubkey,
+    pub input_amount: u64,
+    pub min_out: u64,
+    pub swap_invocation_hash: [u8; 32],
+    pub swap_data: Vec<u8>,
+}
+
+#[account]
+pub struct TransitionAuthorization {
+    pub position: Pubkey,
+    pub evaluator: Pubkey,
+    pub covenant_hash: [u8; 32],
+    pub claim_passport_hash: [u8; 32],
+    pub evidence_root: [u8; 32],
+    pub pre_state_hash: [u8; 32],
+    pub proposed_post_state_hash: [u8; 32],
+    pub receipt_hash: [u8; 32],
+    pub execution_commitment_hash: [u8; 32],
+    pub target_claim_mint: Pubkey,
+    pub position_version: u64,
+    pub nonce: u64,
+    pub expiry_unix: i64,
+    pub operator: u8,
+    pub economic_value_usd_micros: u64,
+    pub bump: u8,
+}
+
+impl TransitionAuthorization {
+    pub const SPACE: usize = 354;
+}
+
 #[account]
 pub struct Position {
     pub position_id: [u8; 32],
@@ -1036,6 +1401,35 @@ pub struct InitializePosition<'info> {
         bump,
     )]
     pub position: Account<'info, Position>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(proof: TransitionProofArgs)]
+pub struct AuthorizeTransition<'info> {
+    #[account(mut)]
+    pub proposer: Signer<'info>,
+    pub evaluator: Signer<'info>,
+
+    #[account(
+        seeds = [b"position", position.owner.as_ref(), position.position_id.as_ref()],
+        bump = position.bump,
+    )]
+    pub position: Account<'info, Position>,
+
+    #[account(
+        init,
+        payer = proposer,
+        space = 8 + TransitionAuthorization::SPACE,
+        seeds = [
+            b"authorization",
+            position.key().as_ref(),
+            &proof.nonce.to_le_bytes(),
+        ],
+        bump,
+    )]
+    pub authorization: Account<'info, TransitionAuthorization>,
 
     pub system_program: Program<'info, System>,
 }
@@ -1121,6 +1515,42 @@ pub struct ExecuteAppleAcquire<'info> {
     pub input_token_account: UncheckedAccount<'info>,
 
     /// CHECK: Token-2022 program owner, exact Claim mint, Position authority and balance are verified manually.
+    #[account(mut)]
+    pub output_token_account: UncheckedAccount<'info>,
+
+    /// CHECK: exact Jupiter V6 program id is verified before CPI.
+    pub jupiter_program: UncheckedAccount<'info>,
+}
+
+#[derive(Accounts)]
+pub struct ExecuteAuthorizedClaimMigrate<'info> {
+    #[account(mut)]
+    pub proposer: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [b"position", position.owner.as_ref(), position.position_id.as_ref()],
+        bump = position.bump,
+    )]
+    pub position: Account<'info, Position>,
+
+    #[account(
+        mut,
+        close = proposer,
+        seeds = [
+            b"authorization",
+            position.key().as_ref(),
+            &authorization.nonce.to_le_bytes(),
+        ],
+        bump = authorization.bump,
+    )]
+    pub authorization: Account<'info, TransitionAuthorization>,
+
+    /// CHECK: Token-2022 owner, exact current Claim mint, Position authority and balance are verified manually.
+    #[account(mut)]
+    pub input_token_account: UncheckedAccount<'info>,
+
+    /// CHECK: Token-2022 owner, exact replacement Claim mint, Position authority and balance are verified manually.
     #[account(mut)]
     pub output_token_account: UncheckedAccount<'info>,
 
@@ -1227,6 +1657,19 @@ pub struct AppleAcquireExecuted {
     pub execution_commitment_hash: [u8; 32],
     pub swap_invocation_hash: [u8; 32],
     pub receipt_hash: [u8; 32],
+}
+
+#[event]
+pub struct TransitionAuthorized {
+    pub position: Pubkey,
+    pub authorization: Pubkey,
+    pub evaluator: Pubkey,
+    pub operator: u8,
+    pub target_claim_mint: Pubkey,
+    pub position_version: u64,
+    pub nonce: u64,
+    pub expiry_unix: i64,
+    pub execution_commitment_hash: [u8; 32],
 }
 
 #[event]
@@ -1374,6 +1817,8 @@ pub enum CovenantError {
     InputAmountMismatch,
     #[msg("Actual output is below the proof-bound minimum")]
     MinimumOutputNotMet,
+    #[msg("Authorization PDA is not bound to this Position")]
+    AuthorizationPositionMismatch,
     #[msg("Position has no current Claim to migrate")]
     CurrentClaimMissing,
     #[msg("Position already has a current Claim")]
