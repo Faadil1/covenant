@@ -27,13 +27,13 @@ pub mod covenant_runtime {
         position_id: [u8; 32],
         covenant_hash: [u8; 32],
         evaluator: Pubkey,
-        max_transition_lamports: u64,
+        max_transition_value_usd_micros: u64,
         allowed_operator_mask: u16,
     ) -> Result<()> {
         require!(position_id != [0u8; 32], CovenantError::InvalidPositionId);
         require!(covenant_hash != [0u8; 32], CovenantError::InvalidCovenant);
         require!(evaluator != Pubkey::default(), CovenantError::InvalidEvaluator);
-        require!(max_transition_lamports > 0, CovenantError::InvalidAmount);
+        require!(max_transition_value_usd_micros > 0, CovenantError::InvalidAmount);
         require!(allowed_operator_mask != 0, CovenantError::NoOperatorsAllowed);
 
         let position = &mut ctx.accounts.position;
@@ -43,7 +43,7 @@ pub mod covenant_runtime {
         position.covenant_hash = covenant_hash;
         position.position_version = 0;
         position.nonce = 0;
-        position.max_transition_lamports = max_transition_lamports;
+        position.max_transition_value_usd_micros = max_transition_value_usd_micros;
         position.allowed_operator_mask = allowed_operator_mask;
         position.frozen = false;
         position.last_receipt_hash = [0u8; 32];
@@ -61,7 +61,7 @@ pub mod covenant_runtime {
             owner: position.owner,
             evaluator,
             covenant_hash,
-            max_transition_lamports,
+            max_transition_value_usd_micros,
             allowed_operator_mask,
         });
 
@@ -132,8 +132,14 @@ pub mod covenant_runtime {
             CovenantError::ProofExpired
         );
         require!(
-            proof.amount > 0 && proof.amount <= position.max_transition_lamports,
+            proof.economic_value_usd_micros > 0
+                && proof.economic_value_usd_micros
+                    <= position.max_transition_value_usd_micros,
             CovenantError::AmountOutsideAuthority
+        );
+        require!(
+            proof.settlement_amount_lamports > 0,
+            CovenantError::InvalidAmount
         );
         require_keys_eq!(
             proof.destination,
@@ -173,7 +179,7 @@ pub mod covenant_runtime {
         );
 
         require!(
-            ctx.accounts.vault.lamports() >= proof.amount,
+            ctx.accounts.vault.lamports() >= proof.settlement_amount_lamports,
             CovenantError::InsufficientVaultBalance
         );
 
@@ -193,7 +199,7 @@ pub mod covenant_runtime {
                 },
                 signer_seeds,
             ),
-            proof.amount,
+            proof.settlement_amount_lamports,
         )?;
 
         let consumed_nonce = position.nonce;
@@ -205,7 +211,8 @@ pub mod covenant_runtime {
             proposer: ctx.accounts.proposer.key(),
             evaluator: ctx.accounts.evaluator.key(),
             operator: proof.operator,
-            amount: proof.amount,
+            economic_value_usd_micros: proof.economic_value_usd_micros,
+            settlement_amount_lamports: proof.settlement_amount_lamports,
             destination: proof.destination,
             nonce: consumed_nonce,
             new_position_version: position.position_version,
@@ -314,7 +321,8 @@ pub struct TransitionProofArgs {
     pub nonce: u64,
     pub expiry_unix: i64,
     pub operator: u8,
-    pub amount: u64,
+    pub economic_value_usd_micros: u64,
+    pub settlement_amount_lamports: u64,
     pub destination: Pubkey,
 }
 
@@ -326,7 +334,7 @@ pub struct Position {
     pub covenant_hash: [u8; 32],
     pub position_version: u64,
     pub nonce: u64,
-    pub max_transition_lamports: u64,
+    pub max_transition_value_usd_micros: u64,
     pub allowed_operator_mask: u16,
     pub frozen: bool,
     pub last_receipt_hash: [u8; 32],
@@ -424,7 +432,7 @@ pub struct PositionInitialized {
     pub owner: Pubkey,
     pub evaluator: Pubkey,
     pub covenant_hash: [u8; 32],
-    pub max_transition_lamports: u64,
+    pub max_transition_value_usd_micros: u64,
     pub allowed_operator_mask: u16,
 }
 
@@ -442,7 +450,8 @@ pub struct TransitionExecuted {
     pub proposer: Pubkey,
     pub evaluator: Pubkey,
     pub operator: u8,
-    pub amount: u64,
+    pub economic_value_usd_micros: u64,
+    pub settlement_amount_lamports: u64,
     pub destination: Pubkey,
     pub nonce: u64,
     pub new_position_version: u64,
