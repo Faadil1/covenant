@@ -226,6 +226,57 @@ pub mod covenant_runtime {
         Ok(())
     }
 
+    /// Owner-controlled bootstrap for bringing an already-held Token-2022
+    /// representation under one stable Invariant Position.
+    ///
+    /// This instruction does not move value and is only valid before the
+    /// Position has a current claim. It verifies the exact Position-owned token
+    /// account before recording the representation.
+    pub fn adopt_existing_claim(
+        ctx: Context<AdoptExistingClaim>,
+        claim_mint: Pubkey,
+    ) -> Result<()> {
+        require!(
+            ctx.accounts.position.current_claim_mint == Pubkey::default(),
+            CovenantError::ClaimAlreadyAdopted
+        );
+        require!(
+            claim_mint != Pubkey::default(),
+            CovenantError::TargetClaimMissing
+        );
+
+        let claim_info = ctx.accounts.claim_token_account.to_account_info();
+        require_keys_eq!(
+            *claim_info.owner,
+            TOKEN_2022_PROGRAM,
+            CovenantError::WrongOutputTokenProgram
+        );
+
+        let base = read_token_account_base(&claim_info)?;
+        require_keys_eq!(base.mint, claim_mint, CovenantError::WrongOutputMint);
+        require_keys_eq!(
+            base.authority,
+            ctx.accounts.position.key(),
+            CovenantError::TokenAccountAuthorityMismatch
+        );
+        require!(base.amount > 0, CovenantError::EmptyClaimBalance);
+
+        let position = &mut ctx.accounts.position;
+        position.current_claim_mint = claim_mint;
+        advance_position_state(position)?;
+
+        emit!(ExistingClaimAdopted {
+            position: position.key(),
+            owner: ctx.accounts.owner.key(),
+            claim_mint,
+            claim_amount: base.amount,
+            new_position_version: position.position_version,
+            new_nonce: position.nonce,
+        });
+
+        Ok(())
+    }
+
     pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
         require!(amount > 0, CovenantError::InvalidAmount);
 
@@ -990,6 +1041,22 @@ pub struct InitializePosition<'info> {
 }
 
 #[derive(Accounts)]
+pub struct AdoptExistingClaim<'info> {
+    pub owner: Signer<'info>,
+
+    #[account(
+        mut,
+        has_one = owner,
+        seeds = [b"position", owner.key().as_ref(), position.position_id.as_ref()],
+        bump = position.bump,
+    )]
+    pub position: Account<'info, Position>,
+
+    /// CHECK: Token-2022 owner, mint, Position authority and balance are verified manually.
+    pub claim_token_account: UncheckedAccount<'info>,
+}
+
+#[derive(Accounts)]
 pub struct Deposit<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
@@ -1107,6 +1174,16 @@ pub struct PositionInitialized {
     pub covenant_hash: [u8; 32],
     pub max_transition_value_usd_micros: u64,
     pub allowed_operator_mask: u16,
+}
+
+#[event]
+pub struct ExistingClaimAdopted {
+    pub position: Pubkey,
+    pub owner: Pubkey,
+    pub claim_mint: Pubkey,
+    pub claim_amount: u64,
+    pub new_position_version: u64,
+    pub new_nonce: u64,
 }
 
 #[event]
@@ -1299,6 +1376,10 @@ pub enum CovenantError {
     MinimumOutputNotMet,
     #[msg("Position has no current Claim to migrate")]
     CurrentClaimMissing,
+    #[msg("Position already has a current Claim")]
+    ClaimAlreadyAdopted,
+    #[msg("Adopted Claim token account has zero balance")]
+    EmptyClaimBalance,
     #[msg("Migration source mint is not the Position's current Claim")]
     SourceClaimMismatch,
     #[msg("Migration target must differ from the current Claim")]
