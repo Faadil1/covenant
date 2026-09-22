@@ -230,7 +230,7 @@ Advance from “technical proof” to “company candidate” only after:
 - at least 3 can identify a current workflow, incident, manual control or cost tied to it;
 - at least 2 agree to a design-partner workflow or provide real non-sensitive examples/data;
 - at least 1 is willing to discuss a paid pilot or procurement path;
-- the Treasury portability test reuses the COVENANT core with adapters/rules rather than architecture replacement.
+- the Treasury portability test reuses the COVENANT core with adapters/rules rather than architecture replacement. **Status 2026-09-22: semantic portability PASS on USTB / TBILL / USDY using the unchanged evaluator and Transition Proof core (CI run 35758958490).**
 
 ## Current verdict
 
@@ -251,6 +251,9 @@ Advance from “technical proof” to “company candidate” only after:
 
 ### Native Advantage
 **Supported if kept narrow.** Onchain exactness, atomic settlement, state versioning, proof-bound authority and receipts make the concept concrete; blockchain itself is not the product identity.
+
+### Cross-Domain Portability
+**Semantically demonstrated.** Replacing Apple equity exposure with a short-duration Treasury/cash-equivalent mandate required new Claim Passports and Covenant rules, but no change to the core evaluator or Transition Proof machinery. Customer/workflow validation remains open.
 
 ## Non-regression rule
 
