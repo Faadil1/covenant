@@ -8,6 +8,60 @@ function sha256Bytes(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
+const BASE58_ALPHABET =
+  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+function base58PubkeyBytes(value) {
+  assertString(value, "pubkey");
+  let number = 0n;
+  for (const char of value) {
+    const digit = BASE58_ALPHABET.indexOf(char);
+    if (digit < 0) throw new Error("Invalid base58 public key: " + value);
+    number = number * 58n + BigInt(digit);
+  }
+
+  const body = [];
+  while (number > 0n) {
+    body.push(Number(number & 0xffn));
+    number >>= 8n;
+  }
+  body.reverse();
+
+  let leadingZeros = 0;
+  while (leadingZeros < value.length && value[leadingZeros] === "1") {
+    leadingZeros += 1;
+  }
+
+  const bytes = Buffer.concat([
+    Buffer.alloc(leadingZeros),
+    Buffer.from(body),
+  ]);
+  if (bytes.length !== 32) {
+    throw new Error(
+      "Expected a 32-byte Solana public key, got " + bytes.length + " bytes",
+    );
+  }
+  return bytes;
+}
+
+export function computeSwapInvocationHash(ix) {
+  const hash = createHash("sha256");
+  hash.update(base58PubkeyBytes(ix.programId));
+
+  for (const account of ix.accounts) {
+    hash.update(base58PubkeyBytes(account.pubkey));
+    hash.update(
+      Buffer.from([
+        account.isSigner ? 1 : 0,
+        account.isWritable ? 1 : 0,
+      ]),
+    );
+  }
+
+  hash.update(Buffer.from(ix.data, "base64"));
+  return hash.digest("hex");
+}
+
 function assertString(value, field) {
   if (typeof value !== "string" || value.length === 0) {
     throw new Error("Missing/invalid Jupiter build field: " + field);
@@ -177,6 +231,7 @@ export function buildJupiterExecutionCommitment({
     priceImpactPct:
       build.priceImpactPct == null ? null : String(build.priceImpactPct),
     swapProgramId: swapInstruction.programId,
+    swapInvocationHash: computeSwapInvocationHash(build.swapInstruction),
     swapInstruction,
     setupInstructionsHash: sha256Canonical(setupInstructions),
     computeBudgetInstructionsHash: sha256Canonical(computeBudgetInstructions),
