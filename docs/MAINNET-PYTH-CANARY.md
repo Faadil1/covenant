@@ -91,7 +91,37 @@ This script **never signs or submits**. It verifies:
 
 Only then may it print `READY_FOR_EXPLICIT_SIGNING`.
 
+### Gate C0 — MAINNET PROGRAM + POSITION SETUP
+
+The real COVENANT program must first exist on mainnet. The setup script refuses any non-mainnet RPC, requires the program account to be executable, creates one fixed canary Position, creates Position-owned USDC/AAPLx token accounts, and funds the Position with only the configured canary amount.
+
+It is locked unless the operator explicitly sets:
+
+```bash
+COVENANT_MAINNET_SETUP=I_UNDERSTAND_THIS_MOVES_REAL_FUNDS \
+SOLANA_KEYPAIR_PATH=~/.config/solana/id.json \
+npm run setup:mainnet-canary
+```
+
+The script prints the resulting Position, exact token accounts and Explorer-verifiable setup transaction. The default funding is $5 USDC and the script hard-refuses more than $20.
+
+If the program is not yet deployed at the configured `COVENANT_PROGRAM_ID`, setup stops before any account creation or USDC transfer. Deployment must be performed locally with the operator's Solana tooling/key material; no deployment key is generated or stored in CI.
+
 ### Gate C — MAINNET CANARY EXECUTED
+
+After Gate A/B/C0 are green, execution remains locked until an explicit local opt-in:
+
+```bash
+COVENANT_MAINNET_EXECUTE=I_UNDERSTAND_THIS_EXECUTES_A_REAL_MAINNET_TRADE \
+PYTH_API_KEY=... \
+JUPITER_API_KEY=... \
+COVENANT_MAINNET_POSITION=... \
+COVENANT_MAINNET_INPUT_TOKEN_ACCOUNT=... \
+COVENANT_MAINNET_DESTINATION_TOKEN_ACCOUNT=... \
+npm run execute:mainnet-canary
+```
+
+The execution script fetches fresh Pyth + Jupiter evidence again immediately before signing; stale evidence aborts and requires a new proposal.
 
 This gate is intentionally not satisfied by code or CI.
 
