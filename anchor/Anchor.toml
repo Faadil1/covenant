@@ -1,0 +1,18 @@
+[toolchain]
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+covenant_runtime = "CEKUNCY7VYeHdwyyWCJTKQkGgMzPeTsx2uwBoQ98wm3z"
+
+[programs.devnet]
+covenant_runtime = "CEKUNCY7VYeHdwyyWCJTKQkGgMzPeTsx2uwBoQ98wm3z"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "cargo test"
