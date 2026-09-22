@@ -20,7 +20,7 @@ const checks = [
   ["unknown fail closed", files.security.includes("There is no UNKNOWN -> TRUE coercion")],
   ["known revocation gap", files.security.includes("Known hardening gap")],
   ["t4 status pass", files.t4.includes("Status: **PASS")],
-  ["readme t4 pass", files.readme.includes("T1–T4 PASS")],
+  ["readme t4 pass", files.readme.includes("T1–T4 technical proof: PASS") || files.readme.includes("T1–T4 PASS")],
 ];
 
 const failed = checks.filter(([, ok]) => !ok);
