@@ -16,6 +16,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: covenant-technical-proof-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   t1-claim-graph:
     runs-on: ubuntu-latest
