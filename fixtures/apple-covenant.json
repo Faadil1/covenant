@@ -1,0 +1,38 @@
+{
+  "id": "covenant:apple:42",
+  "version": 1,
+  "underlyingIntent": "APPLE economic exposure",
+  "rules": [
+    {
+      "id": "claim.collateral_lending_requires_holder_opt_in",
+      "evidencePath": "passport.properties.collateralLendingRequiresHolderOptIn",
+      "operator": "EQUALS",
+      "expected": true,
+      "hard": true,
+      "minEvidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "onUnknown": "REFUSE",
+      "reasonCode": "REQUIRED_CLAIM_PROPERTY_FAILED"
+    },
+    {
+      "id": "market.max_slippage_bps",
+      "evidencePath": "market.slippageBps",
+      "operator": "LTE",
+      "expected": 50,
+      "hard": true,
+      "minEvidenceClass": "LIVE_MARKET_OR_ORACLE",
+      "maxAgeSeconds": 30,
+      "onUnknown": "REFUSE",
+      "reasonCode": "SLIPPAGE_EXCEEDED"
+    },
+    {
+      "id": "portfolio.max_concentration_pct",
+      "evidencePath": "portfolioPostState.concentrationPct",
+      "operator": "LTE",
+      "expected": 15,
+      "hard": true,
+      "minEvidenceClass": "ONCHAIN_DETERMINISTIC",
+      "onUnknown": "REFUSE",
+      "reasonCode": "PORTFOLIO_CONCENTRATION_EXCEEDED"
+    }
+  ]
+}
