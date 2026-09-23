@@ -44,11 +44,30 @@ test("ALLOW: exact claim passes hard claim, market, portfolio and authority rule
   assert.ok(proof.ruleResults.every((r) => r.outcome === Decision.ALLOW));
 });
 
-test("REFUSE: UNKNOWN authoritative claim property cannot silently pass", () => {
+test("REFUSE: active permanent delegate violates the strict owner-control rule", () => {
   const proof = evaluateTransition(baseInput(aaplx));
   assert.equal(proof.decision, Decision.REFUSE);
   const result = proof.ruleResults.find(
-    (r) => r.ruleId === "claim.collateral_lending_requires_holder_opt_in",
+    (r) => r.ruleId === "claim.permanent_delegate_active",
+  );
+  assert.equal(result.actual, true);
+  assert.equal(result.expected, false);
+  assert.equal(result.reasonCode, "PERMANENT_DELEGATE_NOT_ALLOWED");
+});
+
+test("REFUSE: unknown permanent-delegate state cannot silently pass", () => {
+  const unknown = structuredClone(aaplx);
+  unknown.properties.permanentDelegateActive = {
+    value: null,
+    status: "UNKNOWN",
+    evidenceClass: "UNKNOWN",
+    observedAt: null,
+    source: "synthetic unknown test fixture"
+  };
+  const proof = evaluateTransition(baseInput(unknown));
+  assert.equal(proof.decision, Decision.REFUSE);
+  const result = proof.ruleResults.find(
+    (r) => r.ruleId === "claim.permanent_delegate_active",
   );
   assert.equal(result.reasonCode, "EVIDENCE_UNKNOWN");
 });
