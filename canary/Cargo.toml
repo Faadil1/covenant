@@ -1,0 +1,17 @@
+[package]
+name = "covenant-canary"
+version = "0.1.0"
+edition = "2021"
+description = "Minimal public Solana canary for COVENANT bounded authorization"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "covenant_canary"
+
+[dependencies]
+solana-program = "2.2.0"
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1

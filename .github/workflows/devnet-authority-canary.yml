@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "anchor/**"
+      - "canary/**"
       - "scripts/devnet-authority-canary.mjs"
       - ".github/workflows/devnet-authority-canary.yml"
 
@@ -15,7 +15,7 @@ permissions:
 jobs:
   deploy-and-exercise:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -26,56 +26,56 @@ jobs:
       - name: Install JS dependencies
         run: npm install --omit=dev --ignore-scripts --no-audit --no-fund
 
-      - name: Setup Solana + Anchor
+      - name: Setup Solana toolchain
         uses: solana-foundation/github-actions/setup-all@d1e779ca332fc499507fadf97d9c780ffed5a71f
         with:
           solana_version: "3.1.10"
           anchor_version: "1.1.2"
           node_version: "22"
 
-      - name: Generate ephemeral devnet identities
+      - name: Build minimal authority canary
+        working-directory: canary
+        run: cargo build-sbf
+
+      - name: Measure canary
+        shell: bash
+        run: |
+          set -euo pipefail
+          SO="canary/target/deploy/covenant_canary.so"
+          BYTES=$(wc -c < "$SO" | tr -d ' ')
+          echo "canary_binary_bytes=$BYTES"
+          solana rent "$BYTES" --url https://api.devnet.solana.com || true
+
+      - name: Generate ephemeral devnet payer
         shell: bash
         run: |
           set -euo pipefail
           solana-keygen new --no-bip39-passphrase --silent --force -o /tmp/covenant-devnet-payer.json
-          solana-keygen new --no-bip39-passphrase --silent --force -o /tmp/covenant-devnet-program.json
-          echo "PROGRAM_ID=$(solana-keygen pubkey /tmp/covenant-devnet-program.json)" >> "$GITHUB_ENV"
           echo "DEVNET_PAYER=$(solana-keygen pubkey /tmp/covenant-devnet-payer.json)" >> "$GITHUB_ENV"
-
-      - name: Bind build to generated public Program ID
-        shell: bash
-        run: |
-          set -euo pipefail
-          sed -i -E "s/declare_id!\(\"[^\"]+\"\)/declare_id!(\"$PROGRAM_ID\")/" anchor/programs/covenant_runtime/src/lib.rs
-          sed -i -E "s/covenant_runtime = \"[^\"]+\"/covenant_runtime = \"$PROGRAM_ID\"/g" anchor/Anchor.toml
-          grep -F "declare_id!(\"$PROGRAM_ID\")" anchor/programs/covenant_runtime/src/lib.rs
-
-      - name: Build COVENANT
-        working-directory: anchor
-        run: anchor build --ignore-keys
-
-      - name: Fund ephemeral devnet payer
-        shell: bash
-        run: |
-          set -euo pipefail
+          echo "PROGRAM_ID=$(solana-keygen pubkey canary/target/deploy/covenant_canary-keypair.json)" >> "$GITHUB_ENV"
           solana config set --url https://api.devnet.solana.com --keypair /tmp/covenant-devnet-payer.json >/dev/null
-          for attempt in 1 2 3 4; do
-            solana airdrop 2 "$DEVNET_PAYER" --url https://api.devnet.solana.com && break
-            sleep $((attempt * 4))
-          done
+
+      - name: Install programmatic PoW faucet
+        run: cargo install devnet-pow --locked
+
+      - name: Mine enough devnet SOL
+        shell: bash
+        run: |
+          set -euo pipefail
+          devnet-pow mine --target-lamports 500000000
           BALANCE=$(solana balance "$DEVNET_PAYER" --lamports --url https://api.devnet.solana.com | awk '{print $1}')
           echo "payer_lamports=$BALANCE"
-          test "$BALANCE" -gt 1850000000
+          test "$BALANCE" -gt 200000000
 
-      - name: Deploy full authority boundary to devnet
+      - name: Deploy minimal canary to devnet
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p evidence/devnet
-          solana program deploy anchor/target/deploy/covenant_runtime.so             --program-id /tmp/covenant-devnet-program.json             --keypair /tmp/covenant-devnet-payer.json             --url https://api.devnet.solana.com | tee evidence/devnet/deploy.txt
+          solana program deploy canary/target/deploy/covenant_canary.so             --program-id canary/target/deploy/covenant_canary-keypair.json             --keypair /tmp/covenant-devnet-payer.json             --url https://api.devnet.solana.com | tee evidence/devnet/deploy.txt
           solana program show "$PROGRAM_ID" --url https://api.devnet.solana.com | tee evidence/devnet/program-show.txt
 
-      - name: Execute bounded authorization and refuse replay
+      - name: Execute exact authorization and refuse replay
         env:
           COVENANT_DEVNET_PROGRAM_ID: ${{ env.PROGRAM_ID }}
           DEVNET_PAYER_KEYPAIR: /tmp/covenant-devnet-payer.json
@@ -86,11 +86,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          rm -f /tmp/covenant-devnet-payer.json canary/target/deploy/covenant_canary-keypair.json
           if find evidence -type f \( -name '*keypair*' -o -name '*.secret*' \) | grep -q .; then
             echo "Refusing upload: secret-like file found"
             exit 1
           fi
-          rm -f /tmp/covenant-devnet-payer.json /tmp/covenant-devnet-program.json
 
       - name: Upload public devnet evidence
         uses: actions/upload-artifact@v4

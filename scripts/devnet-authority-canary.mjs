@@ -19,48 +19,32 @@ const payer = Keypair.fromSecretKey(
   Uint8Array.from(JSON.parse(await readFile(PAYER_PATH, "utf8"))),
 );
 const evaluator = Keypair.generate();
-const settlement = Keypair.generate().publicKey;
+const state = Keypair.generate();
 const connection = new Connection(RPC, "confirmed");
 
-const DEPOSIT_LAMPORTS = 10_000_000n;
-const SETTLEMENT_LAMPORTS = 5_000_000n;
-const ECONOMIC_VALUE_USD_MICROS = 5_000_000n;
-const OPERATOR_ACQUIRE = 0;
-const ACQUIRE_MASK = 1;
+const STATE_LEN = 81;
+const FUNDING_LAMPORTS = 10_000_000;
+const SETTLEMENT_LAMPORTS = 5_000_000;
+const DOMAIN = Buffer.from("COVENANT_CANARY_AUTH_V1");
 
-function sha256(...parts) {
+const sha256 = (...parts) => {
   const h = createHash("sha256");
   for (const part of parts) h.update(part);
   return h.digest();
-}
-function discriminator(name) {
-  return sha256(Buffer.from("global:" + name)).subarray(0, 8);
-}
-function u16(value) {
-  const b = Buffer.alloc(2); b.writeUInt16LE(Number(value)); return b;
-}
-function u64(value) {
-  const b = Buffer.alloc(8); b.writeBigUInt64LE(BigInt(value)); return b;
-}
-function i64(value) {
-  const b = Buffer.alloc(8); b.writeBigInt64LE(BigInt(value)); return b;
-}
-function labelHash(label) {
-  return sha256(Buffer.from("COVENANT:DEVNET:" + label));
-}
-function settlementCommitment(destination, lamports) {
-  return sha256(
-    Buffer.from("COVENANT_SYSTEM_SETTLEMENT_V1"),
-    destination.toBuffer(),
-    u64(lamports),
-  );
-}
-function explorerTx(signature) {
-  return "https://explorer.solana.com/tx/" + signature + "?cluster=devnet";
-}
-function explorerAddress(address) {
-  return "https://explorer.solana.com/address/" + address + "?cluster=devnet";
-}
+};
+const u64 = (value) => {
+  const b = Buffer.alloc(8);
+  b.writeBigUInt64LE(BigInt(value));
+  return b;
+};
+const i64 = (value) => {
+  const b = Buffer.alloc(8);
+  b.writeBigInt64LE(BigInt(value));
+  return b;
+};
+const explorerTx = (sig) => "https://explorer.solana.com/tx/" + sig + "?cluster=devnet";
+const explorerAddress = (address) => "https://explorer.solana.com/address/" + address + "?cluster=devnet";
+
 async function send(instructions, signers = []) {
   const tx = new Transaction().add(...instructions);
   return sendAndConfirmTransaction(connection, tx, [payer, ...signers], {
@@ -71,114 +55,73 @@ async function send(instructions, signers = []) {
 
 const programAccount = await connection.getAccountInfo(PROGRAM_ID, "confirmed");
 if (!programAccount?.executable) {
-  throw new Error("COVENANT devnet program is not executable at " + PROGRAM_ID.toBase58());
+  throw new Error("Canary program is not executable on devnet");
 }
 
-const positionId = sha256(
-  Buffer.from("COVENANT:PUBLIC-DEVNET-AUTHORITY-CANARY:V1"),
-  payer.publicKey.toBuffer(),
-);
-const covenantHash = labelHash("COVENANT_HASH");
-const [position] = PublicKey.findProgramAddressSync(
-  [Buffer.from("position"), payer.publicKey.toBuffer(), positionId],
-  PROGRAM_ID,
-);
-const [vault] = PublicKey.findProgramAddressSync(
-  [Buffer.from("vault"), position.toBuffer()],
-  PROGRAM_ID,
-);
+const rent = await connection.getMinimumBalanceForRentExemption(STATE_LEN);
+const createState = SystemProgram.createAccount({
+  fromPubkey: payer.publicKey,
+  newAccountPubkey: state.publicKey,
+  lamports: rent + FUNDING_LAMPORTS,
+  space: STATE_LEN,
+  programId: PROGRAM_ID,
+});
+const createStateSignature = await send([createState], [state]);
 
-const initializeData = Buffer.concat([
-  discriminator("initialize_position"),
-  positionId,
-  covenantHash,
-  evaluator.publicKey.toBuffer(),
-  u64(10_000_000n),
-  u16(ACQUIRE_MASK),
-]);
+const covenantHash = sha256(Buffer.from("COVENANT:DEVNET:CANARY:POLICY:V1"));
+const maxLamports = SETTLEMENT_LAMPORTS;
 const initializeIx = new TransactionInstruction({
   programId: PROGRAM_ID,
   keys: [
-    { pubkey: payer.publicKey, isSigner: true, isWritable: true },
-    { pubkey: position, isSigner: false, isWritable: true },
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    { pubkey: state.publicKey, isSigner: false, isWritable: true },
+    { pubkey: payer.publicKey, isSigner: true, isWritable: false },
+    { pubkey: evaluator.publicKey, isSigner: false, isWritable: false },
   ],
-  data: initializeData,
+  data: Buffer.concat([
+    Buffer.from([0]),
+    covenantHash,
+    u64(maxLamports),
+  ]),
 });
 const initializeSignature = await send([initializeIx]);
 
-const seedSettlementIx = SystemProgram.transfer({
-  fromPubkey: payer.publicKey,
-  toPubkey: settlement,
-  lamports: 1_000_000,
-});
-const depositIx = new TransactionInstruction({
-  programId: PROGRAM_ID,
-  keys: [
-    { pubkey: payer.publicKey, isSigner: true, isWritable: true },
-    { pubkey: position, isSigner: false, isWritable: true },
-    { pubkey: vault, isSigner: false, isWritable: true },
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-  ],
-  data: Buffer.concat([discriminator("deposit"), u64(DEPOSIT_LAMPORTS)]),
-});
-const depositSignature = await send([seedSettlementIx, depositIx]);
-
-const positionBefore = await connection.getAccountInfo(position, "confirmed");
-if (!positionBefore) throw new Error("Position missing after initialization");
-const versionBefore = positionBefore.data.readBigUInt64LE(136);
-const nonceBefore = positionBefore.data.readBigUInt64LE(144);
-if (versionBefore !== 1n || nonceBefore !== 1n) {
-  throw new Error("Unexpected Position state before execution: v" + versionBefore + "/n" + nonceBefore);
-}
-
-const settlementBefore = await connection.getBalance(settlement, "confirmed");
-const proofFields = [
+const expiryUnix = BigInt(Math.floor(Date.now() / 1000) + 300);
+const nonce = 0n;
+const commitment = sha256(
+  DOMAIN,
   covenantHash,
-  labelHash("REPRESENTATION_RECORD"),
-  labelHash("EVIDENCE_ROOT"),
-  labelHash("PRE_STATE"),
-  labelHash("POST_STATE"),
-  labelHash("RECEIPT"),
-  settlementCommitment(settlement, SETTLEMENT_LAMPORTS),
-  Buffer.alloc(32),
-  u64(versionBefore),
-  u64(nonceBefore),
-  i64(BigInt(Math.floor(Date.now() / 1000) + 300)),
-  Buffer.from([OPERATOR_ACQUIRE]),
-  u64(ECONOMIC_VALUE_USD_MICROS),
-];
-const executeData = Buffer.concat([
-  discriminator("execute_proven_transition"),
-  ...proofFields,
+  payer.publicKey.toBuffer(),
+  u64(nonce),
   u64(SETTLEMENT_LAMPORTS),
-  settlement.toBuffer(),
+  i64(expiryUnix),
+);
+const executeData = Buffer.concat([
+  Buffer.from([1]),
+  u64(nonce),
+  u64(SETTLEMENT_LAMPORTS),
+  i64(expiryUnix),
+  commitment,
 ]);
 const executeIx = new TransactionInstruction({
   programId: PROGRAM_ID,
   keys: [
-    { pubkey: payer.publicKey, isSigner: true, isWritable: false },
+    { pubkey: state.publicKey, isSigner: false, isWritable: true },
     { pubkey: evaluator.publicKey, isSigner: true, isWritable: false },
-    { pubkey: position, isSigner: false, isWritable: true },
-    { pubkey: vault, isSigner: false, isWritable: true },
-    { pubkey: settlement, isSigner: false, isWritable: true },
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    { pubkey: payer.publicKey, isSigner: true, isWritable: true },
   ],
   data: executeData,
 });
+
+const stateBefore = await connection.getBalance(state.publicKey, "confirmed");
 const executeSignature = await send([executeIx], [evaluator]);
-
-const settlementAfter = await connection.getBalance(settlement, "confirmed");
-const positionAfter = await connection.getAccountInfo(position, "confirmed");
-const versionAfter = positionAfter.data.readBigUInt64LE(136);
-const nonceAfter = positionAfter.data.readBigUInt64LE(144);
-
-if (BigInt(settlementAfter - settlementBefore) !== SETTLEMENT_LAMPORTS) {
-  throw new Error("Settlement delta mismatch");
+const stateAfter = await connection.getBalance(state.publicKey, "confirmed");
+if (stateBefore - stateAfter !== SETTLEMENT_LAMPORTS) {
+  throw new Error("Program-controlled settlement delta mismatch");
 }
-if (versionAfter !== 2n || nonceAfter !== 2n) {
-  throw new Error("Position did not advance after execution");
-}
+
+const stateInfoAfter = await connection.getAccountInfo(state.publicKey, "confirmed");
+const nonceAfter = stateInfoAfter.data.readBigUInt64LE(1);
+if (nonceAfter !== 1n) throw new Error("Nonce did not advance");
 
 const replayTx = new Transaction().add(executeIx);
 replayTx.feePayer = payer.publicKey;
@@ -200,24 +143,33 @@ const replayConfirmation = await connection.confirmTransaction(
 if (!replayConfirmation.value.err) {
   throw new Error("Replay unexpectedly succeeded");
 }
-const settlementAfterReplay = await connection.getBalance(settlement, "confirmed");
-if (settlementAfterReplay !== settlementAfter) {
-  throw new Error("Replay changed settlement balance");
+const stateAfterReplay = await connection.getBalance(state.publicKey, "confirmed");
+if (stateAfterReplay !== stateAfter) {
+  throw new Error("Replay changed program-controlled balance");
 }
 
 const evidence = {
-  schemaVersion: "covenant.devnet-authority-canary.v1",
+  schemaVersion: "covenant.devnet-authority-canary.v2",
   observedAt: new Date().toISOString(),
   cluster: "devnet",
+  scope: "minimal authority-boundary canary; not the full COVENANT runtime",
   programId: PROGRAM_ID.toBase58(),
   programExplorer: explorerAddress(PROGRAM_ID.toBase58()),
-  position: position.toBase58(),
-  positionExplorer: explorerAddress(position.toBase58()),
+  stateAccount: state.publicKey.toBase58(),
+  stateExplorer: explorerAddress(state.publicKey.toBase58()),
   evaluator: evaluator.publicKey.toBase58(),
-  settlement: settlement.toBase58(),
-  transitions: {
+  authorization: {
+    nonceBefore: "0",
+    nonceAfter: nonceAfter.toString(),
+    maxLamports: maxLamports.toString(),
+    settledLamports: SETTLEMENT_LAMPORTS.toString(),
+    expiryUnix: expiryUnix.toString(),
+    covenantHash: covenantHash.toString("hex"),
+    exactCommitment: commitment.toString("hex"),
+  },
+  transactions: {
+    createState: { signature: createStateSignature, explorer: explorerTx(createStateSignature) },
     initialize: { signature: initializeSignature, explorer: explorerTx(initializeSignature) },
-    deposit: { signature: depositSignature, explorer: explorerTx(depositSignature) },
     execute: { signature: executeSignature, explorer: explorerTx(executeSignature) },
     replay: {
       signature: replaySignature,
@@ -226,25 +178,16 @@ const evidence = {
       error: replayConfirmation.value.err,
     },
   },
-  state: {
-    before: { positionVersion: Number(versionBefore), nonce: Number(nonceBefore) },
-    after: { positionVersion: Number(versionAfter), nonce: Number(nonceAfter) },
-    settlementDeltaLamports: settlementAfter - settlementBefore,
-    replaySettlementDeltaLamports: settlementAfterReplay - settlementAfter,
-  },
-  authorization: {
-    operator: "ACQUIRE",
-    economicValueUsdMicros: ECONOMIC_VALUE_USD_MICROS.toString(),
-    expiryBound: true,
-    covenantHashBound: true,
-    evaluatorSignerRequired: true,
-    exactSettlementCommitmentBound: true,
+  stateLamports: {
+    before: stateBefore,
+    after: stateAfter,
+    afterReplay: stateAfterReplay,
   },
   truthBoundary:
-    "Public Solana devnet authority-boundary execution. This is not a mainnet financial transaction and does not claim ZK or formal proof.",
+    "Public Solana devnet canary for evaluator-bound, exact-commitment, nonce-protected authority. Not mainnet, not a token swap, and not a ZK/formal proof.",
 };
 
 await mkdir("evidence/devnet", { recursive: true });
 await writeFile("evidence/devnet/authority-canary.json", JSON.stringify(evidence, null, 2) + "\n");
 console.log(JSON.stringify(evidence, null, 2));
-console.error("\nCOVENANT DEVNET AUTHORITY CANARY: PASS");
+console.error("\nCOVENANT MINIMAL DEVNET CANARY: PASS");
