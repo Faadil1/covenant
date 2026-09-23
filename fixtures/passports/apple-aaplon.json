@@ -41,6 +41,14 @@
       "evidenceClass": "ONCHAIN_DETERMINISTIC",
       "observedAt": "2026-09-23T15:54:35.225Z",
       "source": "Solana mainnet RPC mint inspection; workflow run 35884969091"
+    },
+    "directIssuerRedemptionMinimumUsd": {
+      "value": 1,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-23T17:35:00.000Z",
+      "source": "https://docs.ondo.finance/ondo-stocks/investing-and-redeeming",
+      "note": "Ondo official docs state the minimum investment/redemption amount is $1.00."
     }
   },
   "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
