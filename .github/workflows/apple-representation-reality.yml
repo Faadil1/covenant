@@ -1,0 +1,31 @@
+name: covenant-apple-representation-reality
+
+on:
+  push:
+    paths:
+      - "scripts/apple-token2022-reality.mjs"
+      - ".github/workflows/apple-representation-reality.yml"
+  workflow_dispatch:
+
+jobs:
+  inspect-apple-representations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Inspect AAPLx and AAPLon Token-2022 state on mainnet
+        env:
+          SOLANA_RPC_URL: https://api.mainnet-beta.solana.com
+        run: node scripts/apple-token2022-reality.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: covenant-apple-representation-reality
+          path: evidence/apple-representation-reality/runtime-*.json
+          if-no-files-found: warn
+          retention-days: 14
