@@ -145,6 +145,49 @@ Primary sources:
 - https://ondo.finance/blog/ondo-partners-with-broadridge-for-tokenized-stocks-voting-capabilities
 - https://app.ondo.finance/assets/aaplon
 
+## Second objective difference: direct issuer redemption minimum
+
+Official issuer documentation now provides a second two-sided Apple difference that is easier for a non-technical user to understand.
+
+### AAPLx
+
+xStocks' official FAQ states that direct issuer issuance/redemption has a **$5,000 minimum**.
+
+Bound property:
+
+`directIssuerRedemptionMinimumUsd = 5000`
+
+Primary source:
+
+- https://docs.xstocks.fi/docs/frequently-asked-questions
+
+### AAPLon
+
+Ondo Stocks' official investing/redemption documentation states that the minimum investment/redemption amount is **$1.00**.
+
+Bound property:
+
+`directIssuerRedemptionMinimumUsd = 1`
+
+Primary source:
+
+- https://docs.ondo.finance/ondo-stocks/investing-and-redeeming
+
+This supports a user-selected rule such as:
+
+> **If I need direct issuer redemption, the issuer minimum must be $100 or less.**
+
+Under that rule:
+
+```
+AAPLx   -> $5,000 minimum -> REFUSE
+AAPLon  -> $1 minimum     -> pass this rule
+```
+
+This is an issuer-term comparison, not an eligibility claim. Direct redemption still requires onboarding and current jurisdiction eligibility.
+
+See `docs/APPLE-SMALL-HOLDER-REDEMPTION-PROOF.md`.
+
 ## Historical lending-consent research
 
 The earlier repair demo used a holder-consent-before-collateral-lending rule:
@@ -179,12 +222,12 @@ UNKNOWN    -> REFUSE
 ELIGIBLE   -> continue evaluation
 ```
 
-Current Canada/Quebec evidence fixtures intentionally demonstrate:
+Current Canada/Quebec evidence fixtures now demonstrate:
 
-- AAPLx acquisition: VERIFIED false under the bound current xStocks jurisdiction evidence;
-- AAPLon acquisition: UNKNOWN until exact Canada/Quebec evidence is bound.
+- AAPLx acquisition: VERIFIED false under current official xStocks jurisdiction evidence;
+- AAPLon acquisition: VERIFIED false under Ondo's official eligibility documentation, which explicitly lists Canada as prohibited for subscribing for, acquiring, or redeeming Ondo Stocks.
 
-The product must never infer AAPLon eligibility from generic global or "outside the U.S." language.
+This means the public Apple comparison must not be presented as an executable switch for a Canadian user. Representation fit and user eligibility are separate gates.
 
 ## Market and execution remain separate gates
 
