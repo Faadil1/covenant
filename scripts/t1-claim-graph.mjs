@@ -79,7 +79,28 @@ function evidence({ source, evidenceClass, observedAt, payload, status = "VERIFI
 
 async function resolveXstocksAapl(observedAt) {
   const url = `${XSTOCKS_API}/public/assets/AAPLx`;
-  const { body } = await fetchJson(url);
+  let response;
+  let lastError;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      response = await fetchJson(url, {}, 20_000);
+      break;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 750));
+      }
+    }
+  }
+
+  if (!response) {
+    throw new Error(
+      "Official xStocks API unavailable after 3 attempts: " + String(lastError),
+    );
+  }
+
+  const { body } = response;
   const deployments = body.deployments || body.tokenDeployments || [];
   const solana = deployments.find((d) => d.network === "Solana");
 
