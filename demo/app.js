@@ -1,6 +1,7 @@
 import {
   CLAIMS,
   CURRENT_USER_PROFILE,
+  LATEST_REPAIR_REVALIDATION,
   EVIDENCE_PROFILES,
   loadState,
   saveState,
@@ -292,6 +293,7 @@ function pageClaims(){
   const matrix=document.querySelector("#claimMatrix");
   const profile=document.querySelector("#comparisonProfile");
   const ruleSummary=document.querySelector("#comparisonRules");
+  const latestRepair=document.querySelector("#latestRepairCheck");
 
   const render=()=>{
     if(profile) profile.textContent=CURRENT_USER_PROFILE.label;
@@ -303,6 +305,17 @@ function pageClaims(){
       ruleSummary.textContent=rules.join(" · ");
     }
     if(matrix) matrix.innerHTML=claimMatrixHtml();
+    if(latestRepair){
+      const route=LATEST_REPAIR_REVALIDATION;
+      latestRepair.innerHTML=
+        '<div><span class="eyebrow">LATEST RECORDED REPAIR CHECK</span><strong>'+
+        route.sourceClaim+' → '+route.targetClaim+
+        '</strong><small>Run '+route.run+' · point-in-time live route evidence</small></div>'+
+        '<div><span class="eyebrow">ROUTE IMPACT</span><strong>'+
+        route.routeImpactBps.toFixed(2)+' bps</strong><small>Owner ceiling '+route.ceilingBps+' bps</small></div>'+
+        '<div><span class="eyebrow">COVENANT OUTCOME</span><strong class="repair-outcome">'+
+        route.outcome.replaceAll("_"," ")+'</strong><small>'+route.note+'</small></div>';
+    }
     root.innerHTML=Object.values(CLAIMS).map(claimCardHtml).join("");
     root.querySelectorAll("[data-adopt]").forEach(button=>button.addEventListener("click",()=>{
       const symbol=button.dataset.adopt;state.position.currentClaim=symbol;
