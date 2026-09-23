@@ -24,6 +24,7 @@ const checks=[
  ["objective Apple control rule",state.includes("permanentDelegateActive")&&app.includes("claim.permanent_delegate")&&!pages.runtime.includes("CONSENT UNKNOWN")],
  ["objective Apple issuer terms",state.includes("directIssuerRedemptionMinimumUsd: 5000")&&state.includes("directIssuerRedemptionMinimumUsd: 1")&&app.includes("claim.direct_issuer_redemption_minimum_usd")&&app.includes("Direct issuer redemption minimum")],
  ["profile-aware eligibility matrix",state.includes("CURRENT_USER_PROFILE")&&state.includes('"CA-QC"')&&app.includes("NOT USABLE HERE")&&pages.claims.includes("Eligibility is checked separately from representation fit")],
+ ["latest recorded repair matrix evidence",state.includes("LATEST_REPAIR_REVALIDATION")&&state.includes("35886284296")&&app.includes("LATEST RECORDED REPAIR CHECK")&&pages.claims.includes('id="latestRepairCheck"')],
  ["no false Canada switch claim",pages.claims.includes("both representations currently fail the eligibility gate")&&!pages.claims.includes("AAPLon is available to Canadians")],
  ["truth boundary",pages.proofs.includes("no full COVENANT mainnet deployment")||pages.proofs.includes("no full COVENANT mainnet deployment".toUpperCase())||pages.proofs.includes("no full COVENANT mainnet deployment".toLowerCase())],
  ["responsive CSS",css.includes("@media(max-width:560px)")],
