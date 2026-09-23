@@ -22,6 +22,7 @@ const ruleLabels = {
   "claim.token_program": "Supported Solana token standard",
   "claim.permanent_delegate": "No permanent token-moving delegate",
   "claim.direct_issuer_redemption_minimum_usd": "Direct issuer redemption works for small positions",
+  "eligibility.user_can_acquire": "This profile can acquire the target representation",
   "market.freshness": "Market evidence is fresh",
   "market.max_route_impact_bps": "Route cost stays inside your limit",
   "authority.operator": "This action is allowed by your protection settings",
@@ -341,8 +342,25 @@ function pageRuntime(){
     proofBox=document.querySelector("#proofBox"), executeStatus=document.querySelector("#executeStatus"),
     authTitle=document.querySelector("#authTitle"), generateButton=document.querySelector("#generateProof"),
     authorizeButton=document.querySelector("#authorizeProof"), executeButton=document.querySelector("#executeMutation"),
-    downloadButton=document.querySelector("#downloadProof");
+    downloadButton=document.querySelector("#downloadProof"), repairFlow=document.querySelector("#repairFlow");
   let lastEvaluation=null;
+
+  const renderProtectionEvent=()=>{
+    const targetEligibility=currentEligibility(CLAIMS.AAPLon);
+    const targetEligible=targetEligibility.status==="VERIFIED" && targetEligibility.canAcquire===true;
+    const route=LATEST_REPAIR_REVALIDATION;
+    const routePass=route.routeImpactBps<=route.ceilingBps;
+    const targetRuleFit=CLAIMS.AAPLon.permanentDelegateActive===false;
+    const canSwitch=targetRuleFit&&targetEligible&&routePass;
+    const stage=(n,eyebrow,title,copy,kind)=>'<article class="repair-stage repair-stage--'+kind+'"><span class="repair-stage__number">'+n+'</span><span class="eyebrow">'+eyebrow+'</span><strong>'+title+'</strong><small>'+copy+'</small></article>';
+    repairFlow.innerHTML=
+      stage("01","CURRENT REPRESENTATION","AAPLx","Apple exposure is currently represented by AAPLx.","neutral")+
+      stage("02","RULE MISMATCH","PERMANENT DELEGATE ACTIVE","Your selected repair rule rejects this mint-level authority.","fail")+
+      stage("03","CANDIDATE REPRESENTATION",targetRuleFit?"AAPLon · RULE FIT":"AAPLon · RULE MISMATCH",targetRuleFit?"No PermanentDelegate extension on the exact mint.":"Candidate fails the same representation rule.",targetRuleFit?"pass":"fail")+
+      stage("04","PROFILE ELIGIBILITY",targetEligible?"ELIGIBLE HERE":"NOT ELIGIBLE HERE",CURRENT_USER_PROFILE.label+" · "+targetEligibility.note,targetEligible?"pass":"fail")+
+      stage("05","LATEST RECORDED ROUTE",route.routeImpactBps.toFixed(2)+" BPS",routePass?"Inside owner ceiling "+route.ceilingBps+" bps.":"Above owner ceiling "+route.ceilingBps+" bps · run "+route.run+".",routePass?"pass":"fail")+
+      stage("06","COVENANT OUTCOME",canSwitch?"SAFE SWITCH":"SAFE NO ACTION",canSwitch?"Every gate passes; an exact transition may be prepared.":"At least one required gate fails, so no transition authority exists.",canSwitch?"pass":"outcome");
+  };
 
   const renderState=()=>{
     const pending=state.pending;
@@ -351,54 +369,103 @@ function pageRuntime(){
     executeButton.disabled=!pending||pending.status!=="AUTHORIZED";
     downloadButton.disabled=!pending;
   };
+
   const showEvaluation=(evaluation)=>{
     const user=userDecision(evaluation.decision);
-    const isSwitch=form.operator.value==="MIGRATE" && form.targetClaim.value==="AAPLon" && form.profile.value==="t4";
-    decision.textContent=isSwitch && evaluation.decision==="ALLOW" ? "SAFE SWITCH" : user.label;
-    decision.className="user-decision user-decision--"+user.kind;
-    decisionHuman.textContent=isSwitch && evaluation.decision==="ALLOW"
-      ? "AAPLx no longer satisfies your strict rights rule. AAPLon does, so this exact representation switch keeps the same Apple position protected."
-      : user.copy;
-    resultCard.className="result-card result-card--"+user.kind;
+    const isRepair=form.operator.value==="MIGRATE" && form.targetClaim.value==="AAPLon" && form.profile.value==="repairLatest";
+    const eligibilityResult=evaluation.ruleResults.find(r=>r.rule==="eligibility.user_can_acquire");
+    const routeResult=evaluation.ruleResults.find(r=>r.rule==="market.max_route_impact_bps");
+    const repairAllowed=isRepair && evaluation.decision==="ALLOW";
+
+    decision.textContent=isRepair ? (repairAllowed?"SAFE SWITCH":"SAFE NO ACTION") : user.label;
+    decision.className="user-decision user-decision--"+(repairAllowed?"allow":isRepair?"refuse":user.kind);
+
+    if(isRepair){
+      if(repairAllowed){
+        decisionHuman.textContent="AAPLon fits your representation rules, this profile is eligible, and the exact route is inside your ceiling. COVENANT may prepare one exact switch authorization.";
+      }else{
+        const blockers=[];
+        if(eligibilityResult?.outcome!=="ALLOW") blockers.push(CURRENT_USER_PROFILE.label+" is not eligible for AAPLon under the bound issuer evidence");
+        if(routeResult?.outcome!=="ALLOW" && typeof routeResult?.actual==="number") blockers.push("the latest recorded route is "+Number(routeResult.actual).toFixed(2)+" bps versus your "+routeResult.expected+" bps ceiling");
+        decisionHuman.textContent="AAPLon fits the representation rule, but "+(blockers.length?blockers.join(" and "):"at least one required gate still fails")+". COVENANT correctly creates no authority.";
+      }
+    }else{
+      decisionHuman.textContent=user.copy;
+    }
+
+    resultCard.className="result-card result-card--"+(repairAllowed?"allow":isRepair?"refuse":user.kind);
     authTitle.textContent=evaluation.decision==="ALLOW"
-      ? (isSwitch ? "Your Apple position can stay protected." : "Protection check passed.")
-      : "No automatic authority.";
+      ? (isRepair ? "Every gate passed. One exact switch can be prepared." : "Protection check passed.")
+      : isRepair
+        ? "Correct outcome: no authority."
+        : "No automatic authority.";
     renderRules(evaluation);
     generateButton.disabled=evaluation.decision!=="ALLOW";
     executeStatus.textContent=evaluation.decision==="ALLOW"
       ?"COVENANT can now prepare one exact authorization for this action."
-      :evaluation.decision==="ESCALATE"?"This action needs review before authority can exist.":"This action is blocked by your rules.";
+      :isRepair
+        ?"Candidate found, but eligibility and/or route gates fail. No transition authority is created."
+        :evaluation.decision==="ESCALATE"
+          ?"This action needs review before authority can exist."
+          :"This action is blocked by your rules.";
   };
+
   form.addEventListener("submit",e=>{
     e.preventDefault();
     lastEvaluation=evaluateTransition({state,operator:form.operator.value,targetClaim:form.targetClaim.value,amountUsd:Number(form.amountUsd.value),profileKey:form.profile.value});
     showEvaluation(lastEvaluation);
   });
+
   generateButton.addEventListener("click",async()=>{
-    try{if(!lastEvaluation)throw new Error("Run a protection check first.");state.pending=await generateProof({state,evaluation:lastEvaluation});
+    try{
+      if(!lastEvaluation)throw new Error("Run a protection check first.");
+      state.pending=await generateProof({state,evaluation:lastEvaluation});
       saveState(state,{type:"AUTHORIZATION_PREPARED",message:"Exact browser authorization prepared"});
-      executeStatus.textContent="Exact action prepared. It still cannot run until explicitly confirmed.";renderState();
+      executeStatus.textContent="Exact action prepared. It still cannot run until explicitly confirmed.";
+      renderState();
     }catch(error){executeStatus.textContent=error.message;}
   });
-  authorizeButton.addEventListener("click",()=>{try{authorizePending(state);executeStatus.textContent="Exact demo action confirmed. Apply it to mutate browser-local state.";renderState();}catch(error){executeStatus.textContent=error.message;}});
-  executeButton.addEventListener("click",async()=>{try{
-    const before=state.position.currentClaim||"NONE";
-    const receipt=await executePending(state);
-    const after=state.position.currentClaim||"NONE";
-    executeStatus.textContent=before!==after
-      ? "Apple position still protected. Representation changed "+before+" → "+after+". Receipt "+receipt.receiptHash.slice(0,16)+"…"
-      : "Protected demo action applied. Receipt "+receipt.receiptHash.slice(0,16)+"…";
-    renderState();renderGlobal();
-  }catch(error){executeStatus.textContent=error.message;}});
+  authorizeButton.addEventListener("click",()=>{
+    try{
+      authorizePending(state);
+      executeStatus.textContent="Exact demo action confirmed. Apply it to mutate browser-local state.";
+      renderState();
+    }catch(error){executeStatus.textContent=error.message;}
+  });
+  executeButton.addEventListener("click",async()=>{
+    try{
+      const before=state.position.currentClaim||"NONE";
+      const receipt=await executePending(state);
+      const after=state.position.currentClaim||"NONE";
+      executeStatus.textContent=before!==after
+        ?"Apple position still protected. Representation changed "+before+" → "+after+". Receipt "+receipt.receiptHash.slice(0,16)+"…"
+        :"Protected demo action applied. Receipt "+receipt.receiptHash.slice(0,16)+"…";
+      renderState();renderGlobal();
+    }catch(error){executeStatus.textContent=error.message;}
+  });
   downloadButton.addEventListener("click",()=>{if(state.pending)downloadJson("covenant-transition-authorization.json",state.pending);});
-  document.querySelector("#loadAcquireScenario").addEventListener("click",()=>{
-    state=resetState();form.operator.value="ACQUIRE";form.targetClaim.value="AAPLx";form.profile.value="t3";form.amountUsd.value="100";
-    executeStatus.textContent="Healthy Apple acquisition scenario loaded.";renderState();renderGlobal();form.requestSubmit();
+
+  document.querySelector("#loadAcquireScenario")?.addEventListener("click",()=>{
+    state=resetState();
+    form.operator.value="ACQUIRE";
+    form.targetClaim.value="AAPLx";
+    form.profile.value="t3";
+    form.amountUsd.value="100";
+    executeStatus.textContent="Historical acquisition inputs loaded. Current profile eligibility is still enforced.";
+    renderState();renderGlobal();form.requestSubmit();
   });
-  document.querySelector("#loadMigrateScenario").addEventListener("click",()=>{
-    state=loadPreset("t4-source");form.operator.value="MIGRATE";form.targetClaim.value="AAPLon";form.profile.value="t4";form.amountUsd.value="10";
-    executeStatus.textContent="Representation-switch scenario loaded.";renderState();renderGlobal();form.requestSubmit();
+
+  document.querySelector("#loadMigrateScenario")?.addEventListener("click",()=>{
+    state=loadPreset("t4-source");
+    form.operator.value="MIGRATE";
+    form.targetClaim.value="AAPLon";
+    form.profile.value="repairLatest";
+    form.amountUsd.value="10";
+    state.pending=null;
+    executeStatus.textContent="Latest recorded repair revalidation loaded.";
+    renderProtectionEvent();renderState();renderGlobal();form.requestSubmit();
   });
+
   const params=new URLSearchParams(window.location.search);
   if(params.get("scenario")==="switch"){
     queueMicrotask(()=>document.querySelector("#loadMigrateScenario")?.click());
@@ -410,6 +477,8 @@ function pageRuntime(){
     document.body.classList.toggle("show-technical");
     document.querySelector("#toggleTechnical").textContent=document.body.classList.contains("show-technical")?"HIDE TECHNICAL DETAILS":"SHOW TECHNICAL DETAILS";
   });
+
+  renderProtectionEvent();
   renderState();
 }
 
