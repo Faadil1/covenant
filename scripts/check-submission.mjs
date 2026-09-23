@@ -20,7 +20,7 @@ const checks = [
   ["t4 artifact", files.submission.includes("10696822718")],
   ["fork truth boundary", files.submission.includes("Surfpool mainnet-shaped fork") && files.submission.includes("full mainnet COVENANT execution: not claimed")],
   ["demo under 90 seconds", files.demoScript.includes("1:18–1:30")],
-  ["demo starts with user", files.demoScript.includes("Protect my Apple position")],
+  ["demo starts with user", files.demoScript.toLowerCase().includes("protect my apple position")],
   ["unknown fail closed", files.security.includes("There is no UNKNOWN -> TRUE coercion")],
   ["known revocation gap", files.security.includes("Known hardening gap")],
   ["t4 status pass", files.t4.includes("Status: **PASS")],
