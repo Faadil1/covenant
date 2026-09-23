@@ -18,7 +18,7 @@ let walletAddress = null;
 const ruleLabels = {
   "claim.issuer_mapping": "Official issuer verified",
   "claim.token_program": "Supported Solana token standard",
-  "claim.lending_opt_in": "Holder consent required for collateral lending",
+  "claim.permanent_delegate": "No permanent token-moving delegate",
   "market.freshness": "Market evidence is fresh",
   "market.max_route_impact_bps": "Route cost stays inside your limit",
   "authority.operator": "This action is allowed by your protection settings",
@@ -143,7 +143,7 @@ function pageCovenant(){
   const render=()=>{
     form.requireIssuerMapping.checked=state.covenant.requireIssuerMapping;
     form.requireToken2022.checked=state.covenant.requireToken2022;
-    form.requireLendingOptIn.checked=state.covenant.requireLendingOptIn;
+    form.forbidPermanentDelegate.checked=state.covenant.forbidPermanentDelegate;
     form.maxRouteImpactBps.value=state.covenant.maxRouteImpactBps;
     form.maxAutonomousUsd.value=state.covenant.maxAutonomousUsd;
     ["ACQUIRE","MIGRATE","FREEZE"].forEach(op=>{const el=form.querySelector('[value="'+op+'"]');if(el)el.checked=state.covenant.allowedOperators.includes(op);});
@@ -155,7 +155,7 @@ function pageCovenant(){
     state.covenant={...state.covenant,version:state.covenant.version+1,
       requireIssuerMapping:form.requireIssuerMapping.checked,
       requireToken2022:form.requireToken2022.checked,
-      requireLendingOptIn:form.requireLendingOptIn.checked,
+      forbidPermanentDelegate:form.forbidPermanentDelegate.checked,
       maxRouteImpactBps:Number(form.maxRouteImpactBps.value),
       maxAutonomousUsd:Number(form.maxAutonomousUsd.value),
       allowedOperators:nextAllowed,updatedAt:new Date().toISOString()};
@@ -165,11 +165,11 @@ function pageCovenant(){
     document.querySelector("#saveFeedback").textContent="Saved. Future actions must satisfy protection v"+state.covenant.version+".";
   });
   document.querySelector("#presetAcquire").addEventListener("click",()=>{
-    form.requireIssuerMapping.checked=true;form.requireToken2022.checked=true;form.requireLendingOptIn.checked=false;
+    form.requireIssuerMapping.checked=true;form.requireToken2022.checked=true;form.forbidPermanentDelegate.checked=false;
     form.maxRouteImpactBps.value=50;form.maxAutonomousUsd.value=100;form.querySelector("#opAcquire").checked=true;form.querySelector("#opMigrate").checked=true;
   });
   document.querySelector("#presetRepair").addEventListener("click",()=>{
-    form.requireIssuerMapping.checked=true;form.requireToken2022.checked=true;form.requireLendingOptIn.checked=true;
+    form.requireIssuerMapping.checked=true;form.requireToken2022.checked=true;form.forbidPermanentDelegate.checked=true;
     form.maxRouteImpactBps.value=500;form.maxAutonomousUsd.value=100;form.querySelector("#opAcquire").checked=true;form.querySelector("#opMigrate").checked=true;
   });
   render();
@@ -180,9 +180,10 @@ function claimOutcome(claim){
   let qualifies=true;
   if(state.covenant.requireIssuerMapping) reasons.push("Official issuer verified");
   if(state.covenant.requireToken2022&&claim.tokenProgram!=="Token-2022"){qualifies=false;reasons.push("Unsupported token standard");}
-  if(state.covenant.requireLendingOptIn){
-    if(claim.lendingOptIn===true)reasons.push("Holder lending consent verified");
-    else {qualifies=false;reasons.push("Lending-consent evidence unknown");}
+  if(state.covenant.forbidPermanentDelegate){
+    if(claim.permanentDelegateActive===false) reasons.push("No permanent delegate on this mint");
+    else if(claim.permanentDelegateActive===true){qualifies=false;reasons.push("Active permanent delegate on this mint");}
+    else {qualifies=false;reasons.push("Permanent-delegate state unknown");}
   }
   return {qualifies,reasons};
 }
@@ -193,7 +194,7 @@ function claimCardHtml(claim){
     <div class="representation-card__head"><div><span class="eyebrow">${claim.issuer}</span><h2>${claim.symbol}</h2></div><div>${current}${badge(outcome.qualifies?"QUALIFIES":"BLOCKED",outcome.qualifies?"allow":"refuse")}</div></div>
     <p class="representation-sub">Apple exposure on Solana · ${claim.tokenProgram}</p>
     <div class="check-list">${outcome.reasons.map(r=>"<div>"+(r.includes("unknown")?"!":"✓")+" "+r+"</div>").join("")}</div>
-    <details class="representation-details"><summary>Representation details</summary><dl class="facts"><div><dt>Exact mint</dt><dd><code>${claim.mint}</code></dd></div><div><dt>Provenance</dt><dd>${claim.provenance}</dd></div><div><dt>Holder lending consent</dt><dd>${claim.lendingOptIn===true?"VERIFIED":"UNKNOWN"}</dd></div></dl></details>
+    <details class="representation-details"><summary>Representation details</summary><dl class="facts"><div><dt>Exact mint</dt><dd><code>${claim.mint}</code></dd></div><div><dt>Provenance</dt><dd>${claim.provenance}</dd></div><div><dt>Permanent delegate</dt><dd>${claim.permanentDelegateActive===true?"ACTIVE":claim.permanentDelegateActive===false?"NONE":"UNKNOWN"}</dd></div>${claim.permanentDelegateAddress?`<div><dt>Delegate address</dt><dd><code>${claim.permanentDelegateAddress}</code></dd></div>`:""}</dl></details>
     <button class="button button--secondary" data-adopt="${claim.symbol}">USE AS DEMO POSITION</button>
   </article>`;
 }
