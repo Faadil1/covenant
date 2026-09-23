@@ -58,6 +58,7 @@ The ideal Apple path consumes AAPL / AAPLx / AAPLon. Current trial entitlement i
 ## Technical evidence
 
 - exact AAPLx / AAPLon identities: verified;
+- objective PermanentDelegate difference on the exact mainnet mints: run `35884969091`, artifact `10761673239`;
 - deterministic fail-closed evaluator: verified;
 - governed `USDC -> AAPLx`: Surfpool run `35698743841`;
 - replay refused;
