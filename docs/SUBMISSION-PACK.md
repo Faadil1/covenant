@@ -36,13 +36,13 @@ My Apple Position
       ↓
 AAPLx is current
       ↓
-user requires holder consent before collateral lending
+owner rule: no active permanent token-moving delegate
       ↓
-AAPLx evidence for that exact protection = UNKNOWN
+mainnet evidence: AAPLx = ACTIVE PermanentDelegate
       ↓
-BLOCKED — fail closed, not "AAPLx is unsafe"
+BLOCKED
       ↓
-Ondo publishes the required protection for AAPLon
+mainnet evidence: AAPLon = no PermanentDelegate extension
       ↓
 exact AAPLx -> AAPLon switch is authorized
       ↓
@@ -83,8 +83,17 @@ Early hackathon prototype. No customers, design partners or production AUM are c
 
 ## Reality audit
 
-The Apple case is a reference case, not COVENANT's product boundary. The current repair path demonstrates evidence-bound fail-closed selection: Ondo explicitly documents the holder-consent protection used by the rule, while the repository has no authoritative evidence bound to that exact property for AAPLx.
+The Apple case is a reference case, not COVENANT's product boundary. The killer demo now uses a concrete difference observed directly on the exact Token-2022 mints.
 
-That is **not** a claim that AAPLx lacks the protection or is universally inferior.
+Mainnet workflow run `35884969091` found:
 
-The next canonical killer-demo upgrade should use a concrete representation difference for which both sides are supported by exact primary evidence. See `research/REPRESENTATION-REALITY-AUDIT-V1.md`.
+- AAPLx: active PermanentDelegate;
+- AAPLon: no PermanentDelegate extension.
+
+Solana defines a PermanentDelegate as a mint-level authority that can authorize transfers and burns for any token account of the mint and cannot be revoked by token-account owners.
+
+The user-selected rule is therefore factual and inspectable: **no active permanent token-moving delegate**.
+
+That still does **not** make AAPLon universally better or AAPLx universally unsafe. It proves only that the two exact representations differ on a user-selected authority property.
+
+See `research/REPRESENTATION-REALITY-AUDIT-V1.md`.
