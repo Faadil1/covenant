@@ -4,14 +4,14 @@
   "underlyingIntent": "APPLE economic exposure",
   "rules": [
     {
-      "id": "claim.collateral_lending_requires_holder_opt_in",
-      "evidencePath": "passport.properties.collateralLendingRequiresHolderOptIn",
+      "id": "claim.permanent_delegate_active",
+      "evidencePath": "passport.properties.permanentDelegateActive",
       "operator": "EQUALS",
-      "expected": true,
+      "expected": false,
       "hard": true,
-      "minEvidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "minEvidenceClass": "ONCHAIN_DETERMINISTIC",
       "onUnknown": "REFUSE",
-      "reasonCode": "REQUIRED_CLAIM_PROPERTY_FAILED"
+      "reasonCode": "PERMANENT_DELEGATE_NOT_ALLOWED"
     },
     {
       "id": "market.max_price_impact_bps",
