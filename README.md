@@ -109,4 +109,13 @@ Eligibility is evaluated separately from representation identity. A technically 
 
 Mainnet inspection: workflow run `35884969091`, artifact `10761673239`.
 
-See `research/REPRESENTATION-REALITY-AUDIT-V1.md`.
+A second issuer-term difference is now bound from official docs:
+
+- xStocks direct issuer issuance/redemption minimum: **$5,000**;
+- Ondo Stocks minimum investment/redemption amount: **$1**.
+
+This supports a separate owner rule for small-holder direct-redemption access. Passing that rule still does not establish user eligibility.
+
+For a Canada/Quebec profile, current issuer evidence now refuses both AAPLx and AAPLon acquisition/redemption. COVENANT therefore must not represent the Apple switch as executable for a Canadian user.
+
+See `research/REPRESENTATION-REALITY-AUDIT-V1.md` and `docs/APPLE-SMALL-HOLDER-REDEMPTION-PROOF.md`.
