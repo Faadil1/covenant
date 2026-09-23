@@ -9,18 +9,18 @@ const files = {
 };
 
 const checks = [
-  ["category thesis", files.submission.includes("programmable runtime for economic ownership")],
-  ["non-router differentiation", files.submission.includes("Why this is not a router")],
+  ["category thesis", files.submission.includes("COVENANT lets autonomous software change a tokenized asset's representation")],
+  ["non-router differentiation", files.submission.includes("a router can find a path")],
   ["solana load-bearing", files.submission.includes("Why Solana is load-bearing")],
   ["t3 canonical run", files.submission.includes("35698743841")],
   ["t4 canonical run", files.submission.includes("35733746142")],
   ["t4 artifact", files.submission.includes("10696822718")],
-  ["fork truth boundary", files.submission.includes("No mainnet financial transaction is claimed")],
+  ["fork truth boundary", files.submission.includes("Full mainnet COVENANT execution: not claimed") && files.submission.includes("Surfpool mainnet-shaped fork")],
   ["demo under 90 seconds", files.demoScript.includes("1:18–1:30")],
   ["unknown fail closed", files.security.includes("There is no UNKNOWN -> TRUE coercion")],
   ["known revocation gap", files.security.includes("Known hardening gap")],
   ["t4 status pass", files.t4.includes("Status: **PASS")],
-  ["readme t4 pass", files.readme.includes("T1–T4 technical proof: PASS") || files.readme.includes("T1–T4 PASS")],
+  ["readme t4 pass", files.readme.includes("AAPLx -> AAPLon representation migration") && files.readme.includes("35733746142")],
 ];
 
 const failed = checks.filter(([, ok]) => !ok);
