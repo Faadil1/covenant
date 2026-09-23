@@ -7,6 +7,16 @@ export const CURRENT_USER_PROFILE = {
   note: "Demo eligibility profile. Current official issuer evidence is checked separately from representation fit.",
 };
 
+export const LATEST_REPAIR_REVALIDATION = {
+  run: "35886284296",
+  sourceClaim: "AAPLx",
+  targetClaim: "AAPLon",
+  routeImpactBps: 977.2256517937228,
+  ceilingBps: 500,
+  outcome: "SAFE_NO_ACTION",
+  note: "Latest recorded live route revalidation. This is evidence from a point-in-time run, not a continuously live quote.",
+};
+
 export const CLAIMS = {
   AAPLx: {
     id: "apple:xstocks:aaplx",
