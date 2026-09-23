@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "covenant.eligibility-evidence.v1",
+  "subject": {
+    "jurisdiction": "CA-QC",
+    "investorClass": "UNSPECIFIED"
+  },
+  "representationId": "apple:xstocks:aaplx",
+  "userCanAcquire": {
+    "value": false,
+    "status": "VERIFIED",
+    "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+    "observedAt": "2026-09-23T15:30:00.000Z",
+    "source": "https://xstocks.fi/",
+    "note": "Official xStocks site states xStocks are not available to residents of Canada. This fixture is a jurisdiction test, not legal advice."
+  }
+}
