@@ -95,3 +95,69 @@ test("REFUSE: agent cannot propose an operator outside delegated authority", () 
     "AUTHORITY_OPERATOR_NOT_ALLOWED",
   );
 });
+
+
+test("REFUSE: verified user ineligibility is a first-class hard gate", () => {
+  const input = baseInput();
+  input.covenant = {
+    ...covenant,
+    rules: [
+      ...covenant.rules,
+      {
+        id: "eligibility.user_can_acquire",
+        evidencePath: "eligibility.userCanAcquire",
+        operator: "EQUALS",
+        expected: true,
+        hard: true,
+        minEvidenceClass: "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+        onUnknown: "REFUSE",
+        reasonCode: "USER_INELIGIBLE_FOR_REPRESENTATION"
+      }
+    ]
+  };
+  input.eligibility = {
+    userCanAcquire: verified(false, "SIGNED_OR_AUTHORITATIVE_OFFCHAIN")
+  };
+
+  const proof = evaluateTransition(input);
+  assert.equal(proof.decision, Decision.REFUSE);
+  assert.equal(
+    proof.ruleResults.find((r) => r.ruleId === "eligibility.user_can_acquire").reasonCode,
+    "USER_INELIGIBLE_FOR_REPRESENTATION",
+  );
+});
+
+test("REFUSE: unknown user eligibility cannot silently pass", () => {
+  const input = baseInput();
+  input.covenant = {
+    ...covenant,
+    rules: [
+      ...covenant.rules,
+      {
+        id: "eligibility.user_can_acquire",
+        evidencePath: "eligibility.userCanAcquire",
+        operator: "EQUALS",
+        expected: true,
+        hard: true,
+        minEvidenceClass: "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+        onUnknown: "REFUSE",
+        reasonCode: "USER_INELIGIBLE_FOR_REPRESENTATION"
+      }
+    ]
+  };
+  input.eligibility = {
+    userCanAcquire: {
+      value: null,
+      status: "UNKNOWN",
+      evidenceClass: "UNKNOWN",
+      observedAt: null
+    }
+  };
+
+  const proof = evaluateTransition(input);
+  assert.equal(proof.decision, Decision.REFUSE);
+  assert.equal(
+    proof.ruleResults.find((r) => r.ruleId === "eligibility.user_can_acquire").reasonCode,
+    "EVIDENCE_UNKNOWN",
+  );
+});
