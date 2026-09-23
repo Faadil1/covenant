@@ -1,5 +1,6 @@
 import {
   CLAIMS,
+  CURRENT_USER_PROFILE,
   EVIDENCE_PROFILES,
   loadState,
   saveState,
@@ -184,46 +185,133 @@ function pageCovenant(){
   render();
 }
 
+function currentEligibility(claim){
+  return claim?.eligibility?.[CURRENT_USER_PROFILE.id] || {
+    canAcquire: null,
+    status: "UNKNOWN",
+    source: null,
+    note: "No current eligibility evidence is bound for this profile."
+  };
+}
+
 function claimOutcome(claim){
   const reasons=[];
-  let qualifies=true;
-  if(state.covenant.requireIssuerMapping) reasons.push("Official issuer verified");
-  if(state.covenant.requireToken2022&&claim.tokenProgram!=="Token-2022"){qualifies=false;reasons.push("Unsupported token standard");}
+  let ruleFit=true;
+  if(state.covenant.requireIssuerMapping) reasons.push({ok:true,label:"Official issuer verified"});
+  if(state.covenant.requireToken2022){
+    const ok=claim.tokenProgram==="Token-2022";
+    ruleFit=ruleFit&&ok;
+    reasons.push({ok,label:ok?"Supported Token-2022 representation":"Unsupported token standard"});
+  }
   if(state.covenant.forbidPermanentDelegate){
-    if(claim.permanentDelegateActive===false) reasons.push("No permanent delegate on this mint");
-    else if(claim.permanentDelegateActive===true){qualifies=false;reasons.push("Active permanent delegate on this mint");}
-    else {qualifies=false;reasons.push("Permanent-delegate state unknown");}
+    if(claim.permanentDelegateActive===false) reasons.push({ok:true,label:"No permanent delegate on this mint"});
+    else if(claim.permanentDelegateActive===true){ruleFit=false;reasons.push({ok:false,label:"Active permanent delegate on this mint"});}
+    else {ruleFit=false;reasons.push({ok:false,label:"Permanent-delegate state unknown"});}
   }
   if(state.covenant.enforceSmallHolderRedemption){
     const minimum=claim.directIssuerRedemptionMinimumUsd;
-    if(typeof minimum==="number" && minimum<=state.covenant.maxDirectIssuerRedemptionMinimumUsd) reasons.push("Direct issuer redemption minimum $"+minimum);
-    else if(typeof minimum==="number"){qualifies=false;reasons.push("Direct issuer redemption minimum $"+minimum+" exceeds your $"+state.covenant.maxDirectIssuerRedemptionMinimumUsd+" limit");}
-    else {qualifies=false;reasons.push("Direct issuer redemption minimum unknown");}
+    const cap=state.covenant.maxDirectIssuerRedemptionMinimumUsd;
+    if(typeof minimum==="number" && minimum<=cap) reasons.push({ok:true,label:"Direct issuer redemption minimum $"+minimum.toLocaleString()});
+    else if(typeof minimum==="number"){ruleFit=false;reasons.push({ok:false,label:"Direct issuer redemption minimum $"+minimum.toLocaleString()+" exceeds your $"+cap.toLocaleString()+" limit"});}
+    else {ruleFit=false;reasons.push({ok:false,label:"Direct issuer redemption minimum unknown"});}
   }
-  return {qualifies,reasons};
+  const eligibility=currentEligibility(claim);
+  const eligible=eligibility.status==="VERIFIED" && eligibility.canAcquire===true;
+  return {ruleFit,reasons,eligibility,eligible,usable:ruleFit&&eligible};
 }
+
+function matrixStatus(label,kind){
+  return '<span class="matrix-status matrix-status--'+kind+'">'+label+"</span>";
+}
+
+function money(value){
+  return typeof value==="number" ? "$"+value.toLocaleString("en-US") : "UNKNOWN";
+}
+
+function claimMatrixHtml(){
+  const aaplx=CLAIMS.AAPLx;
+  const aaplon=CLAIMS.AAPLon;
+  const left=claimOutcome(aaplx);
+  const right=claimOutcome(aaplon);
+
+  const delegateCell=(claim)=>claim.permanentDelegateActive===true
+    ? matrixStatus("ACTIVE","bad")
+    : claim.permanentDelegateActive===false
+      ? matrixStatus("NONE","good")
+      : matrixStatus("UNKNOWN","neutral");
+
+  const eligibilityCell=(outcome)=>outcome.eligibility.status!=="VERIFIED"
+    ? matrixStatus("UNKNOWN","neutral")
+    : outcome.eligible
+      ? matrixStatus("YES","good")
+      : matrixStatus("NO","bad");
+
+  const fitCell=(outcome)=>outcome.ruleFit
+    ? matrixStatus("FITS RULES","good")
+    : matrixStatus("RULE MISMATCH","bad");
+
+  const usableCell=(outcome)=>outcome.usable
+    ? matrixStatus("USABLE HERE","good")
+    : matrixStatus("NOT USABLE HERE","bad");
+
+  return `
+    <div class="claim-matrix__row claim-matrix__head">
+      <div>What matters</div>
+      <div><span class="eyebrow">${aaplx.issuer}</span><strong>AAPLx</strong></div>
+      <div><span class="eyebrow">${aaplon.issuer}</span><strong>AAPLon</strong></div>
+    </div>
+    <div class="claim-matrix__row"><div><strong>Exact issuer mapping</strong><small>Representation identity</small></div><div>${matrixStatus("VERIFIED","good")}</div><div>${matrixStatus("VERIFIED","good")}</div></div>
+    <div class="claim-matrix__row"><div><strong>Token standard</strong><small>Exact mint program</small></div><div>Token-2022</div><div>Token-2022</div></div>
+    <div class="claim-matrix__row"><div><strong>Permanent delegate</strong><small>Mint-level transfer / burn authority</small></div><div>${delegateCell(aaplx)}</div><div>${delegateCell(aaplon)}</div></div>
+    <div class="claim-matrix__row"><div><strong>Direct issuer redemption minimum</strong><small>Official issuer terms</small></div><div><strong>${money(aaplx.directIssuerRedemptionMinimumUsd)}</strong></div><div><strong>${money(aaplon.directIssuerRedemptionMinimumUsd)}</strong></div></div>
+    <div class="claim-matrix__row"><div><strong>${CURRENT_USER_PROFILE.label} acquisition eligibility</strong><small>Current issuer evidence</small></div><div>${eligibilityCell(left)}</div><div>${eligibilityCell(right)}</div></div>
+    <div class="claim-matrix__row claim-matrix__row--decision"><div><strong>Fits your representation rules</strong><small>Does not include jurisdiction eligibility</small></div><div>${fitCell(left)}</div><div>${fitCell(right)}</div></div>
+    <div class="claim-matrix__row claim-matrix__row--decision"><div><strong>Usable for this profile now</strong><small>Rules + eligibility</small></div><div>${usableCell(left)}</div><div>${usableCell(right)}</div></div>
+  `;
+}
+
 function claimCardHtml(claim){
   const outcome=claimOutcome(claim);
   const current=state.position.currentClaim===claim.symbol?badge("CURRENT","info"):"";
-  return `<article class="representation-card ${outcome.qualifies?"representation-card--qualifies":"representation-card--blocked"}">
-    <div class="representation-card__head"><div><span class="eyebrow">${claim.issuer}</span><h2>${claim.symbol}</h2></div><div>${current}${badge(outcome.qualifies?"QUALIFIES":"BLOCKED",outcome.qualifies?"allow":"refuse")}</div></div>
+  const ruleBadge=badge(outcome.ruleFit?"RULE FIT":"RULE MISMATCH",outcome.ruleFit?"allow":"refuse");
+  const eligibilityBadge=badge(
+    outcome.eligibility.status!=="VERIFIED"?"ELIGIBILITY UNKNOWN":outcome.eligible?"ELIGIBLE HERE":"NOT ELIGIBLE HERE",
+    outcome.eligible?"allow":"refuse"
+  );
+  return `<article class="representation-card ${outcome.ruleFit?"representation-card--qualifies":"representation-card--blocked"}">
+    <div class="representation-card__head"><div><span class="eyebrow">${claim.issuer}</span><h2>${claim.symbol}</h2></div><div>${current}${ruleBadge}${eligibilityBadge}</div></div>
     <p class="representation-sub">Apple exposure on Solana · ${claim.tokenProgram}</p>
-    <div class="check-list">${outcome.reasons.map(r=>"<div>"+(r.includes("unknown")?"!":"✓")+" "+r+"</div>").join("")}</div>
-    <details class="representation-details"><summary>Representation details</summary><dl class="facts"><div><dt>Exact mint</dt><dd><code>${claim.mint}</code></dd></div><div><dt>Provenance</dt><dd>${claim.provenance}</dd></div><div><dt>Permanent delegate</dt><dd>${claim.permanentDelegateActive===true?"ACTIVE":claim.permanentDelegateActive===false?"NONE":"UNKNOWN"}</dd></div><div><dt>Direct issuer redemption minimum</dt><dd>${typeof claim.directIssuerRedemptionMinimumUsd==="number"?"$"+claim.directIssuerRedemptionMinimumUsd.toLocaleString():"UNKNOWN"}</dd></div>${claim.permanentDelegateAddress?`<div><dt>Delegate address</dt><dd><code>${claim.permanentDelegateAddress}</code></dd></div>`:""}</dl></details>
-    <button class="button button--secondary" data-adopt="${claim.symbol}">USE AS DEMO POSITION</button>
+    <div class="check-list">${outcome.reasons.map(r=>"<div>"+(r.ok?"✓":"×")+" "+r.label+"</div>").join("")}<div>${outcome.eligible?"✓":"×"} ${outcome.eligibility.note}</div></div>
+    <details class="representation-details"><summary>Representation details</summary><dl class="facts"><div><dt>Exact mint</dt><dd><code>${claim.mint}</code></dd></div><div><dt>Provenance</dt><dd>${claim.provenance}</dd></div><div><dt>Permanent delegate</dt><dd>${claim.permanentDelegateActive===true?"ACTIVE":claim.permanentDelegateActive===false?"NONE":"UNKNOWN"}</dd></div><div><dt>Direct issuer redemption minimum</dt><dd>${money(claim.directIssuerRedemptionMinimumUsd)}</dd></div><div><dt>${CURRENT_USER_PROFILE.label} eligible</dt><dd>${outcome.eligibility.status==="VERIFIED"?(outcome.eligible?"YES":"NO"):"UNKNOWN"}</dd></div>${claim.permanentDelegateAddress?`<div><dt>Delegate address</dt><dd><code>${claim.permanentDelegateAddress}</code></dd></div>`:""}</dl></details>
+    <button class="button button--secondary" data-adopt="${claim.symbol}">LOAD AS LOCAL DEMO POSITION</button>
   </article>`;
 }
+
 function pageClaims(){
   const root=document.querySelector("#claimsRoot");
+  const matrix=document.querySelector("#claimMatrix");
+  const profile=document.querySelector("#comparisonProfile");
+  const ruleSummary=document.querySelector("#comparisonRules");
+
   const render=()=>{
+    if(profile) profile.textContent=CURRENT_USER_PROFILE.label;
+    if(ruleSummary){
+      const rules=["Verified issuer","Token-2022"];
+      if(state.covenant.forbidPermanentDelegate) rules.push("No permanent delegate");
+      if(state.covenant.enforceSmallHolderRedemption) rules.push("Issuer redemption minimum ≤ $"+state.covenant.maxDirectIssuerRedemptionMinimumUsd.toLocaleString());
+      rules.push("Route impact ≤ "+state.covenant.maxRouteImpactBps+" bps");
+      ruleSummary.textContent=rules.join(" · ");
+    }
+    if(matrix) matrix.innerHTML=claimMatrixHtml();
     root.innerHTML=Object.values(CLAIMS).map(claimCardHtml).join("");
     root.querySelectorAll("[data-adopt]").forEach(button=>button.addEventListener("click",()=>{
       const symbol=button.dataset.adopt;state.position.currentClaim=symbol;
       if((state.position.balances[symbol]||0)===0)state.position.balances[symbol]=symbol==="AAPLx"?3000000:29421175;
       state.position.version+=1;state.position.nonce+=1;state.pending=null;
-      saveState(state,{type:"ADOPT_CLAIM",message:symbol+" became the demo representation"});render();renderGlobal();
+      saveState(state,{type:"ADOPT_CLAIM",message:symbol+" became the local demo representation"});render();renderGlobal();
     }));
-  };render();
+  };
+  render();
 }
 
 function renderRules(evaluation){
