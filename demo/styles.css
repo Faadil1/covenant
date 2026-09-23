@@ -156,3 +156,25 @@ footer{border-top:1px solid var(--ink);padding:24px;display:flex;justify-content
   .claim-matrix{overflow-x:auto}
   .claim-matrix__row{min-width:700px}
 }
+
+
+.latest-repair-check{
+  display:grid;
+  grid-template-columns:1.1fr .8fr 1.5fr;
+  gap:1px;
+  margin-top:14px;
+  border:1px solid var(--line,#d8d1c5);
+  background:var(--line,#d8d1c5);
+}
+.latest-repair-check>div{
+  background:#fffdf7;
+  padding:16px 18px;
+  display:grid;
+  gap:5px;
+}
+.latest-repair-check strong{font-size:18px;line-height:1.2}
+.latest-repair-check small{color:var(--muted,#6e675c);line-height:1.4}
+.repair-outcome{color:#8a332e}
+@media(max-width:760px){
+  .latest-repair-check{grid-template-columns:1fr}
+}
