@@ -102,7 +102,7 @@ function pageHome(){
   };
   document.querySelector("#startProtection")?.addEventListener("click",()=>{
     state=loadPreset("t4-source");
-    window.location.href="/runtime";
+    window.location.href="/runtime?scenario=switch";
   });
   render();
 }
@@ -236,9 +236,16 @@ function pageRuntime(){
   };
   const showEvaluation=(evaluation)=>{
     const user=userDecision(evaluation.decision);
-    decision.textContent=user.label;decision.className="user-decision user-decision--"+user.kind;
-    decisionHuman.textContent=user.copy;resultCard.className="result-card result-card--"+user.kind;
-    authTitle.textContent=evaluation.decision==="ALLOW"?"Protection check passed.":"No automatic authority.";
+    const isSwitch=form.operator.value==="MIGRATE" && form.targetClaim.value==="AAPLon" && form.profile.value==="t4";
+    decision.textContent=isSwitch && evaluation.decision==="ALLOW" ? "SAFE SWITCH" : user.label;
+    decision.className="user-decision user-decision--"+user.kind;
+    decisionHuman.textContent=isSwitch && evaluation.decision==="ALLOW"
+      ? "AAPLx no longer satisfies your strict rights rule. AAPLon does, so this exact representation switch keeps the same Apple position protected."
+      : user.copy;
+    resultCard.className="result-card result-card--"+user.kind;
+    authTitle.textContent=evaluation.decision==="ALLOW"
+      ? (isSwitch ? "Your Apple position can stay protected." : "Protection check passed.")
+      : "No automatic authority.";
     renderRules(evaluation);
     generateButton.disabled=evaluation.decision!=="ALLOW";
     executeStatus.textContent=evaluation.decision==="ALLOW"
@@ -257,7 +264,15 @@ function pageRuntime(){
     }catch(error){executeStatus.textContent=error.message;}
   });
   authorizeButton.addEventListener("click",()=>{try{authorizePending(state);executeStatus.textContent="Exact demo action confirmed. Apply it to mutate browser-local state.";renderState();}catch(error){executeStatus.textContent=error.message;}});
-  executeButton.addEventListener("click",async()=>{try{const receipt=await executePending(state);executeStatus.textContent="Protected demo action applied. Receipt "+receipt.receiptHash.slice(0,16)+"…";renderState();renderGlobal();}catch(error){executeStatus.textContent=error.message;}});
+  executeButton.addEventListener("click",async()=>{try{
+    const before=state.position.currentClaim||"NONE";
+    const receipt=await executePending(state);
+    const after=state.position.currentClaim||"NONE";
+    executeStatus.textContent=before!==after
+      ? "Apple position still protected. Representation changed "+before+" → "+after+". Receipt "+receipt.receiptHash.slice(0,16)+"…"
+      : "Protected demo action applied. Receipt "+receipt.receiptHash.slice(0,16)+"…";
+    renderState();renderGlobal();
+  }catch(error){executeStatus.textContent=error.message;}});
   downloadButton.addEventListener("click",()=>{if(state.pending)downloadJson("covenant-transition-authorization.json",state.pending);});
   document.querySelector("#loadAcquireScenario").addEventListener("click",()=>{
     state=resetState();form.operator.value="ACQUIRE";form.targetClaim.value="AAPLx";form.profile.value="t3";form.amountUsd.value="100";
@@ -267,6 +282,13 @@ function pageRuntime(){
     state=loadPreset("t4-source");form.operator.value="MIGRATE";form.targetClaim.value="AAPLon";form.profile.value="t4";form.amountUsd.value="10";
     executeStatus.textContent="Representation-switch scenario loaded.";renderState();renderGlobal();form.requestSubmit();
   });
+  const params=new URLSearchParams(window.location.search);
+  if(params.get("scenario")==="switch"){
+    queueMicrotask(()=>document.querySelector("#loadMigrateScenario")?.click());
+  } else if(params.get("scenario")==="acquire"){
+    queueMicrotask(()=>document.querySelector("#loadAcquireScenario")?.click());
+  }
+
   document.querySelector("#toggleTechnical")?.addEventListener("click",()=>{
     document.body.classList.toggle("show-technical");
     document.querySelector("#toggleTechnical").textContent=document.body.classList.contains("show-technical")?"HIDE TECHNICAL DETAILS":"SHOW TECHNICAL DETAILS";

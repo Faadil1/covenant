@@ -9,13 +9,14 @@ const redirects=await readFile(new URL("../demo/_redirects",import.meta.url),"ut
 
 const checks=[
  ["six user-app surfaces",names.every(name=>pages[name].includes('data-page="'))],
- ["user-first hero",pages.index.includes("Own the stock.")&&pages.index.includes("TRY APPLE PROTECTION")],
+ ["user-first hero",pages.index.includes("Own the stock.")&&pages.index.includes("SEE THE PROTECTION EVENT")],
  ["wallet connection",app.includes("window.solana")&&pages.index.includes("CONNECT WALLET")],
  ["human protection rules",pages.covenant.includes("Verified issuers only")&&pages.covenant.includes("Maximum automatic action")],
  ["representation comparison",pages.claims.includes("Same Apple.")&&app.includes("QUALIFIES")],
- ["user decision language",pages.runtime.includes("PROTECTION CHECK")&&app.includes("PROTECTED")&&app.includes("BLOCKED")],
+ ["user decision language",pages.runtime.includes("PROTECTION CHECK")&&app.includes("PROTECTED")&&app.includes("BLOCKED")&&app.includes("SAFE SWITCH")],
  ["exact authorization controls",pages.runtime.includes("CREATE EXACT AUTHORIZATION")&&pages.runtime.includes("APPLY DEMO ACTION")],
  ["technical detail progressive disclosure",pages.runtime.includes("Why this action is safe")],
+ ["one-click killer scenario",pages.runtime.includes("RULE CHANGE / NEW EVIDENCE")&&app.includes("scenario=switch")],
  ["local state mutation",state.includes("LOCAL_BROWSER_SANDBOX")&&state.includes("localStorage")],
  ["nonce/version anti-replay",state.includes("Fresh authorization required")],
  ["verified T3 evidence",pages.proofs.includes("35698743841")],
