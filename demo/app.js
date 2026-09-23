@@ -19,6 +19,7 @@ const ruleLabels = {
   "claim.issuer_mapping": "Official issuer verified",
   "claim.token_program": "Supported Solana token standard",
   "claim.permanent_delegate": "No permanent token-moving delegate",
+  "claim.direct_issuer_redemption_minimum_usd": "Direct issuer redemption works for small positions",
   "market.freshness": "Market evidence is fresh",
   "market.max_route_impact_bps": "Route cost stays inside your limit",
   "authority.operator": "This action is allowed by your protection settings",
@@ -144,6 +145,8 @@ function pageCovenant(){
     form.requireIssuerMapping.checked=state.covenant.requireIssuerMapping;
     form.requireToken2022.checked=state.covenant.requireToken2022;
     form.forbidPermanentDelegate.checked=state.covenant.forbidPermanentDelegate;
+    form.enforceSmallHolderRedemption.checked=state.covenant.enforceSmallHolderRedemption;
+    form.maxDirectIssuerRedemptionMinimumUsd.value=state.covenant.maxDirectIssuerRedemptionMinimumUsd;
     form.maxRouteImpactBps.value=state.covenant.maxRouteImpactBps;
     form.maxAutonomousUsd.value=state.covenant.maxAutonomousUsd;
     ["ACQUIRE","MIGRATE","FREEZE"].forEach(op=>{const el=form.querySelector('[value="'+op+'"]');if(el)el.checked=state.covenant.allowedOperators.includes(op);});
@@ -156,6 +159,8 @@ function pageCovenant(){
       requireIssuerMapping:form.requireIssuerMapping.checked,
       requireToken2022:form.requireToken2022.checked,
       forbidPermanentDelegate:form.forbidPermanentDelegate.checked,
+      enforceSmallHolderRedemption:form.enforceSmallHolderRedemption.checked,
+      maxDirectIssuerRedemptionMinimumUsd:Number(form.maxDirectIssuerRedemptionMinimumUsd.value),
       maxRouteImpactBps:Number(form.maxRouteImpactBps.value),
       maxAutonomousUsd:Number(form.maxAutonomousUsd.value),
       allowedOperators:nextAllowed,updatedAt:new Date().toISOString()};
@@ -165,12 +170,16 @@ function pageCovenant(){
     document.querySelector("#saveFeedback").textContent="Saved. Future actions must satisfy protection v"+state.covenant.version+".";
   });
   document.querySelector("#presetAcquire").addEventListener("click",()=>{
-    form.requireIssuerMapping.checked=true;form.requireToken2022.checked=true;form.forbidPermanentDelegate.checked=false;
-    form.maxRouteImpactBps.value=50;form.maxAutonomousUsd.value=100;form.querySelector("#opAcquire").checked=true;form.querySelector("#opMigrate").checked=true;
+    form.requireIssuerMapping.checked=true;form.requireToken2022.checked=true;form.forbidPermanentDelegate.checked=false;form.enforceSmallHolderRedemption.checked=false;
+    form.maxDirectIssuerRedemptionMinimumUsd.value=100;form.maxRouteImpactBps.value=50;form.maxAutonomousUsd.value=100;form.querySelector("#opAcquire").checked=true;form.querySelector("#opMigrate").checked=true;
   });
   document.querySelector("#presetRepair").addEventListener("click",()=>{
-    form.requireIssuerMapping.checked=true;form.requireToken2022.checked=true;form.forbidPermanentDelegate.checked=true;
-    form.maxRouteImpactBps.value=500;form.maxAutonomousUsd.value=100;form.querySelector("#opAcquire").checked=true;form.querySelector("#opMigrate").checked=true;
+    form.requireIssuerMapping.checked=true;form.requireToken2022.checked=true;form.forbidPermanentDelegate.checked=true;form.enforceSmallHolderRedemption.checked=false;
+    form.maxDirectIssuerRedemptionMinimumUsd.value=100;form.maxRouteImpactBps.value=500;form.maxAutonomousUsd.value=100;form.querySelector("#opAcquire").checked=true;form.querySelector("#opMigrate").checked=true;
+  });
+  document.querySelector("#presetSmallHolder")?.addEventListener("click",()=>{
+    form.requireIssuerMapping.checked=true;form.requireToken2022.checked=true;form.forbidPermanentDelegate.checked=false;form.enforceSmallHolderRedemption.checked=true;
+    form.maxDirectIssuerRedemptionMinimumUsd.value=100;form.maxRouteImpactBps.value=500;form.maxAutonomousUsd.value=100;form.querySelector("#opAcquire").checked=true;form.querySelector("#opMigrate").checked=true;
   });
   render();
 }
@@ -185,6 +194,12 @@ function claimOutcome(claim){
     else if(claim.permanentDelegateActive===true){qualifies=false;reasons.push("Active permanent delegate on this mint");}
     else {qualifies=false;reasons.push("Permanent-delegate state unknown");}
   }
+  if(state.covenant.enforceSmallHolderRedemption){
+    const minimum=claim.directIssuerRedemptionMinimumUsd;
+    if(typeof minimum==="number" && minimum<=state.covenant.maxDirectIssuerRedemptionMinimumUsd) reasons.push("Direct issuer redemption minimum $"+minimum);
+    else if(typeof minimum==="number"){qualifies=false;reasons.push("Direct issuer redemption minimum $"+minimum+" exceeds your $"+state.covenant.maxDirectIssuerRedemptionMinimumUsd+" limit");}
+    else {qualifies=false;reasons.push("Direct issuer redemption minimum unknown");}
+  }
   return {qualifies,reasons};
 }
 function claimCardHtml(claim){
@@ -194,7 +209,7 @@ function claimCardHtml(claim){
     <div class="representation-card__head"><div><span class="eyebrow">${claim.issuer}</span><h2>${claim.symbol}</h2></div><div>${current}${badge(outcome.qualifies?"QUALIFIES":"BLOCKED",outcome.qualifies?"allow":"refuse")}</div></div>
     <p class="representation-sub">Apple exposure on Solana · ${claim.tokenProgram}</p>
     <div class="check-list">${outcome.reasons.map(r=>"<div>"+(r.includes("unknown")?"!":"✓")+" "+r+"</div>").join("")}</div>
-    <details class="representation-details"><summary>Representation details</summary><dl class="facts"><div><dt>Exact mint</dt><dd><code>${claim.mint}</code></dd></div><div><dt>Provenance</dt><dd>${claim.provenance}</dd></div><div><dt>Permanent delegate</dt><dd>${claim.permanentDelegateActive===true?"ACTIVE":claim.permanentDelegateActive===false?"NONE":"UNKNOWN"}</dd></div>${claim.permanentDelegateAddress?`<div><dt>Delegate address</dt><dd><code>${claim.permanentDelegateAddress}</code></dd></div>`:""}</dl></details>
+    <details class="representation-details"><summary>Representation details</summary><dl class="facts"><div><dt>Exact mint</dt><dd><code>${claim.mint}</code></dd></div><div><dt>Provenance</dt><dd>${claim.provenance}</dd></div><div><dt>Permanent delegate</dt><dd>${claim.permanentDelegateActive===true?"ACTIVE":claim.permanentDelegateActive===false?"NONE":"UNKNOWN"}</dd></div><div><dt>Direct issuer redemption minimum</dt><dd>${typeof claim.directIssuerRedemptionMinimumUsd==="number"?"$"+claim.directIssuerRedemptionMinimumUsd.toLocaleString():"UNKNOWN"}</dd></div>${claim.permanentDelegateAddress?`<div><dt>Delegate address</dt><dd><code>${claim.permanentDelegateAddress}</code></dd></div>`:""}</dl></details>
     <button class="button button--secondary" data-adopt="${claim.symbol}">USE AS DEMO POSITION</button>
   </article>`;
 }
