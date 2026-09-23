@@ -27,6 +27,8 @@ The user:
 
 The interface deliberately hides internal concepts such as Claim Passport, nonce, PDA and evidence root. Those are available only as technical evidence.
 
+User eligibility is a separate first-class gate. A valid representation does not become usable merely because its mint and issuer are verified. Jurisdiction, investor class, venue and operation-specific evidence must also permit the action; UNKNOWN fails closed.
+
 ## Killer demo
 
 ```
@@ -36,11 +38,11 @@ AAPLx is current
       ↓
 user requires holder consent before collateral lending
       ↓
-AAPLx evidence = UNKNOWN
+AAPLx evidence for that exact protection = UNKNOWN
       ↓
-BLOCKED
+BLOCKED — fail closed, not "AAPLx is unsafe"
       ↓
-AAPLon satisfies the rule
+Ondo publishes the required protection for AAPLon
       ↓
 exact AAPLx -> AAPLon switch is authorized
       ↓
@@ -77,3 +79,12 @@ COVENANT is not a ZK or formal proof system. Its security property is bounded, e
 ## Startup status
 
 Early hackathon prototype. No customers, design partners or production AUM are claimed yet. External product review and customer discovery are the next validation steps.
+
+
+## Reality audit
+
+The Apple case is a reference case, not COVENANT's product boundary. The current repair path demonstrates evidence-bound fail-closed selection: Ondo explicitly documents the holder-consent protection used by the rule, while the repository has no authoritative evidence bound to that exact property for AAPLx.
+
+That is **not** a claim that AAPLx lacks the protection or is universally inferior.
+
+The next canonical killer-demo upgrade should use a concrete representation difference for which both sides are supported by exact primary evidence. See `research/REPRESENTATION-REALITY-AUDIT-V1.md`.
