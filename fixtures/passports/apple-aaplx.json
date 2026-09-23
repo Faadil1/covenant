@@ -48,6 +48,14 @@
       "evidenceClass": "ONCHAIN_DETERMINISTIC",
       "observedAt": "2026-09-23T15:54:35.225Z",
       "source": "Solana mainnet RPC mint inspection; workflow run 35884969091"
+    },
+    "directIssuerRedemptionMinimumUsd": {
+      "value": 5000,
+      "status": "VERIFIED",
+      "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "observedAt": "2026-09-23T17:35:00.000Z",
+      "source": "https://docs.xstocks.fi/docs/frequently-asked-questions",
+      "note": "xStocks official FAQ states direct issuer issuance/redemption has a $5,000 minimum."
     }
   }
 }
