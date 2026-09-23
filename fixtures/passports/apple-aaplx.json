@@ -33,6 +33,21 @@
       "evidenceClass": "ONCHAIN_DETERMINISTIC",
       "observedAt": "2026-09-22T06:31:32.589Z",
       "source": "Solana RPC getAccountInfo @ slot 449298427"
+    },
+    "permanentDelegateActive": {
+      "value": true,
+      "status": "VERIFIED",
+      "evidenceClass": "ONCHAIN_DETERMINISTIC",
+      "observedAt": "2026-09-23T15:54:35.225Z",
+      "source": "Solana mainnet RPC mint inspection; workflow run 35884969091",
+      "note": "Active Token-2022 PermanentDelegate detected on the exact AAPLx mint."
+    },
+    "permanentDelegateAddress": {
+      "value": "5aMNNLQJwAEeoemTEMkv5NVjqKwvvefRYCQ5Z67HFvEq",
+      "status": "VERIFIED",
+      "evidenceClass": "ONCHAIN_DETERMINISTIC",
+      "observedAt": "2026-09-23T15:54:35.225Z",
+      "source": "Solana mainnet RPC mint inspection; workflow run 35884969091"
     }
   }
 }
