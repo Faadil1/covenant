@@ -58,6 +58,14 @@ The historical run used the earlier rights-sensitive holder-consent policy. It r
 
 ## Layer 3 — current live repair gate
 
+Latest revalidation:
+
+- run: `35886284296`
+- artifact: `10762099429`
+- outcome: `SAFE_NO_ACTION`
+- observed route impact: `977.2256517937228 bps`
+- owner repair ceiling: `500 bps`
+
 The current T4 harness re-evaluates both representation truth and the live AAPLx → AAPLon route.
 
 A target representation is not enough. The route must also satisfy the owner's repair-cost ceiling.
@@ -70,13 +78,13 @@ Current policy:
 - live repair route impact ≤ 500 bps;
 - bounded MIGRATE authority.
 
-If AAPLon passes the representation rule but the current route exceeds 500 bps, COVENANT produces **SAFE_NO_ACTION**:
+In the latest run, AAPLon passed the no-PermanentDelegate rule, but the live route was too expensive. COVENANT correctly produced **SAFE_NO_ACTION**:
 
 - no migration authorization is created;
 - no economic transition occurs;
 - the expensive route is not used.
 
-If the route is inside the bound, the harness continues through the governed migration.
+If a later route is inside the bound, the same harness continues through the governed migration. The historical migration run proves that execution path.
 
 This means “self-healing” is not “move at any cost.” It is:
 
