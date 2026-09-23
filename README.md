@@ -53,7 +53,8 @@ The user does not need to understand Claim Passports, PDAs, nonces or commitment
 | Deterministic protection decision | PASS | ALLOW / ESCALATE / REFUSE engine |
 | Governed USDC -> AAPLx execution | PASS | Surfpool run `35698743841` |
 | Replay rejection | PASS | same T3 run |
-| AAPLx -> AAPLon representation switch | PASS | run `35733746142`, artifact `10696822718` |
+| AAPLx -> AAPLon representation switch | PASS | historical governed migration run `35733746142`, artifact `10696822718` |
+| Current Apple repair revalidation | PASS · SAFE NO ACTION | run `35886284296`, route 977.23 bps > owner ceiling 500 bps, artifact `10762099429` |
 | Live Pyth TSLA + Jupiter TSLAx gate | PASS | run `35794379825` |
 | Minimal Solana authority canary build | PASS | 34,112 bytes · ~0.1739392 SOL devnet rent |
 | Full COVENANT mainnet deployment | NOT CLAIMED | preflight only |
