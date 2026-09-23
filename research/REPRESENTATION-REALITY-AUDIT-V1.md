@@ -2,35 +2,123 @@
 
 Observed: 2026-09-23
 
-This audit separates **verified representation facts**, **user-specific eligibility**, and **open questions**. It exists to prevent the Apple demo from turning a missing-data condition into a claim that one issuer is objectively unsafe.
+This audit separates **representation facts**, **user-specific eligibility**, **market/execution evidence**, and **open questions**. Its purpose is to keep the Apple demo factual: COVENANT evaluates fit to an owner's explicit rule, not a universal ranking of issuers.
 
 ## Product conclusion
 
 COVENANT's durable problem survives the Apple example:
 
-> preserve the owner's economic intent while representation identity, rights, eligibility, market conditions and execution routes change.
+> preserve the owner's economic intent while representation identity, rights, eligibility, mint controls, market conditions and execution routes change.
 
-Apple remains a reference case, not the product boundary.
+Apple is the reference case, not the product boundary.
 
-## Verified Apple representation facts
+## Canonical objective Apple difference
+
+A reproducible mainnet Token-2022 inspection now gives the killer demo an objective two-sided fact.
+
+Workflow:
+
+- run: `35884969091`
+- artifact: `10761673239`
+- observedAt: `2026-09-23T15:54:35.225Z`
+- source class: `ONCHAIN_DETERMINISTIC`
+
+### AAPLx
+
+Exact mint:
+
+`XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp`
+
+Observed Token-2022 extensions include:
+
+- MetadataPointer
+- **PermanentDelegate**
+- DefaultAccountState
+- ScaledUiAmountConfig
+- PausableConfig
+- ConfidentialTransferMint
+- TransferHook
+- TokenMetadata
+
+Active permanent delegate:
+
+`5aMNNLQJwAEeoemTEMkv5NVjqKwvvefRYCQ5Z67HFvEq`
+
+Result:
+
+`permanentDelegateActive = true`
+
+### AAPLon
+
+Exact mint:
+
+`123mYEnRLM2LLYsJW3K6oyYh8uP1fngj732iG638ondo`
+
+Observed Token-2022 extensions include:
+
+- ScaledUiAmountConfig
+- MetadataPointer
+- PausableConfig
+- DefaultAccountState
+- ConfidentialTransferMint
+- TransferHook
+- TokenMetadata
+
+No PermanentDelegate extension was observed.
+
+Result:
+
+`permanentDelegateActive = false`
+
+### Why this property matters
+
+Solana's official Token-2022 documentation defines `PermanentDelegate` as a mint-level authority that can authorize transfers and burns for any token account for that mint. Token-account owners cannot revoke the permanent delegate from their token accounts.
+
+Primary semantic source:
+
+- https://solana.com/docs/tokens/extensions/permanent-delegate
+
+This gives COVENANT a concrete owner-selectable rule:
+
+> **Do not use a representation with an active permanent token-moving delegate.**
+
+Under that rule:
+
+```
+AAPLx   -> active PermanentDelegate -> REFUSE
+AAPLon  -> no PermanentDelegate     -> continue evaluation
+```
+
+This is an exact mint-control comparison. It is no longer an UNKNOWN-vs-VERIFIED story.
+
+## Critical truth boundary
+
+The objective difference does **not** establish:
+
+- that AAPLx is universally unsafe;
+- that AAPLon is universally safer;
+- that AAPLon has no issuer controls;
+- that absence of PermanentDelegate means the holder has unrestricted control;
+- that every investor should prefer AAPLon.
+
+Both exact mints expose other Token-2022 controls, including PausableConfig and TransferHook.
+
+COVENANT's claim is narrower:
+
+> These exact Apple representations differ on an onchain authority property, and an owner may choose a policy that rejects that property.
+
+## Verified representation identity
 
 ### AAPLx — xStocks / Backed Assets (JE) Limited
 
-Bound in the existing Claim Passport:
+Bound in the Claim Passport:
 
 - exact Solana mint verified through the official xStocks API + Solana RPC;
 - Token-2022 identity verified;
-- issuer mapping verified.
+- issuer mapping verified;
+- active PermanentDelegate verified from exact mainnet mint state.
 
-Additional issuer facts verified from current official xStocks documentation:
-
-- xStocks are tracker certificates providing economic exposure, not direct Apple shares;
-- they do not confer shareholder voting rights;
-- they are fully collateralized 1:1 with segregated custody;
-- direct issuer issuance/redemption requires KYC/AML;
-- direct issuer transaction minimum is currently $5,000;
-- the official xStocks site states the products are not available to residents of the United States, United Kingdom, Canada, Australia, or sanctioned jurisdictions;
-- secondary-market transferability does not itself establish that a specific user is legally eligible to acquire or use the instrument.
+Additional official xStocks documentation describes xStocks as tracker certificates providing economic exposure rather than direct registered Apple shares. Availability, direct issuance/redemption, KYC and other legal/economic properties remain issuer- and jurisdiction-specific.
 
 Primary sources:
 
@@ -41,19 +129,14 @@ Primary sources:
 
 ### AAPLon — Ondo Stocks
 
-Bound in the existing Claim Passport:
+Bound in the Claim Passport:
 
 - exact Solana mint verified from Ondo's public Solana mapping + Solana RPC;
 - Token-2022 identity verified;
-- issuer mapping verified.
+- issuer mapping verified;
+- absence of PermanentDelegate verified from exact mainnet mint state.
 
-Additional official Ondo facts:
-
-- AAPLon provides economic exposure to AAPL; the token is not itself Apple stock and does not give the holder a right to receive the underlying AAPL shares;
-- Ondo states that backing securities are not lent without express consent of the tokenholder whose tokens are backed by them;
-- Ondo uses independent Verification and Security Agents as part of its investor-protection structure;
-- Ondo has added a Broadridge mechanism through which holders of Ondo tokenized stocks can submit voting preferences for underlying shares; this is not the same as direct shareholder voting rights;
-- eligibility remains jurisdiction- and product-specific. Generic "outside the U.S." language must not be interpreted as universal eligibility.
+Ondo also documents its own product/legal structure and investor-protection mechanisms. Those are separate from the Token-2022 mint-control comparison.
 
 Primary sources:
 
@@ -62,40 +145,31 @@ Primary sources:
 - https://ondo.finance/blog/ondo-partners-with-broadridge-for-tokenized-stocks-voting-capabilities
 - https://app.ondo.finance/assets/aaplon
 
-## What the current repair demo actually proves
+## Historical lending-consent research
 
-The current protection rule is:
+The earlier repair demo used a holder-consent-before-collateral-lending rule:
 
-> "Do not use a representation unless authoritative evidence says the backing securities cannot be lent without my express consent."
+- AAPLon had authoritative evidence bound to TRUE;
+- AAPLx remained UNKNOWN for that exact property.
 
-For AAPLon, Ondo publishes that protection explicitly.
+That remained a valid demonstration of **UNKNOWN fails closed**, but it was weaker as a killer demo because a skeptic could correctly say the source representation was rejected because evidence was missing.
 
-For AAPLx, the repository currently has **no authoritative evidence bound to that exact property**.
+That comparison is now secondary historical evidence, not the canonical judge story.
 
-Therefore:
+## Eligibility is a separate first-class gate
 
-- AAPLon: property VERIFIED true;
-- AAPLx: property UNKNOWN;
-- COVENANT: UNKNOWN fails closed.
+Representation identity and eligibility are different questions.
 
-This proves **fail-closed evidence-bound selection**.
-
-It does **not** prove that AAPLx lends backing securities without consent.
-
-Public copy must preserve that distinction.
-
-## Eligibility is now a first-class input
-
-Eligibility is not a static property of a token. It depends on at least:
+Eligibility can depend on:
 
 - user jurisdiction;
-- investor classification where relevant;
+- investor classification;
 - issuer/distributor;
 - venue;
-- operation (acquire / hold / transfer / redeem);
+- operation such as acquire / hold / transfer / redeem;
 - current terms and evidence time.
 
-The evaluator therefore accepts an `eligibility` evidence object separately from the Claim Passport.
+The evaluator accepts an `eligibility` evidence object separately from the Claim Passport.
 
 Canonical behavior:
 
@@ -105,37 +179,38 @@ UNKNOWN    -> REFUSE
 ELIGIBLE   -> continue evaluation
 ```
 
-Current Canada/Quebec evidence fixtures intentionally demonstrate this:
+Current Canada/Quebec evidence fixtures intentionally demonstrate:
 
-- AAPLx acquisition: VERIFIED false from the official xStocks site;
+- AAPLx acquisition: VERIFIED false under the bound current xStocks jurisdiction evidence;
 - AAPLon acquisition: UNKNOWN until exact Canada/Quebec evidence is bound.
 
-The product must not infer AAPLon eligibility merely because Ondo markets globally outside the U.S.
+The product must never infer AAPLon eligibility from generic global or "outside the U.S." language.
 
-## Stronger future killer-demo candidates
+## Market and execution remain separate gates
 
-The next demo should prefer an **objective, user-relevant difference** rather than only an UNKNOWN-vs-VERIFIED property.
+Passing the PermanentDelegate rule does not authorize a migration by itself.
 
-Candidates to verify with exact primary evidence:
+A target must still pass all relevant current conditions, including:
 
-1. acquisition / redemption eligibility for a concrete user profile;
-2. direct issuer redemption minimum and availability;
-3. governance / voting-preference capability;
-4. issuer-protection structure;
-5. live route quality or reference-vs-execution divergence;
-6. corporate-action handling;
-7. transfer / collateral restrictions.
+- issuer/identity checks;
+- user eligibility where required;
+- live route constraints;
+- exact amount and target;
+- authority cap;
+- nonce/version/expiry;
+- execution commitment.
 
-A candidate becomes demo-canonical only when both sides of the comparison are bound to exact primary evidence.
+The objective representation difference answers **which representation can satisfy the owner's mint-control rule**. The execution proof answers **whether this exact transition is authorized now**.
 
 ## Reality Gate
 
-Do not encode or market any of the following until exact evidence exists:
+Do not encode or market any of the following as universal conclusions:
 
 - "AAPLx is unsafe";
+- "AAPLon is safe";
 - "AAPLon is available to Canadians";
-- "AAPLon gives Apple shareholder voting rights";
-- "xStocks have no redemption rights";
-- "one representation is universally better."
+- "AAPLon has no issuer control";
+- "PermanentDelegate is malicious";
+- "one Apple representation is universally better."
 
-COVENANT evaluates **fit to an owner's explicit rules**, not a universal ranking of issuers.
+COVENANT evaluates **fit to an explicit owner rule under current evidence**.
