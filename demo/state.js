@@ -1,5 +1,12 @@
 export const STORAGE_KEY = "covenant.demo.state.v4";
 
+export const CURRENT_USER_PROFILE = {
+  id: "CA-QC",
+  label: "Canada / Québec",
+  operation: "ACQUIRE",
+  note: "Demo eligibility profile. Current official issuer evidence is checked separately from representation fit.",
+};
+
 export const CLAIMS = {
   AAPLx: {
     id: "apple:xstocks:aaplx",
@@ -11,6 +18,14 @@ export const CLAIMS = {
     permanentDelegateActive: true,
     permanentDelegateAddress: "5aMNNLQJwAEeoemTEMkv5NVjqKwvvefRYCQ5Z67HFvEq",
     directIssuerRedemptionMinimumUsd: 5000,
+    eligibility: {
+      "CA-QC": {
+        canAcquire: false,
+        status: "VERIFIED",
+        source: "https://xstocks.fi/",
+        note: "xStocks currently lists Canada as unavailable."
+      }
+    },
     provenance: "xStocks official asset API + Solana mainnet RPC",
   },
   AAPLon: {
@@ -23,6 +38,14 @@ export const CLAIMS = {
     permanentDelegateActive: false,
     permanentDelegateAddress: null,
     directIssuerRedemptionMinimumUsd: 1,
+    eligibility: {
+      "CA-QC": {
+        canAcquire: false,
+        status: "VERIFIED",
+        source: "https://docs.ondo.finance/ondo-stocks/eligibility",
+        note: "Ondo Stocks currently lists Canada as a prohibited jurisdiction."
+      }
+    },
     provenance: "Ondo official product docs + official Solana mapping + Solana mainnet RPC",
   },
 };
