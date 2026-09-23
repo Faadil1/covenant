@@ -1,20 +1,21 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Covenant — COVENANT</title><link rel="stylesheet" href="./styles.css"></head>
-<body data-page="covenant"><div class="shell">
-<header class="topbar">
-  <a class="brand" href="/"><span class="brand-mark">C</span><span>COVENANT</span></a>
-  <nav class="nav" aria-label="Primary">
-    <a data-nav="home" href="/">Overview</a>
-    <a data-nav="position" href="/position">Position</a>
-    <a data-nav="covenant" href="/covenant">Covenant</a>
-    <a data-nav="claims" href="/claims">Claims</a>
-    <a data-nav="runtime" href="/runtime">Runtime</a>
-    <a data-nav="proofs" href="/proofs">Evidence</a>
-  </nav>
-  <div class="top-status"><span class="status-dot"></span><span data-local-status>LOCAL SANDBOX</span></div>
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Protection Rules — COVENANT</title><link rel="stylesheet" href="./styles.css"></head>
+<body data-page="covenant"><div class="shell"><header class="topbar">
+<a class="brand" href="/"><span class="brand-mark">C</span><span>COVENANT</span></a>
+<nav class="nav" aria-label="Primary">
+<a data-nav="home" href="/">Portfolio</a>
+<a data-nav="position" href="/position">My Position</a>
+<a data-nav="covenant" href="/covenant">Protection</a>
+<a data-nav="claims" href="/claims">Representations</a>
+<a data-nav="runtime" href="/runtime">Check</a>
+<a data-nav="proofs" href="/proofs">Evidence</a>
+</nav>
+<button class="wallet-pill" data-wallet-connect>CONNECT WALLET</button>
 </header><main class="page">
-<section class="page-head"><div><p class="kicker">VERSIONED ECONOMIC INVARIANTS</p><h1>Define what must remain <em>true.</em></h1><p class="lede">This is the writable policy surface. Amend a Covenant and the Position version/nonce changes so old pending authority cannot silently survive.</p></div><div><span class="badge badge--acid" id="covenantStamp">COVENANT v1</span></div></section>
-<section class="section"><form id="covenantForm" class="panel"><div class="grid grid--2">
-<div><span class="eyebrow">CLAIM REQUIREMENTS</span><div class="checkbox-row"><input type="checkbox" name="requireIssuerMapping" id="issuer"><label for="issuer">Official issuer mapping must be verified</label></div><div class="checkbox-row"><input type="checkbox" name="requireToken2022" id="token22"><label for="token22">Claim must use Token-2022</label></div><div class="checkbox-row"><input type="checkbox" name="requireLendingOptIn" id="lending"><label for="lending">Collateral lending must require holder opt-in</label></div></div>
-<div><span class="eyebrow">MARKET / AUTHORITY</span><div class="form-grid" style="margin-top:12px"><div class="field"><label>Max route impact (bps)</label><input name="maxRouteImpactBps" type="number" min="0" step="0.01"></div><div class="field"><label>Max autonomous USD</label><input name="maxAutonomousUsd" type="number" min="0" step="1"></div></div><div style="margin-top:14px"><span class="eyebrow">DELEGATED OPERATORS</span><div class="checkbox-row"><input type="checkbox" name="operator" value="ACQUIRE" id="opAcquire"><label for="opAcquire">ACQUIRE</label></div><div class="checkbox-row"><input type="checkbox" name="operator" value="MIGRATE" id="opMigrate"><label for="opMigrate">MIGRATE</label></div><div class="checkbox-row"><input type="checkbox" name="operator" value="FREEZE" id="opFreeze"><label for="opFreeze">FREEZE</label></div></div></div></div>
-<div class="hero-actions" style="margin-top:22px"><button class="button button--acid" type="submit">SAVE NEW VERSION</button><button class="button button--secondary" type="button" id="presetAcquire">LOAD T3 ACQUIRE POLICY</button><button class="button button--secondary" type="button" id="presetRepair">LOAD T4 REPAIR POLICY</button></div><p id="saveFeedback" class="mono" style="font-size:10px"></p></form></section>
-</main><footer><span>COVENANT / STOCKLANA</span><span>PROPOSE → EVALUATE → AUTHORIZE → EXECUTE</span><span>LIVE MARKET EVIDENCE · MAINNET PROGRAM NOT DEPLOYED</span></footer></div><script type="module" src="./app.js"></script></body></html>
+<section class="page-head user-head"><div><p class="kicker">PROTECTION RULES</p><h1>What does “safe enough”<br><em>mean to you?</em></h1><p class="lede">Choose the rules COVENANT must satisfy before software can act on your Apple position.</p></div><span class="badge badge--acid" id="covenantStamp">PROTECTION v1</span></section>
+<section class="section"><form id="covenantForm" class="protection-form">
+<div class="protection-group"><span class="eyebrow">REPRESENTATION</span><label class="choice-card"><input type="checkbox" name="requireIssuerMapping" id="issuer"><span><strong>Verified issuers only</strong><small>Block representations that cannot be tied to an official issuer source.</small></span></label><label class="choice-card"><input type="checkbox" name="requireToken2022" id="token22"><span><strong>Require supported Solana token standard</strong><small>Keep the demo on verified Token-2022 representations.</small></span></label><label class="choice-card"><input type="checkbox" name="requireLendingOptIn" id="lending"><span><strong>Require my consent before collateral lending</strong><small>If this right is unknown, COVENANT blocks the representation instead of guessing.</small></span></label></div>
+<div class="protection-group"><span class="eyebrow">MARKET & AUTOMATION</span><div class="slider-like"><label>Maximum route impact</label><div class="input-unit"><input name="maxRouteImpactBps" type="number" min="0" step="0.01"><span>bps</span></div><small>50 bps = 0.50% maximum route impact.</small></div><div class="slider-like"><label>Maximum automatic action</label><div class="input-unit"><span>$</span><input name="maxAutonomousUsd" type="number" min="0" step="1"></div><small>Anything larger requires review instead of automatic authority.</small></div><div class="choice-card choice-card--stack"><strong>When my current representation stops qualifying</strong><label><input type="checkbox" name="operator" value="MIGRATE" id="opMigrate"> Allow an exact switch to another qualifying representation</label><label><input type="checkbox" name="operator" value="ACQUIRE" id="opAcquire"> Allow qualifying acquisitions</label><label class="advanced-only"><input type="checkbox" name="operator" value="FREEZE" id="opFreeze"> Allow freeze action</label></div></div>
+<div class="protection-save"><div><span class="eyebrow">SUMMARY</span><p>Verified representations only. Market impact stays inside your limit. Actions above your cap require review.</p></div><button class="button button--acid button--large" type="submit">SAVE PROTECTION SETTINGS</button><p id="saveFeedback" class="mono"></p></div>
+</form></section>
+<section class="section"><div class="preset-row"><button class="button button--secondary" type="button" id="presetAcquire">BALANCED PRESET</button><button class="button button--secondary" type="button" id="presetRepair">STRICT RIGHTS PRESET</button></div></section>
+</main><footer><span>COVENANT / STOCKLANA</span><span>PROTECTED TOKENIZED-STOCK OWNERSHIP</span><span>USER APP · EVIDENCE-BOUND AUTHORITY</span></footer></div><script type="module" src="./app.js"></script></body></html>

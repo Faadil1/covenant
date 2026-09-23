@@ -268,7 +268,7 @@ export function evaluateTransition({ state, operator, targetClaim, amountUsd, pr
 
 export async function generateProof({ state, evaluation }) {
   if (evaluation.decision !== "ALLOW") {
-    throw new Error("Only ALLOW can become an executable demo proof.");
+    throw new Error("Only ALLOW can become an exact demo authorization.");
   }
   const expiresAt = new Date(Date.now() + 90_000).toISOString();
   const proofMaterial = {
@@ -297,18 +297,18 @@ export async function generateProof({ state, evaluation }) {
 
 export function authorizePending(state) {
   if (!state.pending || state.pending.status !== "PROVEN") {
-    throw new Error("Generate a proof first.");
+    throw new Error("Create an authorization first.");
   }
   if (Date.parse(state.pending.expiresAt) <= Date.now()) {
     state.pending.status = "EXPIRED";
-    saveState(state, { type: "PROOF_EXPIRED", message: "Pending proof expired before authorization" });
-    throw new Error("Proof expired.");
+    saveState(state, { type: "PROOF_EXPIRED", message: "Pending authorization expired before confirmation" });
+    throw new Error("Authorization expired.");
   }
   if (
     state.pending.positionVersion !== state.position.version ||
     state.pending.nonce !== state.position.nonce
   ) {
-    throw new Error("Position state changed. Fresh proof required.");
+    throw new Error("Position state changed. Fresh authorization required.");
   }
   state.pending.status = "AUTHORIZED";
   state.pending.authorized = true;
@@ -319,10 +319,10 @@ export function authorizePending(state) {
 
 export async function executePending(state) {
   const proof = state.pending;
-  if (!proof || proof.status !== "AUTHORIZED") throw new Error("Authorize the proof first.");
-  if (Date.parse(proof.expiresAt) <= Date.now()) throw new Error("Proof expired.");
+  if (!proof || proof.status !== "AUTHORIZED") throw new Error("Confirm the authorization first.");
+  if (Date.parse(proof.expiresAt) <= Date.now()) throw new Error("Authorization expired.");
   if (proof.positionVersion !== state.position.version || proof.nonce !== state.position.nonce) {
-    throw new Error("Replay/stale proof refused: position version or nonce changed.");
+    throw new Error("Replay/stale authorization refused: position version or nonce changed.");
   }
 
   const preState = structuredClone(state.position);

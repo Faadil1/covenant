@@ -1,32 +1,31 @@
 import { readFile } from "node:fs/promises";
 
-const names = ["index","position","covenant","claims","runtime","proofs"];
-const pages = Object.fromEntries(await Promise.all(names.map(async (name) => [
-  name,
-  await readFile(new URL("../demo/" + name + ".html", import.meta.url), "utf8"),
-])));
-const app = await readFile(new URL("../demo/app.js", import.meta.url), "utf8");
-const state = await readFile(new URL("../demo/state.js", import.meta.url), "utf8");
-const css = await readFile(new URL("../demo/styles.css", import.meta.url), "utf8");
-const redirects = await readFile(new URL("../demo/_redirects", import.meta.url), "utf8");
+const names=["index","position","covenant","claims","runtime","proofs"];
+const pages=Object.fromEntries(await Promise.all(names.map(async name=>[name,await readFile(new URL("../demo/"+name+".html",import.meta.url),"utf8")])));
+const app=await readFile(new URL("../demo/app.js",import.meta.url),"utf8");
+const state=await readFile(new URL("../demo/state.js",import.meta.url),"utf8");
+const css=await readFile(new URL("../demo/styles.css",import.meta.url),"utf8");
+const redirects=await readFile(new URL("../demo/_redirects",import.meta.url),"utf8");
 
-const checks = [
-  ["six product surfaces", names.every((name) => pages[name].includes('data-page="'))],
-  ["runtime writable controls", pages.runtime.includes("GENERATE AUTHORIZATION") && pages.runtime.includes("EXECUTE LOCAL MUTATION")],
-  ["covenant writable controls", pages.covenant.includes("SAVE NEW VERSION")],
-  ["position mutation controls", pages.position.includes("FREEZE / UNFREEZE") && pages.position.includes("RESET SANDBOX")],
-  ["claim adoption", app.includes("ADOPT_CLAIM")],
-  ["evidence-before-authority flow", app.includes("authorizePending") && app.includes("executePending")],
-  ["local state mutation", state.includes("LOCAL_BROWSER_SANDBOX") && state.includes("localStorage")],
-  ["nonce/version anti-replay", state.includes("Position state changed. Fresh proof required.")],
-  ["verified T3 evidence", pages.proofs.includes("35698743841")],
-  ["verified T4 evidence", pages.proofs.includes("35733746142") && pages.proofs.includes("10696822718")],
-  ["mainnet truth boundary", pages.runtime.includes("Apple sandbox") && pages.proofs.includes("Full COVENANT mainnet deployment = not yet done")],
-  ["responsive CSS", css.includes("@media(max-width:560px)")],
-  ["extensionless Cloudflare navigation", names.every((name) => !pages[name].includes('href="./runtime.html"') && !pages[name].includes('href="./position.html"') && !pages[name].includes('href="./proofs.html"'))],
-  ["Cloudflare redirect loop guard", !/\/position\s+\/position\.html\s+200/.test(redirects) && !/\/runtime\s+\/runtime\.html\s+200/.test(redirects)],
+const checks=[
+ ["six user-app surfaces",names.every(name=>pages[name].includes('data-page="'))],
+ ["user-first hero",pages.index.includes("Own the stock.")&&pages.index.includes("TRY APPLE PROTECTION")],
+ ["wallet connection",app.includes("window.solana")&&pages.index.includes("CONNECT WALLET")],
+ ["human protection rules",pages.covenant.includes("Verified issuers only")&&pages.covenant.includes("Maximum automatic action")],
+ ["representation comparison",pages.claims.includes("Same Apple.")&&app.includes("QUALIFIES")],
+ ["user decision language",pages.runtime.includes("PROTECTION CHECK")&&app.includes("PROTECTED")&&app.includes("BLOCKED")],
+ ["exact authorization controls",pages.runtime.includes("CREATE EXACT AUTHORIZATION")&&pages.runtime.includes("APPLY DEMO ACTION")],
+ ["technical detail progressive disclosure",pages.runtime.includes("Why this action is safe")],
+ ["local state mutation",state.includes("LOCAL_BROWSER_SANDBOX")&&state.includes("localStorage")],
+ ["nonce/version anti-replay",state.includes("Fresh authorization required")],
+ ["verified T3 evidence",pages.proofs.includes("35698743841")],
+ ["verified T4 evidence",pages.proofs.includes("35733746142")&&pages.proofs.includes("10696822718")],
+ ["truth boundary",pages.proofs.includes("no full COVENANT mainnet deployment")||pages.proofs.includes("no full COVENANT mainnet deployment".toUpperCase())||pages.proofs.includes("no full COVENANT mainnet deployment".toLowerCase())],
+ ["responsive CSS",css.includes("@media(max-width:560px)")],
+ ["extensionless navigation",names.every(name=>!pages[name].includes('href="./runtime.html"')&&!pages[name].includes('href="./position.html"')&&!pages[name].includes('href="./proofs.html"'))],
+ ["Cloudflare redirect guard",!/\/position\s+\/position\.html\s+200/.test(redirects)&&!/\/runtime\s+\/runtime\.html\s+200/.test(redirects)],
 ];
 
-const failed = checks.filter(([, ok]) => !ok);
-if (failed.length) throw new Error("Demo integrity failed: " + failed.map(([n]) => n).join(", "));
-console.log(JSON.stringify({schemaVersion:"covenant.demo-integrity.v2",status:"PASS",checks:checks.map(([n])=>n)},null,2));
+const failed=checks.filter(([,ok])=>!ok);
+if(failed.length)throw new Error("Demo integrity failed: "+failed.map(([n])=>n).join(", "));
+console.log(JSON.stringify({schemaVersion:"covenant.user-app-integrity.v1",status:"PASS",checks:checks.map(([n])=>n)},null,2));

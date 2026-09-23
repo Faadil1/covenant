@@ -2,73 +2,78 @@
 
 ## One line
 
-**COVENANT lets autonomous software change a tokenized asset's representation only when the resulting position still matches the owner's economic rules.**
+**COVENANT protects a user's tokenized-stock position when the token representing that stock changes.**
 
-## The problem
+## User problem
 
-The same underlying stock can exist onchain through different issuers and token representations. A wallet can authorize a signer and a router can find a path, but neither answers whether the resulting representation still preserves what the owner intended to hold.
+A person can buy Apple exposure on Solana through more than one token representation. Those representations can differ in issuer, rights, token properties and market behavior.
 
-## The product
+The user should not need to become an RWA infrastructure expert just to answer:
 
-For Stocklana, the user says:
+> **Does the token I hold still match the Apple position I intended to own?**
 
-> Keep my Apple exposure inside these rules. If the current representation stops qualifying, do not move value unless a fresh exact authorization exists.
+## User application
 
-COVENANT evaluates the exact representation, fresh evidence and the proposed post-state. It returns `ALLOW | ESCALATE | REFUSE`. Only an ALLOW may become a one-time, evidence-bound authorization.
+The Stocklana app is a protected Apple position.
 
-## What is technically demonstrated
+The user:
 
-**Apple / depth**
+1. chooses Apple;
+2. sets protection rules in normal language;
+3. sees whether AAPLx or AAPLon qualifies;
+4. runs a Protection Check before an action;
+5. receives **PROTECTED / BLOCKED / REVIEW NEEDED**;
+6. only a passing action may become one exact authorization.
 
-- AAPLx and AAPLon exact identities resolved from official/onchain evidence.
-- Deterministic fail-closed evaluation.
-- Governed `USDC -> AAPLx` Jupiter execution on a Surfpool mainnet-shaped fork.
-- Consumed authorization replay refused.
-- `AAPLx -> AAPLon` migration with the same Position identity preserved.
+The interface deliberately hides internal concepts such as Claim Passport, nonce, PDA and evidence root. Those are available only as technical evidence.
 
-Canonical evidence: T3 run `35698743841`; T4 run `35733746142`, artifact `10696822718`.
+## Killer demo
 
-**Tesla / live market evidence**
+```
+My Apple Position
+      ↓
+AAPLx is current
+      ↓
+user requires holder consent before collateral lending
+      ↓
+AAPLx evidence = UNKNOWN
+      ↓
+BLOCKED
+      ↓
+AAPLon satisfies the rule
+      ↓
+exact AAPLx -> AAPLon switch is authorized
+      ↓
+same Apple Position remains protected
+```
 
-The current Pyth trial is not entitled to AAPL/AAPLx/AAPLon. Instead of faking those feeds, the live fallback uses Pyth TSLA/USD and an executable Jupiter TSLAx quote.
+## Pyth
 
-Run `35794379825` passed the real COVENANT evaluator with fresh Pyth + Jupiter evidence.
+Pyth market data is an authorization input, not a price widget.
 
-## What “authorization” means cryptographically
+The ideal Apple path consumes AAPL / AAPLx / AAPLon. Current trial entitlement is pending, so Tesla remains a technical live-market fallback only. Run `35794379825` demonstrates the same evaluator using live Pyth TSLA and executable Jupiter TSLAx pricing.
 
-COVENANT is **not a ZK or formal proof system**.
+## Technical evidence
 
-The internal `TransitionProofArgs` name refers to an authorization packet whose fields are hash-bound with SHA-256 commitments. The onchain program then requires the configured evaluator signer and independently checks Covenant hash, Position version, nonce, expiry, operator, value cap, destination/target and exact execution commitment.
+- exact AAPLx / AAPLon identities: verified;
+- deterministic fail-closed evaluator: verified;
+- governed `USDC -> AAPLx`: Surfpool run `35698743841`;
+- replay refused;
+- representation switch `AAPLx -> AAPLon`: run `35733746142`, artifact `10696822718`;
+- live Pyth/Jupiter evaluator path: run `35794379825`.
 
-The security property is **bounded, evidence-bound authority**, not mathematical proof of offchain truth.
+## Security boundary
 
-## Why Solana is load-bearing
+COVENANT is not a ZK or formal proof system. Its security property is bounded, evidence-bound authority: exact target, amount, expiry, evaluator, version, nonce and execution material are bound before the Solana authority boundary may act.
 
-The Position PDA controls authority. Nonce/version state rejects replay. Exact token identities and Jupiter execution material are checked onchain. Successful settlement advances state atomically.
+## Current truth boundary
 
-## Demo boundary
+- user app: browser sandbox;
+- T3/T4: Surfpool mainnet-shaped fork;
+- live-market fallback: Pyth + Jupiter;
+- minimal 34,112-byte devnet authority canary: build-ready, public deployment pending free devnet funding;
+- full mainnet COVENANT execution: not claimed.
 
-- Browser interaction: local sandbox.
-- T3/T4: Surfpool mainnet-shaped fork.
-- Tesla fallback: live Pyth + live Jupiter data through the real evaluator.
-- Devnet canary: minimal 34,112-byte authority program is build-ready; public deployment is pending devnet faucet/funding availability. No public devnet transaction is claimed yet.
-- Full mainnet COVENANT execution: not claimed.
+## Startup status
 
-## Primary sponsor fit
-
-The strongest Stocklana sponsor fit is Pyth: market data is an authorization input, not a dashboard decoration. A stale, low-quality or materially divergent reference causes COVENANT to refuse authority.
-
-## Current startup status
-
-This is an early hackathon prototype. There are no claimed customers, design partners or production assets under management yet. External product review and customer discovery are the next validation steps.
-
-## Evidence map
-
-- `src/policy/evaluator.mjs`
-- `src/evidence/pyth-pro.mjs`
-- `src/evidence/tsla-pyth-jupiter.mjs`
-- `anchor/programs/covenant_runtime/`
-- `scripts/t3b-surfpool-execute.mjs`
-- `scripts/t4-self-healing-surfpool.mjs`
-- `scripts/devnet-authority-canary.mjs`
-- `demo/`
+Early hackathon prototype. No customers, design partners or production AUM are claimed yet. External product review and customer discovery are the next validation steps.

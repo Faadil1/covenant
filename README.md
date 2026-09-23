@@ -1,80 +1,71 @@
 # COVENANT
 
-**Keep the economic exposure you asked for, even when its token representation changes.**
+**Protected tokenized-stock ownership.**
 
-Tokenized assets can represent the same underlying through different issuers, mints, rights and market conditions. COVENANT checks the exact representation and the exact proposed transition before software receives one-time authority to act.
+COVENANT is a user application for people who want stock exposure on Solana without having to understand which token representation is currently acceptable.
+
+For the Stocklana demo, the user promise is simple:
+
+> **Protect my Apple position. Only use representations that satisfy my rules, and do not give software authority to act unless the exact action still keeps me protected.**
+
+The engine underneath checks exact representation identity, market evidence, user protection rules and bounded execution authority.
+
+## User experience
 
 ```
-owner intent
+Choose Apple
    ↓
-exact representation + fresh evidence
+Set protection rules
    ↓
-ALLOW / ESCALATE / REFUSE
+Compare AAPLx / AAPLon
    ↓
-evidence-bound one-time authorization
+PROTECTED / BLOCKED / REVIEW NEEDED
    ↓
-Solana execution
+one exact authorization
+   ↓
+Solana execution boundary
 ```
 
-## What the Stocklana demo shows
+The judge-facing app exposes:
 
-**Apple = representation continuity.** AAPLx and AAPLon are distinct Solana Token-2022 representations of Apple exposure. COVENANT resolves their exact identities, evaluates policy fit, constrains execution and rejects replay.
+- **Portfolio** — the protected Apple position;
+- **Protection** — human-readable rules such as verified issuers, route-impact limit and automation cap;
+- **Representations** — AAPLx vs AAPLon under those rules;
+- **Check** — a complete end-to-end protection decision;
+- **Evidence** — the technical execution and market evidence underneath.
 
-**Tesla = live market gate.** The current Pyth trial does not grant the required Apple feeds, so the live fallback uses Pyth `Equity.US.TSLA/USD` feed `1435` and an executable Jupiter `USDC -> TSLAx` quote. The real evaluator checks freshness, Pyth confidence, publisher count, execution tracking error and route impact before returning ALLOW or REFUSE.
+## Why this is different from a wallet policy
 
-Live TSLA fallback run: `35794379825`.
+A wallet policy asks whether an actor may sign.
+
+COVENANT asks whether the **resulting stock position still satisfies what the owner asked to hold**, then creates authority for that exact action only.
+
+The user does not need to understand Claim Passports, PDAs, nonces or commitments. Those remain implementation details under “Why this action is safe.”
 
 ## Verified technical evidence
 
 | Boundary | Status | Evidence |
 | --- | --- | --- |
-| Exact AAPLx / AAPLon identity | PASS | issuer + Solana RPC |
-| Deterministic ALLOW / ESCALATE / REFUSE | PASS | tests |
+| Exact AAPLx / AAPLon identities | PASS | official issuer + Solana RPC |
+| Deterministic protection decision | PASS | ALLOW / ESCALATE / REFUSE engine |
 | Governed USDC -> AAPLx execution | PASS | Surfpool run `35698743841` |
 | Replay rejection | PASS | same T3 run |
-| AAPLx -> AAPLon representation migration | PASS | run `35733746142`, artifact `10696822718` |
-| Live Pyth TSLA + Jupiter TSLAx policy gate | PASS | run `35794379825` |
+| AAPLx -> AAPLon representation switch | PASS | run `35733746142`, artifact `10696822718` |
+| Live Pyth TSLA + Jupiter TSLAx gate | PASS | run `35794379825` |
+| Minimal Solana authority canary build | PASS | 34,112 bytes · ~0.1739392 SOL devnet rent |
 | Full COVENANT mainnet deployment | NOT CLAIMED | preflight only |
-| Minimal authority canary build | PASS | 34,112-byte Solana program · ~0.1739392 SOL devnet rent |
+
+The Tesla path is **evidence fallback only** while the current Pyth trial lacks Apple feed entitlement. It is not a second user story.
 
 ## Cryptographic scope
 
-COVENANT does **not** claim a zero-knowledge proof or a formal proof system.
+COVENANT does **not** claim ZK or formal verification.
 
-The internal Rust type `TransitionProofArgs` is an **authorization/evidence packet**. SHA-256 commitments bind the Covenant, representation record, evidence root, pre/post state, receipt material and exact execution commitment. The evaluator must sign the transaction, while the Solana program independently checks the stored Covenant hash, evaluator identity, Position version, nonce, expiry, operator, value cap and exact execution material before the PDA can move value.
+The internal `TransitionProofArgs` is an evidence/authorization packet. SHA-256 commitments bind the Covenant, representation, evidence, exact action and resulting state. The evaluator signer plus Solana program independently enforce version, nonce, expiry, operator, amount cap and execution material before authority can be consumed.
 
-Public wording therefore uses **evidence-bound authorization** rather than implying ZK or formal verification.
+Public wording uses **evidence-bound authorization**.
 
-## Why Solana matters
-
-The onchain boundary uses:
-
-- a PDA-controlled Position;
-- exact SPL / Token-2022 identities;
-- evaluator signer checks;
-- version + nonce replay protection;
-- expiry and autonomous value caps;
-- exact execution commitments;
-- Jupiter CPI constraints for the Stocklana path;
-- post-settlement checks and receipts.
-
-Without the onchain boundary, this would only be an offchain rules engine.
-
-## Product boundary
-
-A wallet policy asks:
-
-> May this actor sign?
-
-A router asks:
-
-> Where can I trade?
-
-COVENANT asks:
-
-> Does this exact transition still preserve the economic exposure I asked for, and may software receive authority for this transition only?
-
-## Run the evidence
+## Run
 
 ```bash
 npm run test:t2
@@ -82,17 +73,15 @@ npm run probe:tsla-fallback
 npm run preflight:tsla-mainnet
 ```
 
-The public browser demo is intentionally a sandbox. Verified fork execution and live-market evidence are linked from the Evidence page. A 34,112-byte minimal Solana authority canary builds successfully and is ready for public devnet deployment. Automated deployment has not yet produced a public transaction because the available GitHub-hosted devnet faucets were rate-limited or unavailable. No devnet execution is claimed until Explorer-verifiable signatures exist.
+The browser app is a local sandbox. Verified fork execution and live-market evidence are linked under Evidence. No full mainnet COVENANT execution is claimed.
 
 ## Repository map
 
-- `src/policy/evaluator.mjs` — deterministic policy engine
-- `src/evidence/` — Pyth and market-evidence adapters
+- `demo/` — Stocklana user application
+- `src/policy/evaluator.mjs` — protection decision engine
+- `src/evidence/` — market and representation evidence
 - `src/execution/` — exact execution commitments
 - `anchor/programs/covenant_runtime/` — Solana authority boundary
+- `canary/` — minimal public authority canary
 - `fixtures/passports/` — exact representation records
 - `scripts/` — reproducible evidence harnesses
-- `demo/` — judge-facing product surface
-- `docs/SUBMISSION-PACK.md` — concise submission narrative
-
-**Truth boundary:** no full COVENANT mainnet financial execution is claimed until an Explorer-verifiable mainnet transaction exists.
