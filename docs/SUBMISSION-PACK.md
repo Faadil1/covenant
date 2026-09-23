@@ -1,200 +1,74 @@
-# COVENANT — Stocklana Submission Pack
+# COVENANT — Stocklana submission brief
 
-## One-line pitch
+## One line
 
-**COVENANT is the programmable runtime for economic ownership: users define what must remain economically true, and autonomous actors may change token implementations only when the resulting state still satisfies those invariants.**
+**COVENANT lets autonomous software change a tokenized asset's representation only when the resulting position still matches the owner's economic rules.**
 
-> Tokens are implementations. Economic intent is the interface.
+## The problem
 
-## Problem
+The same underlying stock can exist onchain through different issuers and token representations. A wallet can authorize a signer and a router can find a path, but neither answers whether the resulting representation still preserves what the owner intended to hold.
 
-Tokenized equities create a new failure mode: the same economic underlying can appear through different issuers, mints, lifecycle rules, rights semantics and liquidity paths.
+## The product
 
-A wallet or router can move tokens. It does not prove that the resulting portfolio still represents what the owner intended to own.
+For Stocklana, the user says:
 
-Traditional agent pattern:
+> Keep my Apple exposure inside these rules. If the current representation stops qualifying, do not move value unless a fresh exact authorization exists.
 
-```
-AUTHORITY -> ACTION -> AUDIT
-```
+COVENANT evaluates the exact representation, fresh evidence and the proposed post-state. It returns `ALLOW | ESCALATE | REFUSE`. Only an ALLOW may become a one-time, evidence-bound authorization.
 
-COVENANT:
+## What is technically demonstrated
 
-```
-PROPOSE -> PROVE -> AUTHORIZE -> EXECUTE
-```
+**Apple / depth**
 
-Authority is attached to one exact economic state transition, not granted generically to an agent wallet.
+- AAPLx and AAPLon exact identities resolved from official/onchain evidence.
+- Deterministic fail-closed evaluation.
+- Governed `USDC -> AAPLx` Jupiter execution on a Surfpool mainnet-shaped fork.
+- Consumed authorization replay refused.
+- `AAPLx -> AAPLon` migration with the same Position identity preserved.
 
-## Product primitive
+Canonical evidence: T3 run `35698743841`; T4 run `35733746142`, artifact `10696822718`.
 
-An **Invariant Position** represents stable economic intent.
+**Tesla / live market evidence**
 
-For the Stocklana proof:
+The current Pyth trial is not entitled to AAPL/AAPLx/AAPLon. Instead of faking those feeds, the live fallback uses Pyth TSLA/USD and an executable Jupiter TSLAx quote.
 
-```
-Invariant Position
-  APPLE ECONOMIC EXPOSURE
-       |
-       +-- AAPLx  / xStocks / Backed
-       |
-       +-- AAPLon / Ondo Stocks
-```
+Run `35794379825` passed the real COVENANT evaluator with fresh Pyth + Jupiter evidence.
 
-Each representation has a versioned Claim Passport with exact mint identity, issuer provenance, onchain properties, rights/lifecycle evidence and live route evidence.
+## What “authorization” means cryptographically
 
-The Covenant evaluates those facts plus the proposed post-state and delegated authority.
+COVENANT is **not a ZK or formal proof system**.
 
-## What is proven
+The internal `TransitionProofArgs` name refers to an authorization packet whose fields are hash-bound with SHA-256 commitments. The onchain program then requires the configured evaluator signer and independently checks Covenant hash, Position version, nonce, expiry, operator, value cap, destination/target and exact execution commitment.
 
-### T1 — real Claim Graph
-
-Apple has multiple exact Solana Token-2022 representations resolved through issuer/official sources and Solana RPC.
-
-### T2 — deterministic proof decision
-
-The evaluator returns `ALLOW | ESCALATE | REFUSE` with reason codes and evidence provenance.
-
-Required evidence that is missing remains `UNKNOWN`; `UNKNOWN` fails closed.
-
-### T3 — proof before power
-
-Canonical run: `35698743841`.
-
-An exact `USDC -> AAPLx` transition was:
-
-1. proposed;
-2. evaluated;
-3. bound to a Transition Proof;
-4. authorized through the Position PDA;
-5. executed through Jupiter on a Surfpool mainnet-shaped fork;
-6. verified against postconditions;
-7. recorded as a Transition Receipt;
-8. replayed and refused with balances unchanged.
-
-### T4 — representation mobility / self-healing
-
-Canonical run: `35733746142`. Artifact ID: `10696822718`.
-
-The same Invariant Position began with AAPLx.
-
-A rights-sensitive Covenant required evidence that collateral lending requires holder opt-in. The bound AAPLx Claim Passport had that fact as `UNKNOWN`, so the current representation failed closed.
-
-AAPLon had authoritative evidence satisfying the property and a live direct Jupiter migration route under the repair Covenant ceiling.
-
-COVENANT then:
-
-```
-AAPLx current Claim
-  -> REFUSE (EVIDENCE_UNKNOWN)
-  -> repair planner: MIGRATE
-  -> fresh AAPLon proof
-  -> nonce-bound authorization PDA
-  -> exact AAPLx -> AAPLon Jupiter CPI
-  -> full source consumption
-  -> current_claim_mint changes
-  -> Position identity preserved
-  -> receipt
-```
-
-Observed fork result:
-
-- source: `3,000,000` raw AAPLx;
-- minimum output: `29,293,783` raw AAPLon;
-- settled output: `29,421,175` raw AAPLon;
-- direct route price impact: `248.14350341680253 bps`;
-- repair ceiling: `500 bps`;
-- source residual: `0`;
-- version / nonce: `1/1 -> 2/2`;
-- Position identity preserved: `true`;
-- representation changed: `true`.
-
-### T5 — receipt integrity
-
-The deterministic receipt verifier binds the receipt to the exact:
-
-- proof;
-- Covenant;
-- Claim Passport;
-- evidence root;
-- execution commitment;
-- settled state;
-- transaction reference.
-
-Tampered settled-state evidence fails verification.
+The security property is **bounded, evidence-bound authority**, not mathematical proof of offchain truth.
 
 ## Why Solana is load-bearing
 
-COVENANT uses Solana as the actual economic authority and settlement layer, not as a decorative chain reference.
+The Position PDA controls authority. Nonce/version state rejects replay. Exact token identities and Jupiter execution material are checked onchain. Successful settlement advances state atomically.
 
-The proof depends on:
+## Demo boundary
 
-- exact SPL / Token-2022 mint identity;
-- Token-2022 account/program properties;
-- PDA-controlled Position authority;
-- nonce/version state;
-- evaluator-bound authorization;
-- Jupiter CPI routing;
-- atomic post-settlement verification;
-- auditable transaction state;
-- composable token accounts.
+- Browser interaction: local sandbox.
+- T3/T4: Surfpool mainnet-shaped fork.
+- Tesla fallback: live Pyth + live Jupiter data through the real evaluator.
+- Devnet canary: public Solana authority-boundary transaction and replay refusal.
+- Full mainnet COVENANT execution: not claimed.
 
-Without the Solana execution boundary, COVENANT would collapse into an offchain policy dashboard.
+## Primary sponsor fit
 
-## Why this is not a router
+The strongest Stocklana sponsor fit is Pyth: market data is an authorization input, not a dashboard decoration. A stale, low-quality or materially divergent reference causes COVENANT to refuse authority.
 
-Routing answers:
+## Current startup status
 
-> Where can I trade this token?
+This is an early hackathon prototype. There are no claimed customers, design partners or production assets under management yet. External product review and customer discovery are the next validation steps.
 
-COVENANT answers:
+## Evidence map
 
-> Is this exact economic state transition still faithful to the owner's intent, and may authority exist for this exact transition?
-
-The route is only one evidence input.
-
-## Why this is not an agent wallet
-
-An agent wallet owns broad signing power and constrains behavior around that authority.
-
-COVENANT reverses the relationship:
-
-```
-No proof -> no transition authority
-Exact valid proof -> exact transition authority
-Consumed/stale proof -> no authority
-```
-
-## Demo truth boundary
-
-The demo contains two verified technical-proof narratives:
-
-1. T3 ACQUIRE — `USDC -> AAPLx`;
-2. T4 self-healing — `AAPLx -> AAPLon`.
-
-Both economic executions occurred on Surfpool mainnet-shaped forks. **No mainnet financial transaction is claimed.**
-
-Live quotes and issuer/onchain identity evidence were used by the proof harnesses, while fork-only balances were seeded before authorization.
-
-## Current limitations
-
-- mainnet financial execution remains disabled;
-- evidence changes do not yet instantaneously revoke every already-issued unexpired proof; outstanding exposure is bounded by expiry, nonce/version, freeze/amendment and evaluator rotation;
-- Claim Passport adapters are narrow and Apple-focused for the Stocklana wedge;
-- the 500 bps self-healing route ceiling is a demo/repair Covenant parameter, not investment advice or a universal production threshold.
-
-## Repository evidence map
-
-- `fixtures/passports/` — Claim Passports;
-- `src/policy/evaluator.mjs` — deterministic rule engine;
-- `src/proof/transition-proof.mjs` — proof + receipt hashing;
-- `src/runtime/covenant-runtime.mjs` — PROPOSE -> PROVE orchestration;
-- `src/runtime/repair-planner.mjs` — STAY / MIGRATE / FREEZE / ESCALATE;
-- `anchor/programs/covenant_runtime` — Position authority and exact execution boundary;
-- `scripts/t3b-surfpool-execute.mjs` — verified ACQUIRE proof harness;
-- `scripts/t4-self-healing-surfpool.mjs` — verified representation-mobility harness;
-- `demo/` — jury-facing product surface.
-
-## Closing line
-
-**Traditional portfolios hold assets. COVENANT holds intentions.**
+- `src/policy/evaluator.mjs`
+- `src/evidence/pyth-pro.mjs`
+- `src/evidence/tsla-pyth-jupiter.mjs`
+- `anchor/programs/covenant_runtime/`
+- `scripts/t3b-surfpool-execute.mjs`
+- `scripts/t4-self-healing-surfpool.mjs`
+- `scripts/devnet-authority-canary.mjs`
+- `demo/`

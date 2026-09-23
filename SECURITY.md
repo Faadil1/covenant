@@ -1,5 +1,11 @@
 # COVENANT Security Model
 
+## Cryptographic scope
+
+COVENANT does not implement zero-knowledge proofs or formal verification. The internal `TransitionProofArgs` structure is an evidence-bound authorization packet. SHA-256 commitments bind exact transition material; an evaluator signature attests the decision; the Solana program independently enforces the stored authority constraints.
+
+The system therefore claims **bounded transition authorization and replay resistance**, not cryptographic proof that arbitrary offchain facts are true.
+
 ## Security objective
 
 An autonomous proposer must never gain generic control of Position assets.

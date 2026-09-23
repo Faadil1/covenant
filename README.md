@@ -1,154 +1,98 @@
 # COVENANT
 
-**Let software change how your stock is represented — without letting it change what you agreed to own.**
+**Keep the economic exposure you asked for, even when its token representation changes.**
 
-A tokenized stock can have multiple Solana representations with different issuers, rights, liquidity and market behavior. COVENANT lets an owner define the economic rules that must remain true. An agent receives authority for **one exact transition only** when the proposed post-state still satisfies those rules.
+Tokenized assets can represent the same underlying through different issuers, mints, rights and market conditions. COVENANT checks the exact representation and the exact proposed transition before software receives one-time authority to act.
 
 ```
-OWNER INTENT
+owner intent
    ↓
-COVENANT
-   ↓
-live evidence + exact Claim
+exact representation + fresh evidence
    ↓
 ALLOW / ESCALATE / REFUSE
    ↓
-exact one-time authorization
+evidence-bound one-time authorization
    ↓
 Solana execution
 ```
 
-## Stocklana demo
+## What the Stocklana demo shows
 
-The Stocklana wedge is Apple exposure:
+**Apple = representation continuity.** AAPLx and AAPLon are distinct Solana Token-2022 representations of Apple exposure. COVENANT resolves their exact identities, evaluates policy fit, constrains execution and rejects replay.
 
-- **AAPLx** — xStocks / Backed, exact Solana Token-2022 mint.
-- **AAPLon** — Ondo Stocks, exact Solana Token-2022 mint.
-- **Pyth Pro** — live AAPL / AAPLx / AAPLon market evidence.
-- **Jupiter** — exact route construction and CPI settlement.
-- **COVENANT Position PDA** — owns transition authority, nonce/version state and replay protection.
+**Tesla = live market gate.** The current Pyth trial does not grant the required Apple feeds, so the live fallback uses Pyth `Equity.US.TSLA/USD` feed `1435` and an executable Jupiter `USDC -> TSLAx` quote. The real evaluator checks freshness, Pyth confidence, publisher count, execution tracking error and route impact before returning ALLOW or REFUSE.
 
-The simple user promise:
+Live TSLA fallback run: `35794379825`.
 
-> **Keep Apple exposure inside my rules. If a representation no longer qualifies, software may not move value unless a fresh exact authorization exists.**
+## Verified technical evidence
 
-## What is already proven
+| Boundary | Status | Evidence |
+| --- | --- | --- |
+| Exact AAPLx / AAPLon identity | PASS | issuer + Solana RPC |
+| Deterministic ALLOW / ESCALATE / REFUSE | PASS | tests |
+| Governed USDC -> AAPLx execution | PASS | Surfpool run `35698743841` |
+| Replay rejection | PASS | same T3 run |
+| AAPLx -> AAPLon representation migration | PASS | run `35733746142`, artifact `10696822718` |
+| Live Pyth TSLA + Jupiter TSLAx policy gate | PASS | run `35794379825` |
+| Full COVENANT mainnet deployment | NOT CLAIMED | preflight only |
+| Devnet authority canary | automated workflow | `covenant-devnet-authority-canary` |
 
-**T1–T4 technical proof: PASS.**
+## Cryptographic scope
 
-- Real AAPLx and AAPLon Claim identities are resolved from issuer/onchain evidence.
-- The same deterministic evaluator returns `ALLOW | ESCALATE | REFUSE` and fails closed on missing/stale evidence.
-- A governed `USDC -> AAPLx` transition executed through Jupiter on a Surfpool mainnet-shaped fork.
-- Replay of the consumed transition was refused with balances unchanged.
-- A separate self-healing proof changed representation while preserving the same Position identity.
-- Treasury semantic portability (USTB / TBILL / USDY) reuses the same evaluator/proof core, showing that Apple is a wedge rather than a hard-coded product identity.
+COVENANT does **not** claim a zero-knowledge proof or a formal proof system.
 
-Canonical fork evidence:
+The internal Rust type `TransitionProofArgs` is an **authorization/evidence packet**. SHA-256 commitments bind the Covenant, representation record, evidence root, pre/post state, receipt material and exact execution commitment. The evaluator must sign the transaction, while the Solana program independently checks the stored Covenant hash, evaluator identity, Position version, nonce, expiry, operator, value cap and exact execution material before the PDA can move value.
 
-- T3b ACQUIRE — GitHub Actions run `35698743841`.
-- T4 self-healing — run `35733746142`, artifact `10696822718`.
-- Treasury portability — run `35759121490`.
+Public wording therefore uses **evidence-bound authorization** rather than implying ZK or formal verification.
 
-## Pyth becomes policy, not decoration
+## Why Solana matters
 
-The Stocklana canary Covenant consumes the exact Pyth feeds highlighted by the hackathon:
+The onchain boundary uses:
 
-- `Equity.US.AAPL/USD`
-- `Crypto.AAPLX/USD`
-- `Crypto.AAPLON/USD`
+- a PDA-controlled Position;
+- exact SPL / Token-2022 identities;
+- evaluator signer checks;
+- version + nonce replay protection;
+- expiry and autonomous value caps;
+- exact execution commitments;
+- Jupiter CPI constraints for the Stocklana path;
+- post-settlement checks and receipts.
 
-For the first canary, AAPLx must remain within a bounded tracking error of AAPL, Pyth confidence must remain bounded, evidence must be fresh, and the Jupiter route must remain below the owner's execution-impact ceiling.
+Without the onchain boundary, this would only be an offchain rules engine.
 
-```
-AAPL reference (Pyth)
-        +
-AAPLx price (Pyth)
-        ↓
-tracking error / confidence / freshness
-        +
-exact Jupiter route impact
-        ↓
-COVENANT
-        ↓
-ALLOW or REFUSE
-```
+## Product boundary
 
-Run the deterministic Pyth policy tests:
+A wallet policy asks:
+
+> May this actor sign?
+
+A router asks:
+
+> Where can I trade?
+
+COVENANT asks:
+
+> Does this exact transition still preserve the economic exposure I asked for, and may software receive authority for this transition only?
+
+## Run the evidence
 
 ```bash
 npm run test:t2
-```
-
-With a Pyth Pro key, capture live signed evidence:
-
-```bash
-PYTH_API_KEY=... npm run probe:pyth
-```
-
-## Live fallback while Apple Pyth access is gated
-
-The current Pyth trial is not entitled to AAPL / AAPLx / AAPLon, so the repository also carries a truthful fallback rather than substituting fake market data.
-
-**Tesla fallback is live-validated:**
-
-- Pyth `Equity.US.TSLA/USD` feed `1435`;
-- official xStocks TSLAx mint `XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB`;
-- live Jupiter `USDC -> TSLAx` executable quote;
-- the same COVENANT evaluator applies tracking-error, freshness, confidence, publisher and route-impact rules;
-- live GitHub Actions evidence returned `ALLOW`.
-
-Run:
-
-```bash
 npm run probe:tsla-fallback
 npm run preflight:tsla-mainnet
 ```
 
-See `docs/TSLA-FALLBACK.md`.
+The public browser demo is intentionally a sandbox. Verified fork execution and live-market evidence are linked from the Evidence page. The devnet canary workflow deploys and exercises the authority boundary on public Solana devnet without using mainnet funds.
 
-## Mainnet canary
+## Repository map
 
-The repository now includes a **fail-closed mainnet preflight** for a tiny `USDC -> AAPLx` canary.
+- `src/policy/evaluator.mjs` — deterministic policy engine
+- `src/evidence/` — Pyth and market-evidence adapters
+- `src/execution/` — exact execution commitments
+- `anchor/programs/covenant_runtime/` — Solana authority boundary
+- `fixtures/passports/` — exact representation records
+- `scripts/` — reproducible evidence harnesses
+- `demo/` — judge-facing product surface
+- `docs/SUBMISSION-PACK.md` — concise submission narrative
 
-Default: **$5**. Absolute script hard cap: **$20**.
-
-```bash
-PYTH_API_KEY=... \
-JUPITER_API_KEY=... \
-COVENANT_MAINNET_POSITION=... \
-COVENANT_DESTINATION_TOKEN_ACCOUNT=... \
-npm run preflight:mainnet
-```
-
-The preflight does **not** load a wallet secret, sign, deploy or submit a transaction. It checks the live Pyth policy, exact Jupiter route, program deployment, Position existence and unexpected instruction material.
-
-**Truth boundary:** a real mainnet financial transaction is **not claimed yet**. The public wording changes only after an Explorer-verifiable canary exists and replay has been tested.
-
-See `docs/MAINNET-PYTH-CANARY.md`.
-
-## Why Solana is load-bearing
-
-Without Solana, COVENANT becomes an offchain policy dashboard. The technical proof uses:
-
-- exact SPL / Token-2022 mint identity;
-- PDA-controlled Position authority;
-- nonce/version state;
-- exact proof-bound execution commitments;
-- Jupiter CPI routing;
-- settlement postconditions;
-- replay refusal;
-- auditable receipts.
-
-## Product boundary
-
-COVENANT is not a generic agent wallet or router.
-
-A wallet policy asks:
-
-> **May this actor sign?**
-
-COVENANT asks:
-
-> **Would this exact state transition still leave the owner holding what they intended to own — and may authority exist for this transition only?**
-
-**Economic intent is the interface.**
+**Truth boundary:** no full COVENANT mainnet financial execution is claimed until an Explorer-verifiable mainnet transaction exists.

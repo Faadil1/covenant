@@ -12,11 +12,11 @@ const redirects = await readFile(new URL("../demo/_redirects", import.meta.url),
 
 const checks = [
   ["six product surfaces", names.every((name) => pages[name].includes('data-page="'))],
-  ["runtime writable controls", pages.runtime.includes("GENERATE PROOF") && pages.runtime.includes("EXECUTE LOCAL MUTATION")],
+  ["runtime writable controls", pages.runtime.includes("GENERATE AUTHORIZATION") && pages.runtime.includes("EXECUTE LOCAL MUTATION")],
   ["covenant writable controls", pages.covenant.includes("SAVE NEW VERSION")],
   ["position mutation controls", pages.position.includes("FREEZE / UNFREEZE") && pages.position.includes("RESET SANDBOX")],
   ["claim adoption", app.includes("ADOPT_CLAIM")],
-  ["proof before power flow", app.includes("authorizePending") && app.includes("executePending")],
+  ["evidence-before-authority flow", app.includes("authorizePending") && app.includes("executePending")],
   ["local state mutation", state.includes("LOCAL_BROWSER_SANDBOX") && state.includes("localStorage")],
   ["nonce/version anti-replay", state.includes("Position state changed. Fresh proof required.")],
   ["verified T3 evidence", pages.proofs.includes("35698743841")],

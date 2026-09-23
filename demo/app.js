@@ -219,7 +219,7 @@ function pageRuntime() {
     const pending = state.pending;
     proofBox.textContent = pending
       ? pending.proofHash + " · " + pending.status + " · expires " + pending.expiresAt
-      : "No pending proof";
+      : "No pending authorization";
     authorizeButton.disabled = !pending || pending.status !== "PROVEN";
     executeButton.disabled = !pending || pending.status !== "AUTHORIZED";
     downloadButton.disabled = !pending;
@@ -248,8 +248,8 @@ function pageRuntime() {
     try {
       if (!lastEvaluation) throw new Error("Evaluate a proposal first.");
       state.pending = await generateProof({ state, evaluation: lastEvaluation });
-      saveState(state, { type: "PROOF_GENERATED", message: "Fresh browser Transition Proof generated" });
-      executeStatus.textContent = "Fresh proof generated. It is still non-executable until authorized.";
+      saveState(state, { type: "PROOF_GENERATED", message: "Fresh browser authorization packet generated" });
+      executeStatus.textContent = "Fresh authorization packet generated. It is still non-executable until authorized.";
       renderState();
     } catch (error) {
       executeStatus.textContent = error.message;
