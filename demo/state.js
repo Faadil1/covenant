@@ -19,7 +19,7 @@ export const CLAIMS = {
     decimals: 9,
     tokenProgram: "Token-2022",
     lendingOptIn: true,
-    provenance: "Ondo official repository + Solana RPC",
+    provenance: "Ondo official product docs + official Solana mapping + Solana RPC",
   },
 };
 
