@@ -1,4 +1,4 @@
-export const STORAGE_KEY = "covenant.demo.state.v3";
+export const STORAGE_KEY = "covenant.demo.state.v4";
 
 export const CLAIMS = {
   AAPLx: {
@@ -54,7 +54,7 @@ export const EVIDENCE_PROFILES = {
 
 export function freshState() {
   return {
-    schemaVersion: "covenant.browser-sandbox.v3",
+    schemaVersion: "covenant.browser-sandbox.v4",
     position: {
       id: "APPLE-001",
       intent: "APPLE ECONOMIC EXPOSURE",
@@ -91,7 +91,7 @@ export function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return freshState();
     const parsed = JSON.parse(raw);
-    return parsed?.schemaVersion === "covenant.browser-sandbox.v3"
+    return parsed?.schemaVersion === "covenant.browser-sandbox.v4"
       ? parsed
       : freshState();
   } catch {
