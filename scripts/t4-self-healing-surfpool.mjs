@@ -667,7 +667,7 @@ async function main() {
     });
     if (current.evaluation.decision !== Decision.REFUSE) {
       throw new Error(
-        "Current AAPLx must fail closed under the rights-sensitive Covenant: " +
+        "Current AAPLx must fail closed under the control-sensitive Covenant: " +
         JSON.stringify(current.evaluation.ruleResults),
       );
     }
@@ -796,7 +796,7 @@ async function main() {
     const evidenceRecords = [
       withPayloadHash(aaplonPassport.properties.officialIssuerMappingVerified),
       withPayloadHash(aaplonPassport.properties.tokenProgram),
-      withPayloadHash(aaplonPassport.properties.collateralLendingRequiresHolderOptIn),
+      withPayloadHash(aaplonPassport.properties.permanentDelegateActive),
       withPayloadHash(target.market.priceImpactBps),
     ];
 
