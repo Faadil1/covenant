@@ -35,10 +35,10 @@ export const EVIDENCE_PROFILES = {
   },
   t4: {
     id: "verified-t4",
-    label: "Verified T4 SELF-HEALING snapshot",
+    label: "Verified T4 control-sensitive snapshot",
     observedAt: "2026-09-22T13:31:57.384Z",
     routeImpactBps: { AAPLx: 0, AAPLon: 248.14 },
-    note: "Recorded self-healing fork evidence snapshot; not current market data.",
+    note: "Recorded historical migration-route snapshot; not current market data. PermanentDelegate state comes from mainnet mint evidence run 35884969091.",
   },
   stale: {
     id: "stale-demo",
