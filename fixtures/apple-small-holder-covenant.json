@@ -1,0 +1,49 @@
+{
+  "id": "covenant:apple:small-holder-access",
+  "version": 1,
+  "underlyingIntent": "APPLE economic exposure",
+  "notes": "Small-holder access profile. The owner requires exact issuer identity, Token-2022 identity, direct issuer redemption minimum at or below $100, and an exact route under 500 bps. Eligibility is evaluated separately and still fails closed.",
+  "rules": [
+    {
+      "id": "claim.official_issuer_mapping_verified",
+      "evidencePath": "passport.properties.officialIssuerMappingVerified",
+      "operator": "EQUALS",
+      "expected": true,
+      "hard": true,
+      "minEvidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "onUnknown": "REFUSE",
+      "reasonCode": "OFFICIAL_ISSUER_MAPPING_NOT_VERIFIED"
+    },
+    {
+      "id": "claim.token_program",
+      "evidencePath": "passport.properties.tokenProgram",
+      "operator": "EQUALS",
+      "expected": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "hard": true,
+      "minEvidenceClass": "ONCHAIN_DETERMINISTIC",
+      "onUnknown": "REFUSE",
+      "reasonCode": "TOKEN_PROGRAM_NOT_ALLOWED"
+    },
+    {
+      "id": "claim.direct_issuer_redemption_minimum_usd",
+      "evidencePath": "passport.properties.directIssuerRedemptionMinimumUsd",
+      "operator": "LTE",
+      "expected": 100,
+      "hard": true,
+      "minEvidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+      "onUnknown": "REFUSE",
+      "reasonCode": "DIRECT_REDEMPTION_MINIMUM_TOO_HIGH"
+    },
+    {
+      "id": "repair.max_route_impact_bps",
+      "evidencePath": "market.priceImpactBps",
+      "operator": "LTE",
+      "expected": 500,
+      "hard": true,
+      "minEvidenceClass": "LIVE_MARKET_OR_ORACLE",
+      "maxAgeSeconds": 30,
+      "onUnknown": "REFUSE",
+      "reasonCode": "REPAIR_ROUTE_IMPACT_EXCEEDED"
+    }
+  ]
+}
