@@ -22,7 +22,7 @@ const checks=[
  ["verified T3 evidence",pages.proofs.includes("35698743841")],
  ["verified T4 evidence",pages.proofs.includes("35733746142")&&pages.proofs.includes("10696822718")],
  ["objective Apple control rule",state.includes("permanentDelegateActive")&&app.includes("claim.permanent_delegate")&&!pages.runtime.includes("CONSENT UNKNOWN")],
- ["objective Apple issuer terms",state.includes("directIssuerRedemptionMinimumUsd")&&app.includes("claim.direct_issuer_redemption_minimum_usd")&&pages.claims.includes("$5,000")&&pages.claims.includes("$1")],
+ ["objective Apple issuer terms",state.includes("directIssuerRedemptionMinimumUsd: 5000")&&state.includes("directIssuerRedemptionMinimumUsd: 1")&&app.includes("claim.direct_issuer_redemption_minimum_usd")&&app.includes("Direct issuer redemption minimum")],
  ["profile-aware eligibility matrix",state.includes("CURRENT_USER_PROFILE")&&state.includes('"CA-QC"')&&app.includes("NOT USABLE HERE")&&pages.claims.includes("Eligibility is checked separately from representation fit")],
  ["no false Canada switch claim",pages.claims.includes("both representations currently fail the eligibility gate")&&!pages.claims.includes("AAPLon is available to Canadians")],
  ["truth boundary",pages.proofs.includes("no full COVENANT mainnet deployment")||pages.proofs.includes("no full COVENANT mainnet deployment".toUpperCase())||pages.proofs.includes("no full COVENANT mainnet deployment".toLowerCase())],
