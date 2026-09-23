@@ -84,6 +84,7 @@ export function evaluateTransition({
   passport,
   market,
   portfolioPostState,
+  eligibility,
   authority,
   proposal,
   now = new Date(),
@@ -99,6 +100,7 @@ export function evaluateTransition({
     passport,
     market,
     portfolioPostState,
+    eligibility,
     authority,
     proposal,
   };
