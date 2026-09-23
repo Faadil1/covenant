@@ -75,6 +75,13 @@ export const EVIDENCE_PROFILES = {
     routeImpactBps: { AAPLx: 0, AAPLon: 248.14 },
     note: "Recorded historical migration-route snapshot; not current market data. PermanentDelegate state comes from mainnet mint evidence run 35884969091.",
   },
+  repairLatest: {
+    id: "recorded-repair-revalidation-35886284296",
+    label: "Latest recorded repair revalidation",
+    observedAt: null,
+    routeImpactBps: { AAPLx: 0, AAPLon: LATEST_REPAIR_REVALIDATION.routeImpactBps },
+    note: "Point-in-time live route evidence from run 35886284296; not a continuously live quote.",
+  },
   stale: {
     id: "stale-demo",
     label: "Stale evidence simulation",
@@ -254,6 +261,22 @@ export function evaluateTransition({ state, operator, targetClaim, amountUsd, pr
         maxMinimum,
       );
     }
+
+    const eligibility = claim.eligibility?.[CURRENT_USER_PROFILE.id];
+    const eligibilityVerified = eligibility?.status === "VERIFIED";
+    const userCanAcquire = eligibilityVerified ? eligibility.canAcquire : null;
+    push(
+      "eligibility.user_can_acquire",
+      eligibilityVerified && userCanAcquire === true ? "ALLOW" : "REFUSE",
+      eligibilityVerified
+        ? userCanAcquire === true
+          ? "RULE_PASS"
+          : "USER_INELIGIBLE_FOR_REPRESENTATION"
+        : "EVIDENCE_UNKNOWN",
+      userCanAcquire,
+      true,
+    );
+
     if (profile.stale) {
       push("market.freshness", "REFUSE", "EVIDENCE_STALE", null, "fresh evidence");
     } else {
