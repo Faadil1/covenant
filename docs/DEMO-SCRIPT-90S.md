@@ -1,65 +1,69 @@
-# 90-Second Judge Demo
+# 90-Second Judge Demo — User Application
 
-## 0:00–0:12 — Category
+## 0:00–0:12 — The user problem
 
-Open on the hero.
+Open on **Portfolio**.
 
-> “Tokenized assets gave us programmable ownership, but autonomous agents still operate on token symbols and wallet permissions. COVENANT changes the interface: you own the economic intention, not the implementation.”
+> “I want Apple exposure on Solana. I should not need to know which token wrapper, issuer or mint is safe to use today.”
 
-Point to:
+Click **TRY APPLE PROTECTION**.
 
-**APPLE ECONOMIC EXPOSURE — INVARIANT POSITION**
+> “So I tell COVENANT one thing: protect my Apple position.”
 
-## 0:12–0:27 — Claim Graph
+## 0:12–0:27 — Protection rules
 
-Scroll to the Claim Graph.
+Open **Protection**.
 
-> “These are two real Solana representations of the same Apple exposure: AAPLx and AAPLon. They have different issuers, exact mints, semantics and market paths. COVENANT does not assume they are equivalent.”
+> “I choose the rules in normal language: verified issuers only, a maximum route-impact limit, and how much software may act on automatically.”
 
-Open a Claim Passport briefly.
+Show the holder-consent rule.
 
-> “Every policy fact carries provenance. If we cannot prove a required property, it remains UNKNOWN.”
+> “If I care about a specific ownership right, I can require that too. Unknown evidence is not treated as true.”
 
-## 0:27–0:43 — Proof before power
+## 0:27–0:42 — Same stock, different representations
 
-Show the T3 transition rail.
+Open **Representations**.
 
-> “An ALLOW decision is still not transaction authority. We bind the Covenant, Claim Passport, fresh evidence, post-state, nonce, expiry and the exact Jupiter invocation into a Transition Proof.”
+> “Here are two real Solana representations of Apple: AAPLx and AAPLon. COVENANT does not assume they are equivalent just because both represent Apple.”
 
-Point at:
+Point to the visible **QUALIFIES / BLOCKED** result.
 
-```
-PROPOSE -> PROVE -> AUTHORIZE -> EXECUTE
-```
+> “Each representation is checked against my rules.”
 
-> “Only then can the Position PDA move value.”
+## 0:42–0:58 — The killer moment
 
-## 0:43–0:58 — Verified ACQUIRE
+Open **Check**, choose **REPRESENTATION NEEDS SWITCH**.
 
-Show pre-state and settled state.
+> “My current AAPLx representation no longer satisfies a rights-sensitive rule because the required evidence is unknown.”
 
-> “In the verified Stocklana fork proof, COVENANT spent exactly 100 million raw USDC and received 29.33 million raw AAPLx. Version and nonce advanced, and replay of the consumed proof was refused with balances unchanged.”
+Run **CHECK PROTECTION**.
 
-## 0:58–1:18 — Self-healing
+Point to **BLOCKED** for the current representation, then AAPLon as the qualifying target.
 
-Select **Verified self-healing migration**.
+> “COVENANT blocks the unsafe state and identifies a representation that still satisfies what I asked to own.”
 
-> “Now the important part: the Position is not married to AAPLx. A rights-sensitive Covenant requires holder opt-in before backing collateral can be lent. That required fact is UNKNOWN for our bound AAPLx Passport, so COVENANT fails closed.”
+## 0:58–1:18 — Evidence before authority
 
-Point to AAPLon.
+Create the exact authorization.
 
-> “AAPLon has authoritative evidence for that property and a qualifying live route. COVENANT creates a fresh proof and migrates the whole representation.”
+> “A passing decision still is not open-ended wallet power. COVENANT binds this exact target, amount, expiry and current Position state before authority exists.”
 
-Scroll to the self-healing section.
+Confirm, then apply the demo action.
 
-> “The source goes to zero, AAPLon is received, version and nonce advance, but the Invariant Position ID stays the same.”
+> “The action is consumed once. Version and nonce advance, so replay is refused.”
+
+Open **Why this action is safe** only briefly.
+
+> “The crypto machinery is underneath the product, not the product.”
 
 ## 1:18–1:30 — Close
 
-Show the final manifesto.
+Return to **My Position**.
 
-> “That is the category shift: tokens are implementations; economic intent is the interface. COVENANT makes autonomous ownership representation-mobile without giving an agent open-ended financial authority.”
+> “The token representation changed, but the user’s Apple position stayed protected. That is COVENANT.”
 
 End on:
 
-**PROOF BEFORE POWER.**
+**OWN THE STOCK. NOT THE TOKEN RISK.**
+
+Truth boundary for narration: the browser action is local sandbox state. Verified Jupiter execution and replay refusal are linked under Evidence from Surfpool mainnet-shaped fork runs. No full COVENANT mainnet execution is claimed.

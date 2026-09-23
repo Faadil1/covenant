@@ -9,18 +9,22 @@ const files = {
 };
 
 const checks = [
-  ["category thesis", files.submission.includes("COVENANT lets autonomous software change a tokenized asset's representation")],
-  ["non-router differentiation", files.submission.includes("a router can find a path")],
-  ["solana load-bearing", files.submission.includes("Why Solana is load-bearing")],
+  ["user-app thesis", files.submission.includes("COVENANT protects a user's tokenized-stock position")],
+  ["single Apple wedge", files.submission.includes("protected Apple position") && files.submission.includes("AAPLx or AAPLon")],
+  ["human decision language", files.submission.includes("PROTECTED / BLOCKED / REVIEW NEEDED")],
+  ["wallet-policy differentiation", files.readme.includes("A wallet policy asks whether an actor may sign")],
+  ["solana authority boundary", files.submission.includes("Solana authority boundary")],
+  ["pyth does real work", files.submission.includes("Pyth market data is an authorization input")],
   ["t3 canonical run", files.submission.includes("35698743841")],
   ["t4 canonical run", files.submission.includes("35733746142")],
   ["t4 artifact", files.submission.includes("10696822718")],
-  ["fork truth boundary", files.submission.includes("Full mainnet COVENANT execution: not claimed") && files.submission.includes("Surfpool mainnet-shaped fork")],
+  ["fork truth boundary", files.submission.includes("Surfpool mainnet-shaped fork") && files.submission.includes("full mainnet COVENANT execution: not claimed")],
   ["demo under 90 seconds", files.demoScript.includes("1:18–1:30")],
+  ["demo starts with user", files.demoScript.includes("Protect my Apple position")],
   ["unknown fail closed", files.security.includes("There is no UNKNOWN -> TRUE coercion")],
   ["known revocation gap", files.security.includes("Known hardening gap")],
   ["t4 status pass", files.t4.includes("Status: **PASS")],
-  ["readme t4 pass", files.readme.includes("AAPLx -> AAPLon representation migration") && files.readme.includes("35733746142")],
+  ["readme t4 evidence", files.readme.includes("AAPLx -> AAPLon representation switch") && files.readme.includes("35733746142")],
 ];
 
 const failed = checks.filter(([, ok]) => !ok);
@@ -29,7 +33,7 @@ if (failed.length) {
 }
 
 console.log(JSON.stringify({
-  schemaVersion: "covenant.submission-readiness.v1",
+  schemaVersion: "covenant.submission-readiness.v2",
   status: "PASS",
   checks: checks.map(([name]) => name),
 }, null, 2));
