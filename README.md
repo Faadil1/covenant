@@ -8,7 +8,7 @@ For the Stocklana demo, the user promise is simple:
 
 > **Protect my Apple position. Only use representations that satisfy my rules, and do not give software authority to act unless the exact action still keeps me protected.**
 
-The engine underneath checks exact representation identity, market evidence, user protection rules and bounded execution authority.
+The engine underneath checks exact representation identity, user-specific eligibility, market evidence, protection rules and bounded execution authority.
 
 ## User experience
 
@@ -18,6 +18,8 @@ Choose Apple
 Set protection rules
    ↓
 Compare AAPLx / AAPLon
+   ↓
+Check representation + user eligibility
    ↓
 PROTECTED / BLOCKED / REVIEW NEEDED
    ↓
@@ -85,3 +87,12 @@ The browser app is a local sandbox. Verified fork execution and live-market evid
 - `canary/` — minimal public authority canary
 - `fixtures/passports/` — exact representation records
 - `scripts/` — reproducible evidence harnesses
+
+
+## Representation reality boundary
+
+The current Apple repair demo is intentionally fail-closed. Ondo publishes an explicit protection that its backing securities are not lent without the relevant tokenholder's express consent. COVENANT has not bound authoritative evidence for that exact property on AAPLx, so AAPLx is **UNKNOWN**, not proven unsafe.
+
+Eligibility is evaluated separately from representation identity. A representation can be technically valid and still be unusable for a particular person, jurisdiction, venue or operation. `UNKNOWN` and `INELIGIBLE` both refuse.
+
+See `research/REPRESENTATION-REALITY-AUDIT-V1.md`.
