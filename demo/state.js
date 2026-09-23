@@ -29,14 +29,14 @@ export const EVIDENCE_PROFILES = {
     label: "Verified T3 ACQUIRE snapshot",
     observedAt: "2026-09-22T07:19:30.869Z",
     routeImpactBps: { AAPLx: 19.98, AAPLon: 471.29 },
-    note: "Recorded Stocklana fork proof snapshot; not current market data.",
+    note: "Recorded Stocklana fork evidence snapshot; not current market data.",
   },
   t4: {
     id: "verified-t4",
     label: "Verified T4 SELF-HEALING snapshot",
     observedAt: "2026-09-22T13:31:57.384Z",
     routeImpactBps: { AAPLx: 0, AAPLon: 248.14 },
-    note: "Recorded self-healing fork proof snapshot; not current market data.",
+    note: "Recorded self-healing fork evidence snapshot; not current market data.",
   },
   stale: {
     id: "stale-demo",

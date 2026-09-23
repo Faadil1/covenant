@@ -125,9 +125,9 @@ function pageCovenant() {
     state.position.version += 1;
     state.position.nonce += 1;
     state.pending = null;
-    saveState(state, { type: "COVENANT_AMEND", message: "Covenant amended; prior pending proof invalidated" });
+    saveState(state, { type: "COVENANT_AMEND", message: "Covenant amended; prior pending authorization invalidated" });
     render(); renderGlobal();
-    document.querySelector("#saveFeedback").textContent = "Saved. Prior pending proof invalidated by version/nonce change.";
+    document.querySelector("#saveFeedback").textContent = "Saved. Prior pending authorization invalidated by version/nonce change.";
   });
   document.querySelector("#presetAcquire").addEventListener("click", () => {
     form.requireLendingOptIn.checked = false;
@@ -278,7 +278,7 @@ function pageRuntime() {
   });
 
   downloadButton.addEventListener("click", () => {
-    if (state.pending) downloadJson("covenant-transition-proof.json", state.pending);
+    if (state.pending) downloadJson("covenant-transition-authorization.json", state.pending);
   });
 
   document.querySelector("#loadAcquireScenario").addEventListener("click", () => {
