@@ -1,4 +1,4 @@
-export const STORAGE_KEY = "covenant.demo.state.v2";
+export const STORAGE_KEY = "covenant.demo.state.v3";
 
 export const CLAIMS = {
   AAPLx: {
@@ -8,8 +8,9 @@ export const CLAIMS = {
     mint: "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
     decimals: 8,
     tokenProgram: "Token-2022",
-    lendingOptIn: null,
-    provenance: "xStocks official asset API + Solana RPC",
+    permanentDelegateActive: true,
+    permanentDelegateAddress: "5aMNNLQJwAEeoemTEMkv5NVjqKwvvefRYCQ5Z67HFvEq",
+    provenance: "xStocks official asset API + Solana mainnet RPC",
   },
   AAPLon: {
     id: "apple:ondo:aaplon",
@@ -18,8 +19,9 @@ export const CLAIMS = {
     mint: "123mYEnRLM2LLYsJW3K6oyYh8uP1fngj732iG638ondo",
     decimals: 9,
     tokenProgram: "Token-2022",
-    lendingOptIn: true,
-    provenance: "Ondo official product docs + official Solana mapping + Solana RPC",
+    permanentDelegateActive: false,
+    permanentDelegateAddress: null,
+    provenance: "Ondo official product docs + official Solana mapping + Solana mainnet RPC",
   },
 };
 
@@ -50,7 +52,7 @@ export const EVIDENCE_PROFILES = {
 
 export function freshState() {
   return {
-    schemaVersion: "covenant.browser-sandbox.v2",
+    schemaVersion: "covenant.browser-sandbox.v3",
     position: {
       id: "APPLE-001",
       intent: "APPLE ECONOMIC EXPOSURE",
@@ -68,7 +70,7 @@ export function freshState() {
       version: 1,
       requireIssuerMapping: true,
       requireToken2022: true,
-      requireLendingOptIn: false,
+      forbidPermanentDelegate: false,
       maxRouteImpactBps: 50,
       maxAutonomousUsd: 100,
       allowedOperators: ["ACQUIRE", "MIGRATE", "FREEZE"],
@@ -85,7 +87,7 @@ export function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return freshState();
     const parsed = JSON.parse(raw);
-    return parsed?.schemaVersion === "covenant.browser-sandbox.v2"
+    return parsed?.schemaVersion === "covenant.browser-sandbox.v3"
       ? parsed
       : freshState();
   } catch {
@@ -132,7 +134,7 @@ export function loadPreset(name) {
     state.position.currentClaim = "AAPLx";
     state.position.balances.USDC = 0;
     state.position.balances.AAPLx = 3000000;
-    state.covenant.requireLendingOptIn = true;
+    state.covenant.forbidPermanentDelegate = true;
     state.covenant.maxRouteImpactBps = 500;
     state.events = [{
       at: new Date().toISOString(),
@@ -183,14 +185,18 @@ export function evaluateTransition({ state, operator, targetClaim, amountUsd, pr
         "Token-2022",
       );
     }
-    if (state.covenant.requireLendingOptIn) {
-      const knownTrue = claim.lendingOptIn === true;
+    if (state.covenant.forbidPermanentDelegate) {
+      const noPermanentDelegate = claim.permanentDelegateActive === false;
       push(
-        "claim.lending_opt_in",
-        knownTrue ? "ALLOW" : "REFUSE",
-        knownTrue ? "RULE_PASS" : claim.lendingOptIn == null ? "EVIDENCE_UNKNOWN" : "RULE_FAILED",
-        claim.lendingOptIn,
-        true,
+        "claim.permanent_delegate",
+        noPermanentDelegate ? "ALLOW" : "REFUSE",
+        noPermanentDelegate
+          ? "RULE_PASS"
+          : claim.permanentDelegateActive == null
+            ? "EVIDENCE_UNKNOWN"
+            : "PERMANENT_DELEGATE_NOT_ALLOWED",
+        claim.permanentDelegateActive,
+        false,
       );
     }
     if (profile.stale) {
