@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "covenant.eligibility-evidence.v1",
+  "subject": {
+    "jurisdiction": "CA-QC",
+    "investorClass": "UNSPECIFIED"
+  },
+  "representationId": "apple:ondo:aaplon",
+  "userCanAcquire": {
+    "value": null,
+    "status": "UNKNOWN",
+    "evidenceClass": "UNKNOWN",
+    "observedAt": null,
+    "source": "No exact Canada/Quebec AAPLon acquisition eligibility evidence is bound in this repository yet.",
+    "note": "UNKNOWN must fail closed. Generic 'outside the U.S.' language is not enough to infer eligibility in Canada."
+  }
+}
