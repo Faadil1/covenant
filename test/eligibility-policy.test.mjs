@@ -58,7 +58,7 @@ test("Canada/Quebec xStocks evidence refuses AAPLx acquisition", () => {
   assert.equal(result.reasonCode, "USER_INELIGIBLE_FOR_REPRESENTATION");
 });
 
-test("Canada/Quebec AAPLon remains fail-closed while exact eligibility is unknown", () => {
+test("Canada/Quebec Ondo eligibility evidence refuses AAPLon acquisition", () => {
   const proof = evaluateTransition(
     input(aaplon, { userCanAcquire: caAaplon.userCanAcquire }),
   );
@@ -66,8 +66,8 @@ test("Canada/Quebec AAPLon remains fail-closed while exact eligibility is unknow
   const result = proof.ruleResults.find(
     (row) => row.ruleId === "eligibility.user_can_acquire",
   );
-  assert.equal(result.actual, null);
-  assert.equal(result.reasonCode, "EVIDENCE_UNKNOWN");
+  assert.equal(result.actual, false);
+  assert.equal(result.reasonCode, "USER_INELIGIBLE_FOR_REPRESENTATION");
 });
 
 test("eligibility semantics allow evaluation to continue only with verified true evidence", () => {
