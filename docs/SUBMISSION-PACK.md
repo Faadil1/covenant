@@ -62,7 +62,8 @@ The ideal Apple path consumes AAPL / AAPLx / AAPLon. Current trial entitlement i
 - deterministic fail-closed evaluator: verified;
 - governed `USDC -> AAPLx`: Surfpool run `35698743841`;
 - replay refused;
-- representation switch `AAPLx -> AAPLon`: run `35733746142`, artifact `10696822718`;
+- representation switch `AAPLx -> AAPLon`: historical governed migration run `35733746142`, artifact `10696822718`;
+- current objective-control revalidation: `SAFE_NO_ACTION` because live route impact `977.2256517937228 bps` exceeded the owner's `500 bps` repair ceiling — run `35886284296`, artifact `10762099429`;
 - live Pyth/Jupiter evaluator path: run `35794379825`.
 
 ## Security boundary
@@ -72,7 +73,7 @@ COVENANT is not a ZK or formal proof system. Its security property is bounded, e
 ## Current truth boundary
 
 - user app: browser sandbox;
-- T3/T4: Surfpool mainnet-shaped fork;
+- T3/T4: Surfpool mainnet-shaped fork; current T4 revalidation may refuse instead of migrate when live route conditions violate the Covenant;
 - live-market fallback: Pyth + Jupiter;
 - minimal 34,112-byte devnet authority canary: build-ready, public deployment pending free devnet funding;
 - full mainnet COVENANT execution: not claimed.
