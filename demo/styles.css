@@ -178,3 +178,63 @@ footer{border-top:1px solid var(--ink);padding:24px;display:flex;justify-content
 @media(max-width:760px){
   .latest-repair-check{grid-template-columns:1fr}
 }
+
+
+/* Protection Event — profile-aware repair resolution */
+.profile-line{
+  margin-top:22px;
+  padding:14px 16px;
+  border:1px solid var(--ink);
+  background:var(--panel);
+  display:grid;
+  gap:4px;
+  max-width:520px;
+}
+.profile-line strong{font-size:18px}
+.profile-line small{color:var(--muted);line-height:1.45}
+.protection-event .section-inline{margin-bottom:16px}
+.repair-flow{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:1px;
+  border:1px solid var(--ink);
+  background:var(--ink);
+}
+.repair-flow>.empty-state{grid-column:1/-1;background:var(--panel);border:0}
+.repair-stage{
+  position:relative;
+  min-height:190px;
+  padding:20px;
+  background:var(--panel);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.repair-stage__number{
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--ink);
+  border-radius:50%;
+  font:800 9px monospace;
+  margin-bottom:12px;
+}
+.repair-stage strong{font-size:22px;line-height:1.05}
+.repair-stage small{margin-top:auto;color:var(--muted);line-height:1.45}
+.repair-stage--pass{box-shadow:inset 0 6px 0 var(--acid)}
+.repair-stage--fail{box-shadow:inset 0 6px 0 var(--signal)}
+.repair-stage--outcome{background:#171713;color:var(--paper)}
+.repair-stage--outcome small,.repair-stage--outcome .eyebrow{color:#c8c0b2}
+.repair-stage--outcome .repair-stage__number{border-color:var(--paper)}
+.protection-event-summary h2{font-size:36px;line-height:1;margin:10px 0}
+.protection-event-summary>p{font-size:13px;line-height:1.55;color:var(--muted)}
+.runtime-controls{margin-top:22px}
+.runtime-controls>.panel{background:transparent}
+@media(max-width:980px){
+  .repair-flow{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .repair-flow{grid-template-columns:1fr}
+  .repair-stage{min-height:0}
+}
