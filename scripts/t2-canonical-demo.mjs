@@ -80,10 +80,6 @@ async function main() {
 
   const observedAt = new Date().toISOString();
 
-  // Refresh only the timestamp of already-authoritative fixture evidence.
-  // The source/value/evidence class are unchanged.
-  aaplon.properties.collateralLendingRequiresHolderOptIn.observedAt = observedAt;
-
   const allowCase = await evaluateClaim({
     covenant,
     passport: aaplon,
@@ -100,11 +96,11 @@ async function main() {
     throw new Error("Canonical AAPLon case must ALLOW");
   }
   if (refuseCase.evaluation.decision !== Decision.REFUSE) {
-    throw new Error("Canonical AAPLx UNKNOWN evidence case must REFUSE");
+    throw new Error("Canonical AAPLx active-permanent-delegate case must REFUSE");
   }
 
   const evidenceRecords = [
-    aaplon.properties.collateralLendingRequiresHolderOptIn,
+    aaplon.properties.permanentDelegateActive,
     allowCase.market.priceImpactBps,
     allowCase.market.basisBps,
     allowCase.portfolioPostState.concentrationPct,
@@ -164,7 +160,7 @@ async function main() {
       executableProofCreated: false,
     },
     assertion:
-      "Same economic intent and operator; different claim truth produces a different authorization outcome.",
+      "Same Apple intent and operator; objective onchain mint-control differences produce different authorization outcomes under the owner's rule.",
   };
 
   console.log(JSON.stringify(report, null, 2));
