@@ -98,4 +98,8 @@ The user-selected rule is therefore factual and inspectable: **no active permane
 
 That still does **not** make AAPLon universally better or AAPLx universally unsafe. It proves only that the two exact representations differ on a user-selected authority property.
 
-See `research/REPRESENTATION-REALITY-AUDIT-V1.md`.
+A second objective comparison is also available for a less technical user rule: official issuer docs state a **$5,000** direct issuer issuance/redemption minimum for xStocks versus a **$1** minimum investment/redemption amount for Ondo Stocks. COVENANT can therefore encode a small-holder rule such as “direct issuer redemption minimum ≤ $100.”
+
+This issuer-term comparison is separate from eligibility. Current official evidence lists Canada as unavailable/prohibited for both xStocks and Ondo Stocks, so the Apple switch is not presented as executable for a Canadian user.
+
+See `research/REPRESENTATION-REALITY-AUDIT-V1.md` and `docs/APPLE-SMALL-HOLDER-REDEMPTION-PROOF.md`.
