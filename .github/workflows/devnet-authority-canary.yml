@@ -55,17 +55,58 @@ jobs:
           echo "PROGRAM_ID=$(solana-keygen pubkey canary/target/deploy/covenant_canary-keypair.json)" >> "$GITHUB_ENV"
           solana config set --url https://api.devnet.solana.com --keypair /tmp/covenant-devnet-payer.json >/dev/null
 
-      - name: Install programmatic PoW faucet
-        run: cargo install devnet-pow
-
-      - name: Mine enough devnet SOL
+      - name: Obtain free devnet SOL
         shell: bash
         run: |
-          set -euo pipefail
-          devnet-pow mine --target-lamports 500000000
-          BALANCE=$(solana balance "$DEVNET_PAYER" --lamports --url https://api.devnet.solana.com | awk '{print $1}')
-          echo "payer_lamports=$BALANCE"
-          test "$BALANCE" -gt 200000000
+          set -uo pipefail
+          TARGET=300000000
+
+          balance() {
+            solana balance "$DEVNET_PAYER" --lamports --url https://api.devnet.solana.com 2>/dev/null | awk '{print $1}' || echo 0
+          }
+
+          CURRENT=$(balance)
+          echo "initial_lamports=$CURRENT"
+
+          # Small requests are less likely to hit the public faucet's amount quota
+          # than the 2 SOL request used by the first attempt.
+          for AMOUNT in 0.3 0.2 0.1 0.05; do
+            if [ "$CURRENT" -ge "$TARGET" ]; then break; fi
+            solana airdrop "$AMOUNT" "$DEVNET_PAYER" --url https://api.devnet.solana.com || true
+            sleep 4
+            CURRENT=$(balance)
+            echo "after_rpc_${AMOUNT}_lamports=$CURRENT"
+          done
+
+          # Helius publishes a shared devnet demo proxy. requestAirdrop may be
+          # allowlisted there; if not, this is deliberately non-fatal.
+          if [ "$CURRENT" -lt "$TARGET" ]; then
+            curl -sS -X POST 'https://demo.helius.dev/api/rpc?network=devnet' \
+              -H 'content-type: application/json' \
+              --data "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"requestAirdrop\",\"params\":[\"$DEVNET_PAYER\",400000000]}" \
+              | tee /tmp/helius-airdrop.json || true
+            sleep 8
+            CURRENT=$(balance)
+            echo "after_helius_demo_lamports=$CURRENT"
+          fi
+
+          # Final programmatic fallback recommended by Solana. It can be empty
+          # at times, so failure here only becomes fatal if all sources failed.
+          if [ "$CURRENT" -lt "$TARGET" ]; then
+            cargo install devnet-pow || true
+            if command -v devnet-pow >/dev/null 2>&1; then
+              devnet-pow get-all-faucets -ud || true
+              devnet-pow mine --target-lamports 400000000 -ud || true
+            fi
+            sleep 5
+            CURRENT=$(balance)
+            echo "after_pow_lamports=$CURRENT"
+          fi
+
+          if [ "$CURRENT" -lt "$TARGET" ]; then
+            echo "No free programmatic devnet funding source was available."
+            exit 1
+          fi
 
       - name: Deploy minimal canary to devnet
         shell: bash
