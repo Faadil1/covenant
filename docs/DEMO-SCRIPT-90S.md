@@ -8,7 +8,7 @@ Open on **Portfolio**.
 
 Click **SEE THE PROTECTION EVENT**.
 
-> “I tell COVENANT what properties I am willing to accept, and it protects the economic position rather than blindly trusting the current token.”
+> “Protect my Apple position. I tell COVENANT what properties I am willing to accept, and it protects the economic position rather than blindly trusting the current token.”
 
 ## 0:12–0:27 — One human rule
 
