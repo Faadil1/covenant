@@ -17,13 +17,19 @@ Choose Apple
    ↓
 Set protection rules
    ↓
-Compare AAPLx / AAPLon
+Current representation stops fitting
    ↓
-Check representation + user eligibility
+Find candidate representation
    ↓
-PROTECTED / BLOCKED / REVIEW NEEDED
+Check rule fit
    ↓
-one exact authorization
+Check user eligibility
+   ↓
+Check exact route
+   ↓
+SAFE SWITCH / SAFE NO ACTION
+   ↓
+one exact authorization only if every gate passes
    ↓
 Solana execution boundary
 ```
@@ -60,6 +66,21 @@ The user does not need to understand Claim Passports, PDAs, nonces or commitment
 | Full COVENANT mainnet deployment | NOT CLAIMED | preflight only |
 
 The Tesla path is **evidence fallback only** while the current Pyth trial lacks Apple feed entitlement. It is not a second user story.
+
+### Canonical judge protection event
+
+The primary browser journey is now the current Apple repair decision, not the historical migration:
+
+```
+AAPLx
+  → rule mismatch: PermanentDelegate active
+  → candidate: AAPLon fits the selected representation rule
+  → profile gate: Canada / Québec not eligible
+  → route gate: 977.23 bps > 500 bps ceiling
+  → SAFE NO ACTION
+```
+
+This is intentional. The historical governed AAPLx → AAPLon migration remains execution proof, while the current user journey re-evaluates the present profile and point-in-time route before creating any authority. A candidate representation is not treated as usable merely because it fits the ownership rule.
 
 ## Cryptographic scope
 
