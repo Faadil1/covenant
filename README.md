@@ -91,8 +91,19 @@ The browser app is a local sandbox. Verified fork execution and live-market evid
 
 ## Representation reality boundary
 
-The current Apple repair demo is intentionally fail-closed. Ondo publishes an explicit protection that its backing securities are not lent without the relevant tokenholder's express consent. COVENANT has not bound authoritative evidence for that exact property on AAPLx, so AAPLx is **UNKNOWN**, not proven unsafe.
+The canonical Apple protection event now uses an **objective onchain mint-control difference**, not a missing-data comparison.
 
-Eligibility is evaluated separately from representation identity. A representation can be technically valid and still be unusable for a particular person, jurisdiction, venue or operation. `UNKNOWN` and `INELIGIBLE` both refuse.
+A mainnet Token-2022 inspection of the exact mints found:
+
+- **AAPLx:** active `PermanentDelegate` at `5aMNNLQJwAEeoemTEMkv5NVjqKwvvefRYCQ5Z67HFvEq`;
+- **AAPLon:** no `PermanentDelegate` extension.
+
+The Stocklana demo rule is therefore concrete: **do not use a representation with an active permanent token-moving delegate**. Under Solana Token-2022 semantics, a permanent delegate is a mint-level authority that can authorize transfers and burns for any token account of that mint, and token-account owners cannot revoke it.
+
+This is not a claim that AAPLx is universally unsafe or AAPLon universally superior. Both representations have other issuer controls. COVENANT evaluates whether an exact representation satisfies the owner's explicit rule.
+
+Eligibility is evaluated separately from representation identity. A technically valid representation can still be unusable for a particular person, jurisdiction, venue or operation. `UNKNOWN` and `INELIGIBLE` both refuse.
+
+Mainnet inspection: workflow run `35884969091`, artifact `10761673239`.
 
 See `research/REPRESENTATION-REALITY-AUDIT-V1.md`.
