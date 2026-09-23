@@ -6,11 +6,11 @@
   },
   "representationId": "apple:ondo:aaplon",
   "userCanAcquire": {
-    "value": null,
-    "status": "UNKNOWN",
-    "evidenceClass": "UNKNOWN",
-    "observedAt": null,
-    "source": "No exact Canada/Quebec AAPLon acquisition eligibility evidence is bound in this repository yet.",
-    "note": "UNKNOWN must fail closed. Generic 'outside the U.S.' language is not enough to infer eligibility in Canada."
+    "value": false,
+    "status": "VERIFIED",
+    "evidenceClass": "SIGNED_OR_AUTHORITATIVE_OFFCHAIN",
+    "observedAt": "2026-09-23T17:35:00.000Z",
+    "source": "https://docs.ondo.finance/ondo-stocks/eligibility",
+    "note": "Ondo's official eligibility documentation explicitly lists Canada as prohibited for subscribing for, acquiring, or redeeming Ondo Stocks. This fixture is a jurisdiction test, not legal advice."
   }
 }
