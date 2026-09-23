@@ -4,66 +4,74 @@
 
 Open on **Portfolio**.
 
-> “I want Apple exposure on Solana. I should not need to know which token wrapper, issuer or mint is safe to use today.”
+> “I want Apple exposure on Solana. I should not need to audit every token mint and issuer control myself.”
 
-Click **TRY APPLE PROTECTION**.
+Click **SEE THE PROTECTION EVENT**.
 
-> “So I tell COVENANT one thing: protect my Apple position.”
+> “I tell COVENANT what properties I am willing to accept, and it protects the economic position rather than blindly trusting the current token.”
 
-## 0:12–0:27 — Protection rules
+## 0:12–0:27 — One human rule
 
-Open **Protection**.
+Open **Protection** briefly.
 
-> “I choose the rules in normal language: verified issuers only, a maximum route-impact limit, and how much software may act on automatically.”
+Point to:
 
-Show the holder-consent rule.
+**No permanent token-moving delegate.**
 
-> “If I care about a specific ownership right, I can require that too. Unknown evidence is not treated as true.”
+> “This is a real Token-2022 control. A PermanentDelegate is a mint-level authority that can transfer or burn tokens for any account of that mint, and the holder cannot revoke it.”
 
-## 0:27–0:42 — Same stock, different representations
+Keep the other rules visible: verified issuer, route-impact limit, automatic-action cap.
+
+## 0:27–0:44 — Same Apple, objectively different mint controls
 
 Open **Representations**.
 
-> “Here are two real Solana representations of Apple: AAPLx and AAPLon. COVENANT does not assume they are equivalent just because both represent Apple.”
+> “These are two real Apple representations on Solana. Mainnet inspection of the exact mints found an active PermanentDelegate on AAPLx. AAPLon has no PermanentDelegate extension.”
 
-Point to the visible **QUALIFIES / BLOCKED** result.
+Point to **BLOCKED / QUALIFIES**.
 
-> “Each representation is checked against my rules.”
+> “That does not mean one issuer is universally better. It means these two representations are objectively different on a property I chose to care about.”
 
-## 0:42–0:58 — The killer moment
+## 0:44–0:58 — The killer moment
 
-Open **Check**, choose **REPRESENTATION NEEDS SWITCH**.
+Open **Check** / **REPRESENTATION NEEDS SWITCH**.
 
-> “My current AAPLx representation no longer satisfies a rights-sensitive rule because the required evidence is unknown.”
+Show:
+
+**AAPLx → PERMANENT DELEGATE ACTIVE → CHECK AAPLon**
 
 Run **CHECK PROTECTION**.
 
-Point to **BLOCKED** for the current representation, then AAPLon as the qualifying target.
+> “My Apple intent did not change. The current representation violates my rule, so COVENANT refuses it and checks an alternative.”
 
-> “COVENANT blocks the unsafe state and identifies a representation that still satisfies what I asked to own.”
+Point to **SAFE SWITCH** for AAPLon.
 
 ## 0:58–1:18 — Evidence before authority
 
 Create the exact authorization.
 
-> “A passing decision still is not open-ended wallet power. COVENANT binds this exact target, amount, expiry and current Position state before authority exists.”
+> “A passing decision is still not open-ended wallet power. COVENANT binds this exact representation, route, amount, expiry, Position version and nonce before authority exists.”
 
 Confirm, then apply the demo action.
 
-> “The action is consumed once. Version and nonce advance, so replay is refused.”
+> “The action is consumed once. Version and nonce advance, so stale authorization cannot be replayed.”
 
 Open **Why this action is safe** only briefly.
-
-> “The crypto machinery is underneath the product, not the product.”
 
 ## 1:18–1:30 — Close
 
 Return to **My Position**.
 
-> “The token representation changed, but the user’s Apple position stayed protected. That is COVENANT.”
+> “The token representation changed. The Apple position and the owner's rule stayed intact. That is COVENANT.”
 
 End on:
 
 **OWN THE STOCK. NOT THE TOKEN RISK.**
 
-Truth boundary for narration: the browser action is local sandbox state. Verified Jupiter execution and replay refusal are linked under Evidence from Surfpool mainnet-shaped fork runs. No full COVENANT mainnet execution is claimed.
+## Truth boundary
+
+- The browser action mutates local sandbox state.
+- The objective PermanentDelegate difference comes from the exact mainnet Token-2022 mints; workflow run `35884969091`, artifact `10761673239`.
+- Verified representation migration and replay protections are evidenced by Surfpool mainnet-shaped fork runs.
+- No full COVENANT mainnet deployment is claimed.
+- COVENANT does not claim that AAPLx is universally unsafe or that AAPLon is universally superior.
