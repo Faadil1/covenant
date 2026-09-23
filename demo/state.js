@@ -10,6 +10,7 @@ export const CLAIMS = {
     tokenProgram: "Token-2022",
     permanentDelegateActive: true,
     permanentDelegateAddress: "5aMNNLQJwAEeoemTEMkv5NVjqKwvvefRYCQ5Z67HFvEq",
+    directIssuerRedemptionMinimumUsd: 5000,
     provenance: "xStocks official asset API + Solana mainnet RPC",
   },
   AAPLon: {
@@ -21,6 +22,7 @@ export const CLAIMS = {
     tokenProgram: "Token-2022",
     permanentDelegateActive: false,
     permanentDelegateAddress: null,
+    directIssuerRedemptionMinimumUsd: 1,
     provenance: "Ondo official product docs + official Solana mapping + Solana mainnet RPC",
   },
 };
@@ -71,6 +73,8 @@ export function freshState() {
       requireIssuerMapping: true,
       requireToken2022: true,
       forbidPermanentDelegate: false,
+      enforceSmallHolderRedemption: false,
+      maxDirectIssuerRedemptionMinimumUsd: 100,
       maxRouteImpactBps: 50,
       maxAutonomousUsd: 100,
       allowedOperators: ["ACQUIRE", "MIGRATE", "FREEZE"],
@@ -135,6 +139,7 @@ export function loadPreset(name) {
     state.position.balances.USDC = 0;
     state.position.balances.AAPLx = 3000000;
     state.covenant.forbidPermanentDelegate = true;
+    state.covenant.enforceSmallHolderRedemption = false;
     state.covenant.maxRouteImpactBps = 500;
     state.events = [{
       at: new Date().toISOString(),
@@ -197,6 +202,23 @@ export function evaluateTransition({ state, operator, targetClaim, amountUsd, pr
             : "PERMANENT_DELEGATE_NOT_ALLOWED",
         claim.permanentDelegateActive,
         false,
+      );
+    }
+    if (state.covenant.enforceSmallHolderRedemption) {
+      const minimum = claim.directIssuerRedemptionMinimumUsd;
+      const maxMinimum = state.covenant.maxDirectIssuerRedemptionMinimumUsd;
+      const known = typeof minimum === "number";
+      const passes = known && minimum <= maxMinimum;
+      push(
+        "claim.direct_issuer_redemption_minimum_usd",
+        passes ? "ALLOW" : "REFUSE",
+        passes
+          ? "RULE_PASS"
+          : known
+            ? "DIRECT_REDEMPTION_MINIMUM_TOO_HIGH"
+            : "EVIDENCE_UNKNOWN",
+        known ? minimum : null,
+        maxMinimum,
       );
     }
     if (profile.stale) {
