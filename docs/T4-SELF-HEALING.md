@@ -1,81 +1,136 @@
 # T4 Self-Healing / Representation Mobility
 
-Status: **PASS — verified proof-gated representation migration on Surfpool**
+Status: **PASS — migration mechanism verified historically; objective control rule verified on mainnet; live repair remains market-gated**
 
-This vertical slice proves a representation-level repair without pretending that two tokens referencing AAPL are interchangeable.
+COVENANT now separates three proof layers instead of pretending one run proves everything.
 
-Canonical run: `35733746142`  
-Artifact: `covenant-t4-self-healing-evidence`  
-Artifact ID: `10696822718`
+## Layer 1 — objective representation failure
 
-## Scenario
+Canonical mint-control evidence:
 
-The stable Invariant Position is `APPLE economic exposure`.
+- mainnet run: `35884969091`
+- artifact: `10761673239`
+- observedAt: `2026-09-23T15:54:35.225Z`
 
-The Position begins with a real AAPLx Token-2022 balance. The owner imports that already-held balance with `adopt_existing_claim`; this moves no value and verifies that the exact token account is owned by the Position PDA.
+Exact Token-2022 mint inspection found:
 
-A rights-sensitive Covenant requires:
+- **AAPLx:** active `PermanentDelegate`
+- **AAPLon:** no `PermanentDelegate` extension
 
-- official issuer mapping;
-- Token-2022 identity;
-- evidence that lending of backing securities requires holder opt-in;
-- exact repair route impact ≤ 500 bps.
+AAPLx permanent delegate:
+
+`5aMNNLQJwAEeoemTEMkv5NVjqKwvvefRYCQ5Z67HFvEq`
+
+Solana defines PermanentDelegate as a mint-level authority that can authorize transfers and burns for any token account of that mint; token-account owners cannot revoke it.
+
+The current repair Covenant therefore uses this owner-selected rule:
+
+> **No active permanent token-moving delegate.**
 
 Under the bound Claim Passports:
 
-- AAPLx has `collateralLendingRequiresHolderOptIn = UNKNOWN`, so the required rule fails closed;
-- AAPLon has authoritative issuer evidence for explicit holder consent;
-- the direct AAPLx → AAPLon Jupiter route must also satisfy the live repair-impact rule.
+```
+AAPLx.permanentDelegateActive  = true  -> REFUSE
+AAPLon.permanentDelegateActive = false -> pass this rule
+```
 
-If AAPLon qualifies, the repair planner returns `MIGRATE`, but that plan is still non-executable until a fresh Transition Proof binds the exact route.
+This is an objective onchain difference, not a missing-evidence comparison.
+
+## Layer 2 — representation mobility mechanism
+
+Historical canonical migration run:
+
+- run: `35733746142`
+- artifact: `10696822718`
+- outcome: `MIGRATED`
+
+That run proved the constrained AAPLx → AAPLon state transition on a Surfpool mainnet-shaped fork:
+
+- full current-Claim balance consumed;
+- exact Jupiter invocation bound;
+- minimum output enforced;
+- Position identity preserved;
+- current Claim changed only after settlement;
+- Position version / nonce advanced;
+- replay refused.
+
+The historical run used the earlier rights-sensitive holder-consent policy. It remains valid evidence for the **migration mechanism**, but it is not retroactively presented as proof of the new PermanentDelegate rule.
+
+## Layer 3 — current live repair gate
+
+The current T4 harness re-evaluates both representation truth and the live AAPLx → AAPLon route.
+
+A target representation is not enough. The route must also satisfy the owner's repair-cost ceiling.
+
+Current policy:
+
+- exact issuer mapping;
+- Token-2022 identity;
+- no active PermanentDelegate;
+- live repair route impact ≤ 500 bps;
+- bounded MIGRATE authority.
+
+If AAPLon passes the representation rule but the current route exceeds 500 bps, COVENANT produces **SAFE_NO_ACTION**:
+
+- no migration authorization is created;
+- no economic transition occurs;
+- the expensive route is not used.
+
+If the route is inside the bound, the harness continues through the governed migration.
+
+This means “self-healing” is not “move at any cost.” It is:
+
+> find a qualifying representation **and** prove that the exact repair is currently admissible.
 
 ## Governed migration
 
-The onchain `execute_claim_migrate` instruction requires:
+When every gate passes, the onchain migration path requires:
 
 - operator = MIGRATE;
 - source mint = Position.current_claim_mint;
 - source and target accounts are Position-owned Token-2022 accounts;
 - target mint = proof target;
 - target differs from source;
-- the **entire** current-Claim balance is consumed;
-- exact Jupiter V6 invocation hash/account order/data match the proof;
+- the entire current-Claim balance is consumed;
+- exact Jupiter invocation hash/account order/data match the proof;
 - exact source amount and minimum target output are satisfied;
 - nonce/version advance atomically;
 - current_claim_mint changes only after settlement;
 - replay fails.
 
-This makes representation mobility a state transition, not a dashboard recommendation.
+The evaluator-approved transition is persisted as a nonce-bound authorization before the compact execution transaction.
 
-## Truth boundary
+## Historical verified result — 2026-09-22
 
-The proof does not claim that AAPLx changed its legal terms during the run. It uses the currently bound truth: the required holder-opt-in property is UNKNOWN for AAPLx and authoritative TRUE for AAPLon.
-
-The route and economic migration are live-mainnet-shaped inputs/execution on Surfpool. No real mainnet funds are used.
-
-The 500 bps repair bound is intentionally distinct from the 50 bps Stocklana ACQUIRE profile. It is a demo/repair policy, not a recommendation about acceptable trading cost.
-
-
-## Verified result — 2026-09-22
-
-The canonical run completed the full self-healing path:
+The canonical historical migration completed:
 
 - current representation: AAPLx;
-- current decision: `REFUSE`;
-- failure reason: required holder-opt-in lending evidence remained `UNKNOWN`;
 - replacement representation: AAPLon;
-- replacement decision: `ALLOW`;
-- live direct AAPLx → AAPLon route impact: `248.14350341680253 bps`;
-- repair Covenant ceiling: `500 bps`;
+- live direct route impact: `248.14350341680253 bps`;
+- repair ceiling: `500 bps`;
 - source balance: `3000000` raw AAPLx;
 - minimum target: `29293783` raw AAPLon;
 - settled target: `29421175` raw AAPLon;
 - source residual: `0`;
 - Position version / nonce: `1/1 -> 2/2`;
 - Position identity: preserved;
-- representation: changed;
 - outcome: `MIGRATED`.
 
-The migration proof hash was `5f8b540ac809a29dd80a409cfa09aa114e8cc34f875bc0bb27e5f14ca60c154e`.
+Historical migration proof hash:
 
-The onchain authorization used a nonce-bound PDA containing the full evaluator-approved Transition Proof before the compact execution transaction. Jupiter setup material was restricted to allowlisted non-economic account-creation instructions, and source/target economic balances were verified unchanged across setup.
+`5f8b540ac809a29dd80a409cfa09aa114e8cc34f875bc0bb27e5f14ca60c154e`
+
+## Truth boundary
+
+COVENANT does **not** claim:
+
+- that AAPLx is universally unsafe;
+- that AAPLon is universally superior;
+- that absence of PermanentDelegate means absence of all issuer controls;
+- that the historical migration used the new PermanentDelegate rule;
+- that a migration should execute when the current route violates the owner's cost ceiling;
+- that any of these Surfpool transactions moved real mainnet funds.
+
+The claim is narrower and inspectable:
+
+> the exact Apple representations differ on a user-selected onchain authority property, and COVENANT only creates transition authority when both the target representation and the exact route satisfy the current Covenant.
