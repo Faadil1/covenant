@@ -2,7 +2,7 @@
   "id": "covenant:apple:self-healing",
   "version": 1,
   "underlyingIntent": "APPLE economic exposure",
-  "notes": "Rights-sensitive repair profile. A Claim must have verified issuer identity, Token-2022 identity, evidence that collateral lending requires holder opt-in, and an exact proposed route under 500 bps. UNKNOWN fails closed. The 500 bps ceiling is a repair/demo bound, not the Stocklana ACQUIRE ceiling.",
+  "notes": "Control-sensitive repair profile. A Claim must have verified issuer identity, Token-2022 identity, no active mint-level PermanentDelegate, and an exact proposed route under 500 bps. UNKNOWN fails closed. The 500 bps ceiling is a repair/demo bound, not the Stocklana ACQUIRE ceiling.",
   "rules": [
     {
       "id": "claim.official_issuer_mapping_verified",
@@ -25,14 +25,14 @@
       "reasonCode": "TOKEN_PROGRAM_NOT_ALLOWED"
     },
     {
-      "id": "claim.collateral_lending_requires_holder_opt_in",
-      "evidencePath": "passport.properties.collateralLendingRequiresHolderOptIn",
+      "id": "claim.permanent_delegate_active",
+      "evidencePath": "passport.properties.permanentDelegateActive",
       "operator": "EQUALS",
-      "expected": true,
+      "expected": false,
       "hard": true,
-      "minEvidenceClass": "CURATED_RESEARCH",
+      "minEvidenceClass": "ONCHAIN_DETERMINISTIC",
       "onUnknown": "REFUSE",
-      "reasonCode": "HOLDER_OPT_IN_NOT_PROVEN"
+      "reasonCode": "PERMANENT_DELEGATE_NOT_ALLOWED"
     },
     {
       "id": "repair.max_route_impact_bps",
