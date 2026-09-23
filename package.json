@@ -21,7 +21,8 @@
     "probe:pyth:playground": "node scripts/pyth-playground-ingest.mjs",
     "probe:pyth:lazer": "node --env-file-if-exists=.env scripts/pyth-lazer-websocket-check.mjs",
     "probe:tsla-fallback": "node --env-file-if-exists=.env scripts/tsla-fallback-live-check.mjs",
-    "preflight:tsla-mainnet": "node --env-file-if-exists=.env scripts/tsla-mainnet-preflight.mjs"
+    "preflight:tsla-mainnet": "node --env-file-if-exists=.env scripts/tsla-mainnet-preflight.mjs",
+    "probe:apple-reality": "node scripts/apple-token2022-reality.mjs"
   },
   "engines": {
     "node": ">=22.9.0"
