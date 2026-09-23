@@ -5,6 +5,7 @@ import {
   ExtensionType,
   TOKEN_2022_PROGRAM_ID,
   getExtensionTypes,
+  getPermanentDelegate,
   unpackMint,
 } from "@solana/spl-token";
 
@@ -48,6 +49,18 @@ async function inspect(connection, representation) {
     (type) => ExtensionType[type] || "UNKNOWN_" + type,
   );
 
+  const permanentDelegateRecord = getPermanentDelegate(mint);
+  const permanentDelegateAddress =
+    permanentDelegateRecord?.delegate &&
+    typeof permanentDelegateRecord.delegate.toBase58 === "function"
+      ? permanentDelegateRecord.delegate.toBase58()
+      : permanentDelegateRecord?.delegate
+        ? String(permanentDelegateRecord.delegate)
+        : null;
+  const permanentDelegateActive =
+    Boolean(permanentDelegateAddress) &&
+    permanentDelegateAddress !== PublicKey.default.toBase58();
+
   return {
     ...representation,
     ownerProgram: info.owner.toBase58(),
@@ -58,6 +71,10 @@ async function inspect(connection, representation) {
     extensionNames,
     scaledUiAmountConfig:
       extensionTypes.includes(ExtensionType.ScaledUiAmountConfig),
+    permanentDelegateExtension:
+      extensionTypes.includes(ExtensionType.PermanentDelegate),
+    permanentDelegateAddress,
+    permanentDelegateActive,
   };
 }
 
@@ -74,13 +91,22 @@ async function main() {
   const aaplon = records.find((record) => record.symbol === "AAPLon");
 
   const comparison = {
-    property: "Token-2022 ScaledUiAmountConfig",
-    aaplx: aaplx.scaledUiAmountConfig,
-    aaplon: aaplon.scaledUiAmountConfig,
+    property: "Active Token-2022 PermanentDelegate",
+    aaplx: aaplx.permanentDelegateActive,
+    aaplon: aaplon.permanentDelegateActive,
     objectiveDifference:
-      aaplx.scaledUiAmountConfig !== aaplon.scaledUiAmountConfig,
+      aaplx.permanentDelegateActive !== aaplon.permanentDelegateActive,
     userMeaning:
-      "Scaled UI mints require integrations to apply an issuer-controlled display multiplier when converting raw balances to displayed amounts. A representation without the extension does not have that exact integration dependency.",
+      "Under Solana Token-2022, an active permanent delegate is a mint-level authority that can authorize transfers and burns for any token account of that mint, and token-account owners cannot revoke it.",
+    semanticsSource:
+      "https://solana.com/docs/tokens/extensions/permanent-delegate",
+    secondaryObservation: {
+      property: "ScaledUiAmountConfig",
+      aaplx: aaplx.scaledUiAmountConfig,
+      aaplon: aaplon.scaledUiAmountConfig,
+      objectiveDifference:
+        aaplx.scaledUiAmountConfig !== aaplon.scaledUiAmountConfig,
+    },
   };
 
   const report = {
