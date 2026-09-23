@@ -51,7 +51,7 @@ The Position PDA controls authority. Nonce/version state rejects replay. Exact t
 - Browser interaction: local sandbox.
 - T3/T4: Surfpool mainnet-shaped fork.
 - Tesla fallback: live Pyth + live Jupiter data through the real evaluator.
-- Devnet canary: public Solana authority-boundary transaction and replay refusal.
+- Devnet canary: minimal 34,112-byte authority program is build-ready; public deployment is pending devnet faucet/funding availability. No public devnet transaction is claimed yet.
 - Full mainnet COVENANT execution: not claimed.
 
 ## Primary sponsor fit

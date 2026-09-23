@@ -35,7 +35,7 @@ Live TSLA fallback run: `35794379825`.
 | AAPLx -> AAPLon representation migration | PASS | run `35733746142`, artifact `10696822718` |
 | Live Pyth TSLA + Jupiter TSLAx policy gate | PASS | run `35794379825` |
 | Full COVENANT mainnet deployment | NOT CLAIMED | preflight only |
-| Devnet authority canary | automated workflow | `covenant-devnet-authority-canary` |
+| Minimal authority canary build | PASS | 34,112-byte Solana program · ~0.1739392 SOL devnet rent |
 
 ## Cryptographic scope
 
@@ -82,7 +82,7 @@ npm run probe:tsla-fallback
 npm run preflight:tsla-mainnet
 ```
 
-The public browser demo is intentionally a sandbox. Verified fork execution and live-market evidence are linked from the Evidence page. The devnet canary workflow deploys and exercises the authority boundary on public Solana devnet without using mainnet funds.
+The public browser demo is intentionally a sandbox. Verified fork execution and live-market evidence are linked from the Evidence page. A 34,112-byte minimal Solana authority canary builds successfully and is ready for public devnet deployment. Automated deployment has not yet produced a public transaction because the available GitHub-hosted devnet faucets were rate-limited or unavailable. No devnet execution is claimed until Explorer-verifiable signatures exist.
 
 ## Repository map
 
