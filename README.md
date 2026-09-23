@@ -49,6 +49,7 @@ The user does not need to understand Claim Passports, PDAs, nonces or commitment
 | Boundary | Status | Evidence |
 | --- | --- | --- |
 | Exact AAPLx / AAPLon identities | PASS | official issuer + Solana RPC |
+| Objective AAPLx / AAPLon mint-control difference | PASS | mainnet run `35884969091`, artifact `10761673239` |
 | Deterministic protection decision | PASS | ALLOW / ESCALATE / REFUSE engine |
 | Governed USDC -> AAPLx execution | PASS | Surfpool run `35698743841` |
 | Replay rejection | PASS | same T3 run |
@@ -71,6 +72,7 @@ Public wording uses **evidence-bound authorization**.
 
 ```bash
 npm run test:t2
+npm run probe:apple-reality
 npm run probe:tsla-fallback
 npm run preflight:tsla-mainnet
 ```
