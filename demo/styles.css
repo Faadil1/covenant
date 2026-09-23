@@ -82,3 +82,77 @@ footer{border-top:1px solid var(--ink);padding:24px;display:flex;justify-content
   .event-story{grid-template-columns:1fr}
   .event-arrow{padding:8px;border-left:0;border-right:0;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);transform:none}
 }
+
+
+/* Profile-aware representation comparison */
+.compare-context{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);
+  gap:1px;
+  border:1px solid var(--line,#d8d1c5);
+  background:var(--line,#d8d1c5);
+  margin-bottom:18px;
+}
+.compare-context>div{
+  background:var(--paper,#f7f2e8);
+  padding:18px 20px;
+  display:grid;
+  gap:6px;
+}
+.compare-context strong{font-size:18px;line-height:1.25}
+.compare-context small{color:var(--muted,#6e675c);line-height:1.45}
+.compare-context a{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:inherit}
+
+.claim-matrix{
+  border:1px solid var(--line,#d8d1c5);
+  background:var(--paper,#f7f2e8);
+  overflow:hidden;
+}
+.claim-matrix__row{
+  display:grid;
+  grid-template-columns:minmax(220px,1.35fr) minmax(150px,1fr) minmax(150px,1fr);
+  align-items:stretch;
+  border-top:1px solid var(--line,#d8d1c5);
+}
+.claim-matrix__row:first-child{border-top:0}
+.claim-matrix__row>div{
+  padding:17px 18px;
+  border-left:1px solid var(--line,#d8d1c5);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+  min-width:0;
+}
+.claim-matrix__row>div:first-child{border-left:0}
+.claim-matrix__row strong{line-height:1.25}
+.claim-matrix__row small{color:var(--muted,#6e675c);line-height:1.35}
+.claim-matrix__head{
+  background:#191915;
+  color:#fffdf7;
+}
+.claim-matrix__head>div{padding-top:20px;padding-bottom:20px}
+.claim-matrix__head .eyebrow{color:#bdb5a7}
+.claim-matrix__head strong{font-family:Georgia,"Times New Roman",serif;font-size:28px;font-weight:500}
+.claim-matrix__row--decision{background:#efe8da}
+
+.matrix-status{
+  display:inline-flex;
+  align-self:flex-start;
+  padding:7px 10px;
+  border:1px solid currentColor;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.06em;
+  line-height:1;
+  white-space:nowrap;
+}
+.matrix-status--good{color:#2d5a3d;background:#edf4ed}
+.matrix-status--bad{color:#8a332e;background:#f7ebe8}
+.matrix-status--neutral{color:#6a6257;background:#eee9df}
+
+@media(max-width:760px){
+  .compare-context{grid-template-columns:1fr}
+  .claim-matrix{overflow-x:auto}
+  .claim-matrix__row{min-width:700px}
+}
