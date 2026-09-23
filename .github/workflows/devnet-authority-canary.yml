@@ -56,7 +56,7 @@ jobs:
           solana config set --url https://api.devnet.solana.com --keypair /tmp/covenant-devnet-payer.json >/dev/null
 
       - name: Install programmatic PoW faucet
-        run: cargo install devnet-pow --locked
+        run: cargo install devnet-pow
 
       - name: Mine enough devnet SOL
         shell: bash
