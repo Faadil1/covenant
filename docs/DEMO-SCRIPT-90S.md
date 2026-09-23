@@ -4,13 +4,13 @@
 
 Open on **Portfolio**.
 
-> “I want Apple exposure on Solana. I should not need to audit every token mint and issuer control myself.”
+> “I want Apple exposure on Solana. I should not need to audit every token mint, issuer rule, jurisdiction restriction and route myself.”
 
 Click **SEE THE PROTECTION EVENT**.
 
-> “Protect my Apple position. I tell COVENANT what properties I am willing to accept, and it protects the economic position rather than blindly trusting the current token.”
+> “COVENANT protects the economic position rather than blindly trusting whichever token currently represents it.”
 
-## 0:12–0:27 — One human rule
+## 0:12–0:25 — One owner rule
 
 Open **Protection** briefly.
 
@@ -20,49 +20,66 @@ Point to:
 
 > “This is a real Token-2022 control. A PermanentDelegate is a mint-level authority that can transfer or burn tokens for any account of that mint, and the holder cannot revoke it.”
 
-Keep the other rules visible: verified issuer, route-impact limit, automatic-action cap.
+Keep the route-impact ceiling and automatic-action cap visible.
 
-## 0:27–0:44 — Same Apple, objectively different mint controls
+## 0:25–0:42 — Representation fit is not user eligibility
 
 Open **Representations**.
 
-> “These are two real Apple representations on Solana. Mainnet inspection of the exact mints found an active PermanentDelegate on AAPLx. AAPLon has no PermanentDelegate extension.”
+> “These are two real Apple representations on Solana. Mainnet inspection found an active PermanentDelegate on AAPLx. AAPLon has no PermanentDelegate extension.”
 
-Point to **BLOCKED / QUALIFIES**.
+Point to the two separate decision rows:
 
-> “That does not mean one issuer is universally better. It means these two representations are objectively different on a property I chose to care about.”
+**FITS YOUR REPRESENTATION RULES**
 
-## 0:44–0:58 — The killer moment
+and
 
-Open **Check** / **REPRESENTATION NEEDS SWITCH**.
+**USABLE FOR THIS PROFILE NOW**
 
-Show:
+> “AAPLon fits this ownership rule better, but that does not mean I can use it. For the current Canada / Québec profile, both representations fail the issuer eligibility gate.”
 
-**AAPLx → PERMANENT DELEGATE ACTIVE → CHECK AAPLon**
+Point to the latest recorded repair check:
 
-Run **CHECK PROTECTION**.
+**977.23 bps route impact > 500 bps owner ceiling → SAFE NO ACTION.**
 
-> “My Apple intent did not change. The current representation violates my rule, so COVENANT refuses it and checks an alternative.”
+## 0:42–1:06 — The protection event
 
-Point to **SAFE SWITCH** for AAPLon.
+Open **Check** and click **RUN CURRENT PROTECTION EVENT**.
 
-## 0:58–1:18 — Evidence before authority
+The journey should read:
 
-Create the exact authorization.
+**AAPLx**
+→ **RULE MISMATCH**
+→ **AAPLon · RULE FIT**
+→ **NOT ELIGIBLE HERE**
+→ **977.23 BPS > 500 BPS**
+→ **SAFE NO ACTION**
 
-> “A passing decision is still not open-ended wallet power. COVENANT binds this exact representation, route, amount, expiry, Position version and nonce before authority exists.”
+> “My Apple intent did not change. COVENANT found a candidate representation that satisfies the mint-control rule, then separately checked whether I can use it and whether the exact route is acceptable. Those gates fail, so it creates no authority.”
 
-Confirm, then apply the demo action.
+Point to **Correct outcome: no authority.**
 
-> “The action is consumed once. Version and nonce advance, so stale authorization cannot be replayed.”
+> “Doing nothing is a successful protection outcome.”
 
-Open **Why this action is safe** only briefly.
+## 1:06–1:20 — Proof that SAFE SWITCH is real when every gate passes
 
-## 1:18–1:30 — Close
+Open **Evidence**.
 
-Return to **My Position**.
+Point to the historical governed AAPLx → AAPLon migration:
 
-> “The token representation changed. The Apple position and the owner's rule stayed intact. That is COVENANT.”
+- run `35733746142`
+- artifact `10696822718`
+- Position identity preserved
+- version / nonce advanced
+- replay protection evidenced
+
+> “COVENANT has also proven the opposite branch: when the bounded transition passes, it can authorize one exact representation switch and consume that authority once. The current user journey does not pretend those historical conditions still hold.”
+
+## 1:20–1:30 — Close
+
+Return to the Protection Event result.
+
+> “COVENANT is not a swap bot. It separates representation fit, user eligibility and route viability, then gives software power only when all three are true.”
 
 End on:
 
@@ -70,8 +87,10 @@ End on:
 
 ## Truth boundary
 
-- The browser action mutates local sandbox state.
+- The public app is a browser sandbox; any applied demo action mutates local state only.
 - The objective PermanentDelegate difference comes from the exact mainnet Token-2022 mints; workflow run `35884969091`, artifact `10761673239`.
-- Verified representation migration and replay protections are evidenced by Surfpool mainnet-shaped fork runs.
+- Canada / Québec eligibility is bound separately from representation fit using current issuer evidence stored in the demo state.
+- The latest recorded Apple repair revalidation is run `35886284296`, artifact `10762099429`: route impact `977.2256517937228 bps` versus a `500 bps` ceiling, yielding `SAFE_NO_ACTION`.
+- The historical governed representation migration is run `35733746142`, artifact `10696822718`.
 - No full COVENANT mainnet deployment is claimed.
 - COVENANT does not claim that AAPLx is universally unsafe or that AAPLon is universally superior.
