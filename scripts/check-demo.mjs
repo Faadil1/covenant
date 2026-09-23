@@ -13,7 +13,7 @@ const checks=[
  ["wallet connection",app.includes("window.solana")&&pages.index.includes("CONNECT WALLET")],
  ["human protection rules",pages.covenant.includes("Verified issuers only")&&pages.covenant.includes("No permanent token-moving delegate")&&pages.covenant.includes("Small-holder direct redemption")&&pages.covenant.includes("Maximum automatic action")],
  ["representation comparison",pages.claims.includes("Same Apple.")&&pages.claims.includes('id="claimMatrix"')&&app.includes("FITS RULES")],
- ["user decision language",pages.runtime.includes("PROTECTION CHECK")&&app.includes("PROTECTED")&&app.includes("BLOCKED")&&app.includes("SAFE SWITCH")],
+ ["user decision language",pages.runtime.includes("PROTECTION EVENT")&&app.includes("PROTECTED")&&app.includes("BLOCKED")&&app.includes("SAFE SWITCH")&&app.includes("SAFE NO ACTION")],
  ["exact authorization controls",pages.runtime.includes("CREATE EXACT AUTHORIZATION")&&pages.runtime.includes("APPLY DEMO ACTION")],
  ["technical detail progressive disclosure",pages.runtime.includes("Why this action is safe")],
  ["one-click protection event",pages.runtime.includes("COVENANT RESOLUTION PATH")&&pages.runtime.includes("RUN CURRENT PROTECTION EVENT")&&app.includes("PERMANENT DELEGATE ACTIVE")&&app.includes("SAFE NO ACTION")&&app.includes("scenario=switch")],
