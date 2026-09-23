@@ -18,6 +18,8 @@ const checks = [
   ["t3 canonical run", files.submission.includes("35698743841")],
   ["t4 canonical run", files.submission.includes("35733746142")],
   ["t4 artifact", files.submission.includes("10696822718")],
+  ["objective Apple control difference", files.submission.includes("PermanentDelegate") && files.submission.includes("35884969091")],
+  ["judge demo uses objective control rule", files.demoScript.includes("PermanentDelegate") && files.demoScript.includes("AAPLx") && files.demoScript.includes("AAPLon")],
   ["fork truth boundary", files.submission.includes("Surfpool mainnet-shaped fork") && files.submission.includes("full mainnet COVENANT execution: not claimed")],
   ["demo under 90 seconds", files.demoScript.includes("1:18–1:30")],
   ["demo starts with user", files.demoScript.toLowerCase().includes("protect my apple position")],
