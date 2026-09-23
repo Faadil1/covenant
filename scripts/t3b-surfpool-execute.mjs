@@ -48,6 +48,7 @@ const TOKEN_2022_PROGRAM = new PublicKey("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEp
 const INPUT_AMOUNT = BigInt(process.env.COVENANT_INPUT_AMOUNT || "100000000");
 const ECONOMIC_VALUE_USD = Number(process.env.COVENANT_ECONOMIC_VALUE_USD || "100");
 const MAX_SLIPPAGE_BPS = Number(process.env.COVENANT_SLIPPAGE_BPS || "50");
+const MAX_ROUTE_ACCOUNTS = Number(process.env.COVENANT_MAX_ROUTE_ACCOUNTS || "32");
 const MAINNET_RPC = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 const JUPITER_V2 = process.env.JUPITER_API_BASE || "https://api.jup.ag/swap/v2";
 const JUPITER_API_KEY = process.env.JUPITER_API_KEY || "";
@@ -231,6 +232,10 @@ async function buildJupiterRoute({ taker, destinationTokenAccount }) {
     slippageBps: String(MAX_SLIPPAGE_BPS),
     wrapAndUnwrapSol: "false",
     destinationTokenAccount: destinationTokenAccount.toBase58(),
+    // COVENANT wraps Jupiter's route inside its own exact-authority instruction.
+    // Reserve transaction space for the COVENANT accounts + proof material.
+    // Jupiter recommends lowering maxAccounts when composing custom instructions.
+    maxAccounts: String(MAX_ROUTE_ACCOUNTS),
   });
   const headers = JUPITER_API_KEY ? { "x-api-key": JUPITER_API_KEY } : {};
   const url = JUPITER_V2 + "/build?" + params;
@@ -562,6 +567,8 @@ async function main() {
     await markStage("ROUTE_BOUND", {
       outputMint: AAPLX.toBase58(),
       minOut: commitment.minOut,
+      maxAccountsRequested: MAX_ROUTE_ACCOUNTS,
+      swapAccountCount: (build.swapInstruction.accounts || []).length,
       swapInvocationHash: commitment.swapInvocationHash,
       omittedSetupInstructionCount: route.omittedSetupInstructions.length,
       setupReason:
