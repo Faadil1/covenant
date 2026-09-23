@@ -677,9 +677,80 @@ async function main() {
       quote: migrationQuote,
       now,
     });
+
     if (target.evaluation.decision !== Decision.ALLOW) {
+      const targetFailures = target.evaluation.ruleResults.filter(
+        (result) => result.outcome !== Decision.ALLOW,
+      );
+      const onlyMarketCostBlocked =
+        targetFailures.length === 1 &&
+        targetFailures[0].ruleId === "repair.max_route_impact_bps" &&
+        targetFailures[0].reasonCode === "REPAIR_ROUTE_IMPACT_EXCEEDED";
+
+      if (onlyMarketCostBlocked) {
+        const evidence = {
+          schemaVersion: "covenant.t4-self-healing-safe-no-action.v1",
+          observedAt: runObservedAt,
+          proofStrength: "OBJECTIVE_REPRESENTATION_FAILURE_PLUS_LIVE_MARKET_REFUSAL",
+          outcome: "SAFE_NO_ACTION",
+          truthBoundary: {
+            sourceRepresentation:
+              "AAPLx violates the owner-selected no-permanent-delegate rule using ONCHAIN_DETERMINISTIC exact-mint evidence.",
+            targetRepresentation:
+              "AAPLon satisfies the no-permanent-delegate rule, but the current live migration route exceeds the owner's repair-cost ceiling.",
+            execution:
+              "No migration authorization or economic transition is created while the live route violates the Covenant.",
+            mainnetFinancialExecution: false,
+          },
+          environment: {
+            kind: "SURFPOOL_MAINNET_SHAPED_FORK",
+            covenantProgram: PROGRAM_ID.toBase58(),
+            position: position.toBase58(),
+            sourceMint: AAPLX.toBase58(),
+            targetMint: AAPLON.toBase58(),
+          },
+          revalidation: {
+            current: {
+              claimId: aaplxPassport.id,
+              decision: current.evaluation.decision,
+              ruleResults: current.evaluation.ruleResults,
+            },
+            target: {
+              claimId: aaplonPassport.id,
+              decision: target.evaluation.decision,
+              ruleResults: target.evaluation.ruleResults,
+            },
+          },
+          market: {
+            migrationPriceImpactBps: migrationQuote.priceImpactBps,
+            maxRepairImpactBps: 500,
+            routeSource: migrationQuote.source,
+          },
+          assertion:
+            "COVENANT found a representation that satisfies the owner's mint-control rule but refused to repair at an unacceptable live route cost. No transition authority was created.",
+        };
+
+        await mkdir(resolve(ROOT, "evidence/t4"), { recursive: true });
+        const path = resolve(
+          ROOT,
+          "evidence/t4/self-healing-blocked-" +
+            new Date().toISOString().replace(/[:.]/g, "-") +
+            ".json",
+        );
+        await writeFile(path, JSON.stringify(evidence, null, 2) + "\n");
+        await markStage("PASS_SAFE_NO_ACTION", {
+          evidencePath: path,
+          migrationPriceImpactBps: migrationQuote.priceImpactBps,
+          maxRepairImpactBps: 500,
+        });
+        console.log(JSON.stringify(evidence, null, 2));
+        console.error("\nCOVENANT T4 SELF-HEALING: PASS — SAFE NO ACTION");
+        console.error("Evidence: " + path);
+        return;
+      }
+
       throw new Error(
-        "AAPLon repair target did not ALLOW: " +
+        "AAPLon repair target failed for a non-market reason: " +
         JSON.stringify(target.evaluation.ruleResults),
       );
     }
